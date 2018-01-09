@@ -12,11 +12,9 @@ import zmq.ZError;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class TestRouterMandatory
-{
+public class TestRouterMandatory {
     @Test
-    public void testRouterMandatory() throws Exception
-    {
+    public void testRouterMandatory() throws Exception {
         int rc;
         boolean brc;
 

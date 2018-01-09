@@ -8,13 +8,11 @@ import org.zeromq.ZMsg;
 
 //  Freelance client - Model 1
 //  Uses REQ socket to query one or more services
-public class flclient1
-{
+public class flclient1 {
     private static final int REQUEST_TIMEOUT = 1000;
-    private static final int MAX_RETRIES     = 3;   //  Before we abandon
+    private static final int MAX_RETRIES = 3;   //  Before we abandon
 
-    private static ZMsg tryRequest(ZContext ctx, String endpoint, ZMsg request)
-    {
+    private static ZMsg tryRequest(ZContext ctx, String endpoint, ZMsg request) {
         System.out.printf("I: trying echo service at %s...\n", endpoint);
         Socket client = ctx.createSocket(ZMQ.REQ);
         client.connect(endpoint);
@@ -42,8 +40,7 @@ public class flclient1
     //  to. If it has two or more servers to talk to, it will try each server just
     //  once:
 
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         ZContext ctx = new ZContext();
         ZMsg request = new ZMsg();
         request.add("Hello world");
@@ -62,8 +59,7 @@ public class flclient1
                     break; //  Successful
                 System.out.printf("W: no response from %s, retrying...\n", endpoint);
             }
-        }
-        else {
+        } else {
             //  For multiple endpoints, try each at most once
             int endpointNbr;
             for (endpointNbr = 0; endpointNbr < endpoints; endpointNbr++) {

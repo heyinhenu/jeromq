@@ -38,19 +38,16 @@ import zmq.util.Utils;
 // It connects to the server, and then sends a request once per second
 // It collects responses as they arrive, and it prints them out. We will
 // run several client tasks in parallel, each with a different random ID.
-public class ProxyTest
-{
-    private final class Client implements Runnable
-    {
-        private final int     idx;
-        private final String  host;
-        private final String  control;
+public class ProxyTest {
+    private final class Client implements Runnable {
+        private final int idx;
+        private final String host;
+        private final String control;
         private final boolean verbose;
 
         private final AtomicBoolean done = new AtomicBoolean();
 
-        Client(int idx, String host, String control, boolean verbose)
-        {
+        Client(int idx, String host, String control, boolean verbose) {
             this.idx = idx;
             this.host = host;
             this.control = control;
@@ -58,8 +55,7 @@ public class ProxyTest
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Ctx ctx = ZMQ.createContext();
             SocketBase client = ZMQ.socket(ctx, ZMQ.ZMQ_DEALER);
             assertThat(client, notNullValue());
@@ -140,24 +136,21 @@ public class ProxyTest
 
     private static final String BACKEND = "inproc://backend";
 
-    private final class Server implements Runnable
-    {
-        private final String  host;
-        private final String  control;
+    private final class Server implements Runnable {
+        private final String host;
+        private final String control;
         private final boolean verbose;
 
         private final AtomicBoolean done = new AtomicBoolean();
 
-        Server(String host, String control, boolean verbose)
-        {
+        Server(String host, String control, boolean verbose) {
             this.host = host;
             this.control = control;
             this.verbose = verbose;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Ctx ctx = ZMQ.createContext();
             // Frontend socket talks to clients over TCP
             SocketBase frontend = ZMQ.socket(ctx, ZMQ.ZMQ_ROUTER);
@@ -209,15 +202,13 @@ public class ProxyTest
     // Each worker task works on one request at a time and sends a random number
     // of replies back, with random delays between replies:
     // The comments in the first column, if suppressed, makes it a poller version
-    private final class Worker implements Runnable
-    {
+    private final class Worker implements Runnable {
         private final boolean verbose;
-        private final int     idx;
-        private final String  control;
-        private final Ctx     ctx;
+        private final int idx;
+        private final String control;
+        private final Ctx ctx;
 
-        public Worker(Ctx ctx, int idx, String control, boolean verbose)
-        {
+        public Worker(Ctx ctx, int idx, String control, boolean verbose) {
             this.ctx = ctx;
             this.idx = idx;
             this.control = control;
@@ -225,8 +216,7 @@ public class ProxyTest
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             SocketBase worker = ZMQ.socket(ctx, ZMQ.ZMQ_DEALER);
             assertThat(worker, notNullValue());
 
@@ -291,8 +281,7 @@ public class ProxyTest
     }
 
     @Test
-    public void testProxy() throws IOException, InterruptedException
-    {
+    public void testProxy() throws IOException, InterruptedException {
         // The main thread simply starts several clients and a server, and then
         // waits for the server to finish.
         Ctx ctx = ZMQ.createContext();
@@ -338,8 +327,7 @@ public class ProxyTest
         }
     }
 
-    public void testRepeated() throws Exception
-    {
+    public void testRepeated() throws Exception {
         for (int idx = 0; idx < 470; ++idx) {
             System.out.println("---------- " + idx);
             testProxy();

@@ -16,18 +16,9 @@ import zmq.io.net.Address;
 import zmq.util.Errno;
 import zmq.util.Wire;
 
-public class CurveServerMechanism extends Mechanism
-{
-    private enum State
-    {
-        EXPECT_HELLO,
-        SEND_WELCOME,
-        EXPECT_INITIATE,
-        EXPECT_ZAP_REPLY,
-        SEND_READY,
-        SEND_ERROR,
-        ERROR_SENT,
-        CONNECTED
+public class CurveServerMechanism extends Mechanism {
+    private enum State {
+        EXPECT_HELLO, SEND_WELCOME, EXPECT_INITIATE, EXPECT_ZAP_REPLY, SEND_READY, SEND_ERROR, ERROR_SENT, CONNECTED
     }
 
     private long cnNonce;
@@ -51,8 +42,7 @@ public class CurveServerMechanism extends Mechanism
 
     private final Errno errno;
 
-    public CurveServerMechanism(SessionBase session, Address peerAddress, Options options)
-    {
+    public CurveServerMechanism(SessionBase session, Address peerAddress, Options options) {
         super(session, peerAddress, options);
         this.state = State.EXPECT_HELLO;
         cnNonce = 1;
@@ -73,60 +63,57 @@ public class CurveServerMechanism extends Mechanism
     }
 
     @Override
-    public int nextHandshakeCommand(Msg msg)
-    {
+    public int nextHandshakeCommand(Msg msg) {
         int rc;
         switch (state) {
-        case SEND_WELCOME:
-            rc = produceWelcome(msg);
-            if (rc == 0) {
-                state = State.EXPECT_INITIATE;
-            }
-            break;
-        case SEND_READY:
-            rc = produceReady(msg);
-            if (rc == 0) {
-                state = State.CONNECTED;
-            }
-            break;
-        case SEND_ERROR:
-            rc = produceError(msg);
-            if (rc == 0) {
-                state = State.ERROR_SENT;
-            }
-            break;
-        default:
-            rc = ZError.EAGAIN;
-            break;
+            case SEND_WELCOME:
+                rc = produceWelcome(msg);
+                if (rc == 0) {
+                    state = State.EXPECT_INITIATE;
+                }
+                break;
+            case SEND_READY:
+                rc = produceReady(msg);
+                if (rc == 0) {
+                    state = State.CONNECTED;
+                }
+                break;
+            case SEND_ERROR:
+                rc = produceError(msg);
+                if (rc == 0) {
+                    state = State.ERROR_SENT;
+                }
+                break;
+            default:
+                rc = ZError.EAGAIN;
+                break;
 
         }
         return rc;
     }
 
     @Override
-    public int processHandshakeCommand(Msg msg)
-    {
+    public int processHandshakeCommand(Msg msg) {
         int rc;
         switch (state) {
-        case EXPECT_HELLO:
-            rc = processHello(msg);
-            break;
-        case EXPECT_INITIATE:
-            rc = processInitiate(msg);
-            break;
-        default:
-            //  Temporary support for security debugging
-            puts("CURVE I: invalid handshake command");
-            rc = ZError.EPROTO;
-            break;
+            case EXPECT_HELLO:
+                rc = processHello(msg);
+                break;
+            case EXPECT_INITIATE:
+                rc = processInitiate(msg);
+                break;
+            default:
+                //  Temporary support for security debugging
+                puts("CURVE I: invalid handshake command");
+                rc = ZError.EPROTO;
+                break;
 
         }
         return rc;
     }
 
     @Override
-    public Msg encode(Msg msg)
-    {
+    public Msg encode(Msg msg) {
         assert (state == State.CONNECTED);
 
         byte flags = 0;
@@ -160,8 +147,7 @@ public class CurveServerMechanism extends Mechanism
     }
 
     @Override
-    public Msg decode(Msg msg)
-    {
+    public Msg decode(Msg msg) {
         assert (state == State.CONNECTED);
 
         if (msg.size() < 33) {
@@ -210,8 +196,7 @@ public class CurveServerMechanism extends Mechanism
             messagePlaintext.position(Curve.Size.ZERO.bytes() + 1);
             decoded.put(messagePlaintext);
             return decoded;
-        }
-        else {
+        } else {
             //  Temporary support for security debugging
             puts("CURVE I: connection key used for MESSAGE is wrong");
             errno.set(ZError.EPROTO);
@@ -220,8 +205,7 @@ public class CurveServerMechanism extends Mechanism
     }
 
     @Override
-    public int zapMsgAvailable()
-    {
+    public int zapMsgAvailable() {
         if (state != State.EXPECT_ZAP_REPLY) {
             return ZError.EFSM;
         }
@@ -234,21 +218,17 @@ public class CurveServerMechanism extends Mechanism
     }
 
     @Override
-    public Status status()
-    {
+    public Status status() {
         if (state == State.CONNECTED) {
             return Status.READY;
-        }
-        else if (state == State.ERROR_SENT) {
+        } else if (state == State.ERROR_SENT) {
             return Status.ERROR;
-        }
-        else {
+        } else {
             return Status.HANDSHAKING;
         }
     }
 
-    private int processHello(Msg msg)
-    {
+    private int processHello(Msg msg) {
         if (msg.size() != 200) {
             //  Temporary support for security debugging
             puts("CURVE I: client HELLO is not correct size");
@@ -296,8 +276,7 @@ public class CurveServerMechanism extends Mechanism
         return 0;
     }
 
-    private int produceWelcome(Msg msg)
-    {
+    private int produceWelcome(Msg msg) {
         ByteBuffer cookieNonce = ByteBuffer.allocate(Curve.Size.NONCE.bytes());
         ByteBuffer cookiePlaintext = ByteBuffer.allocate(Curve.Size.ZERO.bytes() + 64);
         ByteBuffer cookieCiphertext = ByteBuffer.allocate(Curve.Size.BOXZERO.bytes() + 80);
@@ -316,8 +295,8 @@ public class CurveServerMechanism extends Mechanism
         cookieKey = cryptoBox.random(Curve.Size.KEY.bytes());
 
         //  Encrypt using symmetric cookie key
-        int rc = cryptoBox
-                .secretbox(cookieCiphertext, cookiePlaintext, cookiePlaintext.capacity(), cookieNonce, cookieKey);
+        int rc = cryptoBox.secretbox(cookieCiphertext, cookiePlaintext, cookiePlaintext.capacity(), cookieNonce,
+                cookieKey);
         assert (rc == 0);
 
         ByteBuffer welcomeNonce = ByteBuffer.allocate(Curve.Size.NONCE.bytes());
@@ -337,13 +316,8 @@ public class CurveServerMechanism extends Mechanism
         cookieCiphertext.limit(Curve.Size.BOXZERO.bytes() + 80).position(Curve.Size.BOXZERO.bytes());
         welcomePlaintext.put(cookieCiphertext);
 
-        rc = cryptoBox.box(
-                           welcomeCiphertext,
-                           welcomePlaintext,
-                           welcomePlaintext.capacity(),
-                           welcomeNonce,
-                           cnClient,
-                           secretKey);
+        rc = cryptoBox.box(welcomeCiphertext, welcomePlaintext, welcomePlaintext.capacity(), welcomeNonce, cnClient,
+                secretKey);
         if (rc == -1) {
             return -1;
         }
@@ -355,8 +329,7 @@ public class CurveServerMechanism extends Mechanism
         return 0;
     }
 
-    private int processInitiate(Msg msg)
-    {
+    private int processInitiate(Msg msg) {
         if (msg.size() < 257) {
             //  Temporary support for security debugging
             puts("CURVE I: client INITIATE is not correct size");
@@ -387,8 +360,8 @@ public class CurveServerMechanism extends Mechanism
         }
 
         //  Check cookie plain text is as expected [C' + s']
-        if (!compare(cookiePlaintext, cnClient, Curve.Size.ZERO.bytes(), 32)
-                || !compare(cookiePlaintext, cnSecret, Curve.Size.ZERO.bytes() + 32, 32)) {
+        if (!compare(cookiePlaintext, cnClient, Curve.Size.ZERO.bytes(), 32) || !compare(cookiePlaintext, cnSecret,
+                Curve.Size.ZERO.bytes() + 32, 32)) {
             //  Temporary support for security debugging
             puts("CURVE I: client INITIATE cookie is not valid");
             return ZError.EPROTO;
@@ -458,15 +431,12 @@ public class CurveServerMechanism extends Mechanism
             rc = receiveAndProcessZapReply();
             if (rc == 0) {
                 state = "200".equals(statusCode) ? State.SEND_READY : State.SEND_ERROR;
-            }
-            else if (rc == ZError.EAGAIN) {
+            } else if (rc == ZError.EAGAIN) {
                 state = State.EXPECT_ZAP_REPLY;
-            }
-            else {
+            } else {
                 return -1;
             }
-        }
-        else {
+        } else {
             state = State.SEND_READY;
         }
         initiatePlaintext.position(0);
@@ -474,8 +444,7 @@ public class CurveServerMechanism extends Mechanism
         return parseMetadata(initiatePlaintext, Curve.Size.ZERO.bytes() + 128, false);
     }
 
-    private int produceReady(Msg msg)
-    {
+    private int produceReady(Msg msg) {
         ByteBuffer readyNonce = ByteBuffer.allocate(Curve.Size.NONCE.bytes());
         ByteBuffer readyPlaintext = ByteBuffer.allocate(Curve.Size.ZERO.bytes() + 256);
         ByteBuffer readyBox = ByteBuffer.allocate(Curve.Size.BOXZERO.bytes() + 16 + 256);
@@ -510,8 +479,7 @@ public class CurveServerMechanism extends Mechanism
         return 0;
     }
 
-    private int produceError(Msg msg)
-    {
+    private int produceError(Msg msg) {
         assert (statusCode != null && statusCode.length() == 3);
 
         appendData(msg, "ERROR");
@@ -520,8 +488,7 @@ public class CurveServerMechanism extends Mechanism
         return 0;
     }
 
-    private void sendZapRequest(byte[] key)
-    {
+    private void sendZapRequest(byte[] key) {
         sendZapRequest(Mechanisms.CURVE, true);
 
         //  Credentials frame

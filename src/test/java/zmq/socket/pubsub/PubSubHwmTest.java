@@ -13,26 +13,22 @@ import zmq.ZError;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class PubSubHwmTest
-{
+public class PubSubHwmTest {
     @Test
-    public void testDefaults()
-    {
+    public void testDefaults() {
         // send 1000 msg on hwm 1000, receive 1000
         int count = testDefaults(1000, 1000);
         assertThat(count, is(1000));
     }
 
     @Test
-    public void testBlocking()
-    {
+    public void testBlocking() {
         // send 6000 msg on hwm 2000, drops above hwm, only receive hwm
         int count = testBlocking(2000, 6000);
         assertThat(count, is(6000));
     }
 
-    private int testDefaults(int sendHwm, int msgCnt)
-    {
+    private int testDefaults(int sendHwm, int msgCnt) {
         Ctx ctx = ZMQ.createContext();
 
         // Set up bind socket
@@ -73,8 +69,7 @@ public class PubSubHwmTest
         return recvCount;
     }
 
-    private int receive(SocketBase socket)
-    {
+    private int receive(SocketBase socket) {
         int recvCount = 0;
         // Now receive all sent messages
         while (null != ZMQ.recv(socket, ZMQ.ZMQ_DONTWAIT)) {
@@ -84,8 +79,7 @@ public class PubSubHwmTest
         return recvCount;
     }
 
-    private int testBlocking(int sendHwm, int msgCnt)
-    {
+    private int testBlocking(int sendHwm, int msgCnt) {
         Ctx ctx = ZMQ.createContext();
 
         // Set up bind socket
@@ -115,8 +109,7 @@ public class PubSubHwmTest
             int ret = ZMQ.send(pub, "", ZMQ.ZMQ_DONTWAIT);
             if (ret == 0) {
                 ++sendCount;
-            }
-            else if (ret == -1) {
+            } else if (ret == -1) {
                 assertThat(pub.errno(), is(ZError.EAGAIN));
                 recvCount += receive(sub);
 
@@ -135,8 +128,7 @@ public class PubSubHwmTest
     }
 
     @Test
-    public void testResetHwm() throws IOException
-    {
+    public void testResetHwm() throws IOException {
         // hwm should apply to the messages that have already been received
         // with hwm 11024: send 9999 msg, receive 9999, send 1100, receive 1100
 

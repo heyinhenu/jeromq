@@ -11,10 +11,8 @@ import org.junit.Test;
 
 import zmq.util.Utils;
 
-public class TestLastEndpoint
-{
-    static void bindAndVerify(SocketBase s, String endpoint)
-    {
+public class TestLastEndpoint {
+    static void bindAndVerify(SocketBase s, String endpoint) {
         boolean brc = ZMQ.bind(s, endpoint);
         assertThat(brc, is(true));
 
@@ -23,8 +21,7 @@ public class TestLastEndpoint
     }
 
     @Test
-    public void testLastEndpoint() throws IOException
-    {
+    public void testLastEndpoint() throws IOException {
         int port1 = Utils.findOpenPort();
         int port2 = Utils.findOpenPort();
 

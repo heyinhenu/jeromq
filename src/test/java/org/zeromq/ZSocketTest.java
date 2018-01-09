@@ -6,16 +6,12 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class ZSocketTest
-{
+public class ZSocketTest {
     @Test
-    public void pushPullTest() throws IOException
-    {
+    public void pushPullTest() throws IOException {
         int port = Utils.findOpenPort();
 
-        try (
-             final ZSocket pull = new ZSocket(ZMQ.PULL);
-             final ZSocket push = new ZSocket(ZMQ.PUSH)) {
+        try (final ZSocket pull = new ZSocket(ZMQ.PULL); final ZSocket push = new ZSocket(ZMQ.PUSH)) {
             pull.bind("tcp://*:" + port);
             push.connect("tcp://127.0.0.1:" + port);
 

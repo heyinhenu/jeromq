@@ -13,26 +13,23 @@ import org.zeromq.ZMQ.PollItem;
 import org.zeromq.ZMQ.Socket;
 
 //  Clone server - Model Five
-public class clonesrv5
-{
-    private ZContext           ctx;       //  Context wrapper
+public class clonesrv5 {
+    private ZContext ctx;       //  Context wrapper
     private Map<String, kvmsg> kvmap;     //  Key-value store
-    private ZLoop              loop;      //  zloop reactor
-    private int                port;      //  Main port we're working on
-    private long               sequence;  //  How many updates we're at
-    private Socket             snapshot;  //  Handle snapshot requests
-    private Socket             publisher; //  Publish updates to clients
-    private Socket             collector; //  Collect updates from clients
+    private ZLoop loop;      //  zloop reactor
+    private int port;      //  Main port we're working on
+    private long sequence;  //  How many updates we're at
+    private Socket snapshot;  //  Handle snapshot requests
+    private Socket publisher; //  Publish updates to clients
+    private Socket collector; //  Collect updates from clients
 
     //  .split snapshot handler
     //  This is the reactor handler for the snapshot socket; it accepts
     //  just the ICANHAZ? request and replies with a state snapshot ending
     //  with a KTHXBAI message:
-    private static class Snapshots implements IZLoopHandler
-    {
+    private static class Snapshots implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv5 srv = (clonesrv5) arg;
             Socket socket = item.getSocket();
 
@@ -43,8 +40,8 @@ public class clonesrv5
                 String subtree = null;
                 if (request.equals("ICANHAZ?")) {
                     subtree = socket.recvStr();
-                }
-                else System.out.printf("E: bad request, aborting\n");
+                } else
+                    System.out.printf("E: bad request, aborting\n");
 
                 if (subtree != null) {
                     //  Send state socket to client
@@ -69,11 +66,9 @@ public class clonesrv5
     //  .split collect updates
     //  We store each update with a new getSequence number, and if necessary, a
     //  time-to-live. We publish updates immediately on our publisher socket:
-    private static class Collector implements IZLoopHandler
-    {
+    private static class Collector implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv5 srv = (clonesrv5) arg;
             Socket socket = item.getSocket();
 
@@ -92,11 +87,9 @@ public class clonesrv5
         }
     }
 
-    private static class FlushTTL implements IZLoopHandler
-    {
+    private static class FlushTTL implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv5 srv = (clonesrv5) arg;
             if (srv.kvmap != null) {
                 for (kvmsg msg : new ArrayList<kvmsg>(srv.kvmap.values())) {
@@ -107,8 +100,7 @@ public class clonesrv5
         }
     }
 
-    public clonesrv5()
-    {
+    public clonesrv5() {
         port = 5556;
         ctx = new ZContext();
         kvmap = new HashMap<String, kvmsg>();
@@ -124,8 +116,7 @@ public class clonesrv5
         collector.bind(String.format("tcp://*:%d", port + 2));
     }
 
-    public void run()
-    {
+    public void run() {
         //  Register our handlers with reactor
         PollItem poller = new PollItem(snapshot, ZMQ.Poller.POLLIN);
         loop.addPoller(poller, new Snapshots(), this);
@@ -139,8 +130,7 @@ public class clonesrv5
     }
 
     //  We call this function for each getKey-value pair in our hash table
-    private static void sendSingle(kvmsg msg, byte[] identity, String subtree, Socket socket)
-    {
+    private static void sendSingle(kvmsg msg, byte[] identity, String subtree, Socket socket) {
         if (msg.getKey().startsWith(subtree)) {
             socket.send(identity, //  Choose recipient
                     ZMQ.SNDMORE);
@@ -154,8 +144,7 @@ public class clonesrv5
 
     //  If getKey-value pair has expired, delete it and publish the
     //  fact to listening clients.
-    private void flushSingle(kvmsg msg)
-    {
+    private void flushSingle(kvmsg msg) {
         long ttl = Long.parseLong(msg.getProp("ttl"));
         if (ttl > 0 && System.currentTimeMillis() >= ttl) {
             msg.setSequence(++sequence);
@@ -166,8 +155,7 @@ public class clonesrv5
         }
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         clonesrv5 srv = new clonesrv5();
         srv.run();
     }

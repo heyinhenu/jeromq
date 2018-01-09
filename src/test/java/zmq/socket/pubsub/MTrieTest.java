@@ -14,14 +14,12 @@ import zmq.ZObject;
 import zmq.pipe.Pipe;
 import zmq.socket.pubsub.Mtrie.IMtrieHandler;
 
-public class MTrieTest
-{
-    private static final class MtrieHandler implements IMtrieHandler
-    {
+public class MTrieTest {
+    private static final class MtrieHandler implements IMtrieHandler {
         private final AtomicInteger counter = new AtomicInteger();
+
         @Override
-        public void invoke(Pipe pipe, byte[] data, int size, XPub pub)
-        {
+        public void invoke(Pipe pipe, byte[] data, int size, XPub pub) {
             counter.incrementAndGet();
         }
     }
@@ -30,27 +28,23 @@ public class MTrieTest
 
     private MtrieHandler handler;
 
-    private static final Msg prefix = new Msg(new byte[] { 1, 2, 3, 4, 5 });
+    private static final Msg prefix = new Msg(new byte[]{1, 2, 3, 4, 5});
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         pipe = createPipe();
         handler = new MtrieHandler();
     }
 
-    private Pipe createPipe()
-    {
-        ZObject object = new ZObject(null, 0)
-        {
+    private Pipe createPipe() {
+        ZObject object = new ZObject(null, 0) {
         };
-        Pipe[] pair = Pipe.pair(new ZObject[] { object, object }, new int[2], new boolean[2]);
+        Pipe[] pair = Pipe.pair(new ZObject[]{object, object}, new int[2], new boolean[2]);
         return pair[0];
     }
 
     @Test
-    public void testAddRemoveNodeOnTop()
-    {
+    public void testAddRemoveNodeOnTop() {
         Mtrie mtrie = new Mtrie();
 
         boolean rc = mtrie.addOnTop(pipe);
@@ -60,8 +54,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesBelowLevel()
-    {
+    public void testAddRemoveMultiNodesBelowLevel() {
         Mtrie mtrie = new Mtrie();
         Pipe other = createPipe();
         Pipe third = createPipe();
@@ -94,8 +87,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesAboveLevel()
-    {
+    public void testAddRemoveMultiNodesAboveLevel() {
         Mtrie mtrie = new Mtrie();
         Pipe other = createPipe();
         Pipe third = createPipe();
@@ -128,8 +120,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesSameLevel()
-    {
+    public void testAddRemoveMultiNodesSameLevel() {
         Mtrie mtrie = new Mtrie();
         Pipe other = createPipe();
 
@@ -145,8 +136,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveOneNode()
-    {
+    public void testAddRemoveOneNode() {
         Mtrie mtrie = new Mtrie();
 
         boolean rc = mtrie.add(prefix, pipe);
@@ -157,8 +147,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveOneNodeWithFunctionCall()
-    {
+    public void testAddRemoveOneNodeWithFunctionCall() {
         Mtrie mtrie = new Mtrie();
 
         boolean rc = mtrie.add(prefix, pipe);
@@ -170,8 +159,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesSameLevelWithFunctionCall()
-    {
+    public void testAddRemoveMultiNodesSameLevelWithFunctionCall() {
         Mtrie mtrie = new Mtrie();
         Pipe other = createPipe();
 
@@ -190,8 +178,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveNodeOnTopWithFunctionCall()
-    {
+    public void testAddRemoveNodeOnTopWithFunctionCall() {
         Mtrie mtrie = new Mtrie();
 
         boolean rc = mtrie.addOnTop(pipe);
@@ -202,8 +189,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesBelowLevelWithFunctionCall()
-    {
+    public void testAddRemoveMultiNodesBelowLevelWithFunctionCall() {
         Mtrie mtrie = new Mtrie();
         Pipe other = createPipe();
         Pipe third = createPipe();
@@ -240,8 +226,7 @@ public class MTrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesAboveLevelWithFunctionCall()
-    {
+    public void testAddRemoveMultiNodesAboveLevelWithFunctionCall() {
         Mtrie mtrie = new Mtrie();
         Pipe other = createPipe();
         Pipe third = createPipe();

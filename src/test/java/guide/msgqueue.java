@@ -5,14 +5,12 @@ import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
 /**
-* Simple message queuing broker
-* Same as request-reply broker but using QUEUE device.
-*/
-public class msgqueue
-{
+ * Simple message queuing broker
+ * Same as request-reply broker but using QUEUE device.
+ */
+public class msgqueue {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         //  Prepare our context and sockets
         Context context = ZMQ.context(1);
 

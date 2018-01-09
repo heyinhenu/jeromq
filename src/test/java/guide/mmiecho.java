@@ -5,11 +5,9 @@ import org.zeromq.ZMsg;
 /**
  * MMI echo query example
  */
-public class mmiecho
-{
+public class mmiecho {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         boolean verbose = (args.length > 0 && "-v".equals(args[0]));
         mdcliapi clientSession = new mdcliapi("tcp://localhost:5555", verbose);
 
@@ -24,8 +22,7 @@ public class mmiecho
         if (reply != null) {
             String replyCode = reply.getFirst().toString();
             System.out.printf("Lookup echo service: %s\n", replyCode);
-        }
-        else {
+        } else {
             System.out.println("E: no response from broker, make sure it's running");
         }
 

@@ -12,11 +12,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class TestReqrepTcp
-{
+public class TestReqrepTcp {
     @Test
-    public void testReqrepTcp() throws Exception
-    {
+    public void testReqrepTcp() throws Exception {
         int port = Utils.findOpenPort();
         System.out.println("Starting with port " + port);
         Ctx ctx = ZMQ.init(1);

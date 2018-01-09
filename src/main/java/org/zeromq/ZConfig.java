@@ -26,42 +26,42 @@ import java.util.regex.Pattern;
  * <p>
  * <pre>
  * {@code
-        context
-            iothreads = 1
-            verbose = 1      #   Ask for a trace
-        main
-            type = zqueue    #  ZMQ_DEVICE type
-            frontend
-                option
-                    hwm = 1000
-                    swap = 25000000     #  25MB
-                bind = 'inproc://addr1'
-                bind = 'ipc://addr2'
-            backend
-                bind = inproc://addr3
-   }
-   <p>
-   {@code
-    root                    Down = child
-    |                     Across = next
-    v
-    context-->main
-    |         |
-    |         v
-    |       type=queue-->frontend-->backend
-    |                      |          |
-    |                      |          v
-    |                      |        bind=inproc://addr3
-    |                      v
-    |                    option-->bind=inproc://addr1-->bind=ipc://addr2
-    |                      |
-    |                      v
-    |                    hwm=1000-->swap=25000000
-    v
-    iothreads=1-->verbose=false
- }
- </pre>
+ * context
+ * iothreads = 1
+ * verbose = 1      #   Ask for a trace
+ * main
+ * type = zqueue    #  ZMQ_DEVICE type
+ * frontend
+ * option
+ * hwm = 1000
+ * swap = 25000000     #  25MB
+ * bind = 'inproc://addr1'
+ * bind = 'ipc://addr2'
+ * backend
+ * bind = inproc://addr3
+ * }
  *
+ * {@code
+ * root                    Down = child
+ * |                     Across = next
+ * v
+ * context-->main
+ * |         |
+ * |         v
+ * |       type=queue-->frontend-->backend
+ * |                      |          |
+ * |                      |          v
+ * |                      |        bind=inproc://addr3
+ * |                      v
+ * |                    option-->bind=inproc://addr1-->bind=ipc://addr2
+ * |                      |
+ * |                      v
+ * |                    hwm=1000-->swap=25000000
+ * v
+ * iothreads=1-->verbose=false
+ * }
+ * </pre>
+ * <p>
  * It can put and get values and save and load them to disk:
  * <p>
  * <pre>
@@ -71,47 +71,41 @@ import java.util.regex.Pattern;
  * String val = conf.get("/curve/public-key","fallback-defaultkey");
  * conf.save("test.cert");
  * ZConfig loaded = ZConfig.load("test.cert");
- }
+ * }
  */
-public class ZConfig
-{
-    private interface IVisitor
-    {
+public class ZConfig {
+    private interface IVisitor {
         void handleNode(ZConfig node, int level) throws IOException;
     }
 
-    private static final String  LEFT           = "^( *)([0-9a-zA-Z\\$\\-_@\\.&\\+\\/]+)";
+    private static final String LEFT = "^( *)([0-9a-zA-Z\\$\\-_@\\.&\\+\\/]+)";
     private static final Pattern PTRN_CONTAINER = Pattern.compile(LEFT + "( *#.*)?$");
-    private static final Pattern PTRN_KEYVALUE  = Pattern.compile(LEFT + " = ((\"|')(.*)(\\4)|(.*?))(#.*)?$");
+    private static final Pattern PTRN_KEYVALUE = Pattern.compile(LEFT + " = ((\"|')(.*)(\\4)|(.*?))(#.*)?$");
 
-    private final String               name;
+    private final String name;
     private final Map<String, ZConfig> children = new HashMap<>();
-    private final List<String>         comments = new LinkedList<>();
+    private final List<String> comments = new LinkedList<>();
 
     private String value;
 
-    public ZConfig(String name, ZConfig parent)
-    {
+    public ZConfig(String name, ZConfig parent) {
         this.name = name;
         if (parent != null) {
             parent.children.put(name, this);
         }
     }
 
-    public ZConfig getChild(String name)
-    {
+    public ZConfig getChild(String name) {
         return children.get(name);
     }
 
-    public Map<String, String> getValues()
-    {
+    public Map<String, String> getValues() {
         Map<String, String> values = new HashMap<>();
         fillValues("", values);
         return values;
     }
 
-    private void fillValues(String prefix, Map<String, String> values)
-    {
+    private void fillValues(String prefix, Map<String, String> values) {
         for (Entry<String, ZConfig> entry : children.entrySet()) {
             String key = entry.getKey();
             ZConfig child = entry.getValue();
@@ -123,18 +117,15 @@ public class ZConfig
         }
     }
 
-    public String getName()
-    {
+    public String getName() {
         return this.name;
     }
 
-    public String getValue(String path)
-    {
+    public String getValue(String path) {
         return getValue(path, null);
     }
 
-    public String getValue(String path, String defaultValue)
-    {
+    public String getValue(String path, String defaultValue) {
         String[] pathElements = path.split("/");
         ZConfig current = this;
         for (String pathElem : pathElements) {
@@ -152,8 +143,7 @@ public class ZConfig
     /**
      * check if a value-path exists
      */
-    public boolean pathExists(String path)
-    {
+    public boolean pathExists(String path) {
         String[] pathElements = path.split("/");
         ZConfig current = this;
         for (String pathElem : pathElements) {
@@ -171,16 +161,14 @@ public class ZConfig
     /**
      * add comment
      */
-    public void addComment(String comment)
-    {
+    public void addComment(String comment) {
         comments.add(comment);
     }
 
     /**
      * @param value set value of config item
      */
-    public ZConfig putValue(String path, String value)
-    {
+    public ZConfig putValue(String path, String value) {
         String[] pathElements = path.split("/");
         ZConfig current = this;
         for (String pathElement : pathElements) {
@@ -198,54 +186,45 @@ public class ZConfig
         return current;
     }
 
-    private void visit(ZConfig startNode, IVisitor handler, int level) throws IOException
-    {
+    private void visit(ZConfig startNode, IVisitor handler, int level) throws IOException {
         handler.handleNode(startNode, level);
         for (ZConfig node : startNode.children.values()) {
             visit(node, handler, level + 1);
         }
     }
 
-    public File save(String filename) throws IOException
-    {
+    public File save(String filename) throws IOException {
         if (filename.equals("-")) {
             // print to console
             Writer writer = new PrintWriter(System.out);
             try {
                 save(writer);
-            }
-            finally {
+            } finally {
                 writer.close();
             }
             return null;
-        }
-        else { // write to file
+        } else { // write to file
             final File file = new File(filename);
             if (file.exists()) {
                 file.delete();
-            }
-            else {
+            } else {
                 // create necessary directories;
                 file.getParentFile().mkdirs();
             }
             Writer writer = new FileWriter(file);
             try {
                 save(writer);
-            }
-            finally {
+            } finally {
                 writer.close();
             }
             return file;
         }
     }
 
-    public void save(final Writer writer) throws IOException
-    {
-        visit(this, new IVisitor()
-        {
+    public void save(final Writer writer) throws IOException {
+        visit(this, new IVisitor() {
             @Override
-            public void handleNode(ZConfig node, int level) throws IOException
-            {
+            public void handleNode(ZConfig node, int level) throws IOException {
                 // First print comments
                 if (node.comments.size() > 0) {
                     for (String comment : node.comments) {
@@ -259,8 +238,7 @@ public class ZConfig
                     writer.append(prefix);
                     if (node.value == null) {
                         writer.append(node.name).append("\n");
-                    }
-                    else {
+                    } else {
                         writer.append(String.format("%s = \"%s\"\n", node.name, node.value));
                     }
                 }
@@ -268,8 +246,7 @@ public class ZConfig
         }, 0);
     }
 
-    public static ZConfig load(String filename) throws IOException
-    {
+    public static ZConfig load(String filename) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         try {
             List<String> content = new ArrayList<>();
@@ -287,14 +264,12 @@ public class ZConfig
             }
 
             return load(new ZConfig("root", null), content, 0, new AtomicInteger());
-        }
-        finally {
+        } finally {
             reader.close();
         }
     }
 
-    private static ZConfig load(ZConfig parent, List<String> content, int currentLevel, AtomicInteger lineNumber)
-    {
+    private static ZConfig load(ZConfig parent, List<String> content, int currentLevel, AtomicInteger lineNumber) {
         while (lineNumber.get() < content.size()) {
             String currentLine = content.get(lineNumber.get());
 
@@ -306,8 +281,7 @@ public class ZConfig
                     break;
                 }
                 load(child, content, currentLevel + 1, lineNumber);
-            }
-            else {
+            } else {
                 Matcher keyvalue = PTRN_KEYVALUE.matcher(currentLine);
                 if (keyvalue.find()) {
                     ZConfig child = child(parent, keyvalue, currentLevel, currentLine, lineNumber);
@@ -325,8 +299,7 @@ public class ZConfig
                     }
 
                     child.value = value;
-                }
-                else {
+                } else {
                     throw new ReadException("Couldn't process line", currentLine, lineNumber);
                 }
             }
@@ -335,14 +308,12 @@ public class ZConfig
     }
 
     private static ZConfig child(ZConfig parent, Matcher matcher, int currentLevel, String currentLine,
-                                 AtomicInteger lineNumber)
-    {
+            AtomicInteger lineNumber) {
         int level = matcher.group(1).length() / 4;
 
         if (level > currentLevel) {
             throw new ReadException("Level mismatch in line", currentLine, lineNumber);
-        }
-        else if (level < currentLevel) {
+        } else if (level < currentLevel) {
             // jump back;
             return null;
         }
@@ -350,15 +321,13 @@ public class ZConfig
         return new ZConfig(matcher.group(2), parent);
     }
 
-    public static class ReadException extends RuntimeException
-    {
+    public static class ReadException extends RuntimeException {
         private static final long serialVersionUID = 1L;
 
-        public final int    currentLineNumber;
+        public final int currentLineNumber;
         public final String currentLine;
 
-        public ReadException(String message, String currentLine, AtomicInteger currentLineNumber)
-        {
+        public ReadException(String message, String currentLine, AtomicInteger currentLineNumber) {
             super(String.format("%s %s: %s", message, currentLineNumber, currentLine));
             this.currentLine = currentLine;
             this.currentLineNumber = currentLineNumber.get();

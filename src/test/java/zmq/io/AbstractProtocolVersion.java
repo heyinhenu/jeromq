@@ -20,23 +20,19 @@ import zmq.ZError;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public abstract class AbstractProtocolVersion
-{
-    static class SocketMonitor extends Thread
-    {
-        private final Ctx             ctx;
-        private final String          monitorAddr;
+public abstract class AbstractProtocolVersion {
+    static class SocketMonitor extends Thread {
+        private final Ctx ctx;
+        private final String monitorAddr;
         private final List<ZMQ.Event> events = new ArrayList<>();
 
-        public SocketMonitor(Ctx ctx, String monitorAddr)
-        {
+        public SocketMonitor(Ctx ctx, String monitorAddr) {
             this.ctx = ctx;
             this.monitorAddr = monitorAddr;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             SocketBase s = ZMQ.socket(ctx, ZMQ.ZMQ_PAIR);
             boolean rc = s.connect(monitorAddr);
             assertThat(rc, is(true));
@@ -54,9 +50,8 @@ public abstract class AbstractProtocolVersion
         }
     }
 
-    protected byte[] assertProtocolVersion(int version, List<ByteBuffer> raws, String payload)
-            throws IOException, InterruptedException
-    {
+    protected byte[] assertProtocolVersion(int version, List<ByteBuffer> raws,
+            String payload) throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://localhost:" + port;
 
@@ -105,8 +100,7 @@ public abstract class AbstractProtocolVersion
         return Arrays.copyOf(data, read);
     }
 
-    protected List<ByteBuffer> raws(int revision)
-    {
+    protected List<ByteBuffer> raws(int revision) {
         List<ByteBuffer> raws = new ArrayList<>();
         ByteBuffer raw = ByteBuffer.allocate(12);
         // send V1 header
@@ -120,8 +114,7 @@ public abstract class AbstractProtocolVersion
         return raws;
     }
 
-    protected ByteBuffer identity()
-    {
+    protected ByteBuffer identity() {
         return ByteBuffer.allocate(2)
                 // size
                 .put((byte) 1)

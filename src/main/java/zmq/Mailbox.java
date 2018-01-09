@@ -9,8 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import zmq.pipe.YPipe;
 import zmq.util.Errno;
 
-public final class Mailbox implements Closeable
-{
+public final class Mailbox implements Closeable {
     //  The pipe to store actual commands.
     private final YPipe<Command> cpipe;
 
@@ -32,8 +31,7 @@ public final class Mailbox implements Closeable
 
     private final Errno errno;
 
-    public Mailbox(Ctx ctx, String name, int tid)
-    {
+    public Mailbox(Ctx ctx, String name, int tid) {
         this.errno = ctx.errno();
         cpipe = new YPipe<>(Config.COMMAND_PIPE_GRANULARITY.getValue());
         sync = new ReentrantLock();
@@ -50,20 +48,17 @@ public final class Mailbox implements Closeable
         this.name = name;
     }
 
-    public SelectableChannel getFd()
-    {
+    public SelectableChannel getFd() {
         return signaler.getFd();
     }
 
-    void send(final Command cmd)
-    {
+    void send(final Command cmd) {
         boolean ok = false;
         sync.lock();
         try {
             cpipe.write(cmd, false);
             ok = cpipe.flush();
-        }
-        finally {
+        } finally {
             sync.unlock();
         }
 
@@ -72,8 +67,7 @@ public final class Mailbox implements Closeable
         }
     }
 
-    public Command recv(long timeout)
-    {
+    public Command recv(long timeout) {
         Command cmd;
         //  Try to get the command straight away.
         if (active) {
@@ -107,8 +101,7 @@ public final class Mailbox implements Closeable
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         //  TODO: Retrieve and deallocate commands inside the cpipe.
 
         // Work around problem that other threads might still be in our
@@ -120,8 +113,7 @@ public final class Mailbox implements Closeable
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return super.toString() + "[" + name + "]";
     }
 }

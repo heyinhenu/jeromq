@@ -5,8 +5,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import zmq.Msg;
 
-class DBuffer<T extends Msg>
-{
+class DBuffer<T extends Msg> {
     private T back;
     private T front;
 
@@ -14,32 +13,27 @@ class DBuffer<T extends Msg>
 
     private boolean hasMsg;
 
-    public T back()
-    {
+    public T back() {
         return back;
     }
 
-    public T front()
-    {
+    public T front() {
         return front;
     }
 
-    void write(T msg)
-    {
+    void write(T msg) {
         assert (msg.check());
         sync.lock();
         try {
             back = front;
             front = msg;
             hasMsg = true;
-        }
-        finally {
+        } finally {
             sync.unlock();
         }
     }
 
-    T read()
-    {
+    T read() {
         sync.lock();
         try {
             if (!hasMsg) {
@@ -51,30 +45,25 @@ class DBuffer<T extends Msg>
             hasMsg = false;
 
             return front;
-        }
-        finally {
+        } finally {
             sync.unlock();
         }
     }
 
-    boolean checkRead()
-    {
+    boolean checkRead() {
         sync.lock();
         try {
             return hasMsg;
-        }
-        finally {
+        } finally {
             sync.unlock();
         }
     }
 
-    T probe()
-    {
+    T probe() {
         sync.lock();
         try {
             return front;
-        }
-        finally {
+        } finally {
             sync.unlock();
         }
     }

@@ -8,11 +8,9 @@ package guide;
 
 import org.zeromq.ZMQ;
 
-public class hwserver
-{
+public class hwserver {
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         ZMQ.Context context = ZMQ.context(1);
 
         //  Socket to talk to clients

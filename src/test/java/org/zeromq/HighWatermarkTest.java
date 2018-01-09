@@ -13,24 +13,21 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.junit.Test;
 
-public class HighWatermarkTest
-{
-    public static final int N_MESSAGES   = 30000;
+public class HighWatermarkTest {
+    public static final int N_MESSAGES = 30000;
     public static final int MESSAGE_SIZE = 50;
 
     public static final int FILL_WATERMARK = 3000;
-    public static final int TRACE          = 7000;
+    public static final int TRACE = 7000;
 
-    public static class Dispatcher implements Runnable
-    {
+    public static class Dispatcher implements Runnable {
         private final String control;
 
-        private final String  dispatch;
+        private final String dispatch;
         private final boolean trace;
-        private final String  msg;
+        private final String msg;
 
-        public Dispatcher(String msg, String dispatch, String control, boolean trace)
-        {
+        public Dispatcher(String msg, String dispatch, String control, boolean trace) {
             this.msg = msg;
             this.dispatch = dispatch;
             this.control = control;
@@ -38,8 +35,7 @@ public class HighWatermarkTest
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Thread.currentThread().setName("Dispatcher");
 
             ZContext context = new ZContext(1);
@@ -72,8 +68,7 @@ public class HighWatermarkTest
                 System.out.println("Dispatcher finished, awaiting for collector finish");
                 controller.recvStr();
                 // We can finish NOW!
-            }
-            finally {
+            } finally {
                 if (trace) {
                     System.out.println("Dispatcher closing.");
                 }
@@ -83,17 +78,15 @@ public class HighWatermarkTest
         }
     }
 
-    public static class Worker implements Runnable
-    {
+    public static class Worker implements Runnable {
         private final String control;
 
-        private final String  dispatch;
-        private final String  collect;
+        private final String dispatch;
+        private final String collect;
         private final boolean trace;
-        private final int     index;
+        private final int index;
 
-        public Worker(String dispatch, String collect, String control, int index, boolean trace)
-        {
+        public Worker(String dispatch, String collect, String control, int index, boolean trace) {
             this.dispatch = dispatch;
             this.collect = collect;
             this.control = control;
@@ -102,8 +95,7 @@ public class HighWatermarkTest
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Thread.currentThread().setName("Worker #" + index);
 
             ZContext context = new ZContext(1);
@@ -143,8 +135,7 @@ public class HighWatermarkTest
                         //  Simple progress indicator for the viewer
                         if (trace) {
                             System.out.println("Worker #" + index + " recv " + msg);
-                        }
-                        else {
+                        } else {
                             if (idx % TRACE == 0) {
                                 System.out.println("Worker #" + index + " recv " + idx + " messages");
                             }
@@ -162,8 +153,7 @@ public class HighWatermarkTest
                         break;
                     }
                 }
-            }
-            finally {
+            } finally {
                 if (trace) {
                     System.out.println("Worker #" + index + " closing.");
                 }
@@ -176,20 +166,18 @@ public class HighWatermarkTest
         }
     }
 
-    public static class Collector implements Runnable
-    {
+    public static class Collector implements Runnable {
         private final String control;
 
         private final boolean trace;
-        private final String  collect;
-        private final String  msg;
+        private final String collect;
+        private final String msg;
 
         private final int workers;
 
         private final AtomicBoolean success = new AtomicBoolean();
 
-        public Collector(String msg, String collect, String control, int workers, boolean trace)
-        {
+        public Collector(String msg, String collect, String control, int workers, boolean trace) {
             this.msg = msg;
             this.collect = collect;
             this.control = control;
@@ -198,8 +186,7 @@ public class HighWatermarkTest
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Thread.currentThread().setName("Collector");
             if (trace) {
                 System.out.println("Started collector on " + collect);
@@ -230,8 +217,7 @@ public class HighWatermarkTest
                     msg = new String(receiver.recv(0), ZMQ.CHARSET).trim();
                     if (trace) {
                         System.out.println("Collector recv : " + taskNbr + " -> " + msg);
-                    }
-                    else if (taskNbr % TRACE == 0 || taskNbr == 100) {
+                    } else if (taskNbr % TRACE == 0 || taskNbr == 100) {
                         System.out.println("Collector recv : " + taskNbr + " messages ");
                     }
 
@@ -249,8 +235,7 @@ public class HighWatermarkTest
                 }
 
                 controller.send("FINISH"); // Signal dispatcher to finish
-            }
-            finally {
+            } finally {
                 context.close();
                 System.out.println("Collector done.");
             }
@@ -260,19 +245,16 @@ public class HighWatermarkTest
     }
 
     @Test
-    public void testReliabilityOnWatermark() throws IOException, InterruptedException
-    {
+    public void testReliabilityOnWatermark() throws IOException, InterruptedException {
         testWatermark(1);
     }
 
     @Test
-    public void testReliabilityOnWatermark2() throws IOException, InterruptedException
-    {
+    public void testReliabilityOnWatermark2() throws IOException, InterruptedException {
         testWatermark(2);
     }
 
-    private void testWatermark(int workers) throws IOException, InterruptedException
-    {
+    private void testWatermark(int workers) throws IOException, InterruptedException {
         long start = System.currentTimeMillis();
 
         ExecutorService threadPool = Executors.newFixedThreadPool(workers + 2);
@@ -300,12 +282,11 @@ public class HighWatermarkTest
 
     /*--------------------------------------------------------------*/
 
-    private static final String       ABC = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private static final String ABC = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static final SecureRandom rnd = new SecureRandom();
 
     // http://stackoverflow.com/a/157202
-    private static String randomString(int len)
-    {
+    private static String randomString(int len) {
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
             sb.append(ABC.charAt(rnd.nextInt(ABC.length())));

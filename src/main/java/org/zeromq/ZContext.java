@@ -13,15 +13,13 @@ import org.zeromq.ZMQ.Socket;
 
 /**
  * ZContext provides a high-level ZeroMQ context management class
- *
+ * <p>
  * It manages open sockets in the context and automatically closes these before terminating the context.
  * It provides a simple way to set the linger timeout on sockets, and configure contexts for number of I/O threads.
  * Sets-up signal (interrupt) handling for the process.
- *
  */
 
-public class ZContext implements Closeable
-{
+public class ZContext implements Closeable {
     /**
      * Reference to underlying Context object
      */
@@ -71,18 +69,15 @@ public class ZContext implements Closeable
     /**
      * Class Constructor
      */
-    public ZContext()
-    {
+    public ZContext() {
         this(1);
     }
 
-    public ZContext(int ioThreads)
-    {
+    public ZContext(int ioThreads) {
         this(null, true, ioThreads);
     }
 
-    private ZContext(Context context, boolean main, int ioThreads)
-    {
+    private ZContext(Context context, boolean main, int ioThreads) {
         this.sockets = new CopyOnWriteArrayList<>();
         this.mutex = new ReentrantLock();
         this.context = context;
@@ -97,8 +92,7 @@ public class ZContext implements Closeable
     /**
      * Destructor.  Call this to gracefully terminate context and close any managed 0MQ sockets
      */
-    public void destroy()
-    {
+    public void destroy() {
         for (Socket socket : sockets) {
             destroySocket(socket);
         }
@@ -113,13 +107,11 @@ public class ZContext implements Closeable
     /**
      * Creates a new managed socket within this ZContext instance.
      * Use this to get automatic management of the socket at shutdown
-     * @param type
-     *          socket type (see ZMQ static class members)
-     * @return
-     *          Newly created Socket object
+     *
+     * @param type socket type (see ZMQ static class members)
+     * @return Newly created Socket object
      */
-    public Socket createSocket(int type)
-    {
+    public Socket createSocket(int type) {
         // Create and register socket
         Socket socket = getContext().socket(type);
         socket.setRcvHWM(this.rcvhwm);
@@ -127,8 +119,7 @@ public class ZContext implements Closeable
         try {
             mutex.lock();
             sockets.add(socket);
-        }
-        finally {
+        } finally {
             mutex.unlock();
         }
         return socket;
@@ -137,11 +128,10 @@ public class ZContext implements Closeable
     /**
      * Destroys managed socket within this context
      * and remove from sockets list
-     * @param s
-     *          org.zeromq.Socket object to destroy
+     *
+     * @param s org.zeromq.Socket object to destroy
      */
-    public void destroySocket(Socket s)
-    {
+    public void destroySocket(Socket s) {
         if (s == null) {
             return;
         }
@@ -150,19 +140,16 @@ public class ZContext implements Closeable
         try {
             mutex.lock();
             this.sockets.remove(s);
-        }
-        finally {
+        } finally {
             mutex.unlock();
         }
     }
 
-    public Selector createSelector()
-    {
+    public Selector createSelector() {
         return getContext().selector();
     }
 
-    public Poller createPoller(int size)
-    {
+    public Poller createPoller(int size) {
         return new Poller(getContext(), size);
     }
 
@@ -170,11 +157,11 @@ public class ZContext implements Closeable
      * Creates new shadow context.
      * Shares same underlying org.zeromq.Context instance but has own list
      * of managed sockets, io thread count etc.
-     * @param ctx   Original ZContext to create shadow of
-     * @return  New ZContext
+     *
+     * @param ctx Original ZContext to create shadow of
+     * @return New ZContext
      */
-    public static ZContext shadow(ZContext ctx)
-    {
+    public static ZContext shadow(ZContext ctx) {
         ZContext context = new ZContext(ctx.getContext(), false, ctx.ioThreads);
         context.linger = ctx.linger;
         context.sndhwm = ctx.sndhwm;
@@ -186,8 +173,7 @@ public class ZContext implements Closeable
     /**
      * @return the ioThreads
      */
-    public int getIoThreads()
-    {
+    public int getIoThreads() {
         return ioThreads;
     }
 
@@ -196,29 +182,25 @@ public class ZContext implements Closeable
      * @deprecated This value should not be changed after the context is initialized.
      */
     @Deprecated
-    public void setIoThreads(int ioThreads)
-    {
+    public void setIoThreads(int ioThreads) {
         return;
     }
 
     /**
      * @return the linger
      */
-    public int getLinger()
-    {
+    public int getLinger() {
         return linger;
     }
 
     /**
      * @param linger the linger to set
      */
-    public void setLinger(int linger)
-    {
+    public void setLinger(int linger) {
         try {
             mutex.lock();
             this.linger = linger;
-        }
-        finally {
+        } finally {
             mutex.unlock();
         }
     }
@@ -227,15 +209,14 @@ public class ZContext implements Closeable
      * Set initial receive HWM for all new normal sockets created in context.
      * You can set this per-socket after the socket is created.
      * The default, no matter the underlying ZeroMQ version, is 1,000.
+     *
      * @param rcvhwm the rcvhwm
      */
-    public void setRcvHWM(int rcvhwm)
-    {
+    public void setRcvHWM(int rcvhwm) {
         try {
             mutex.lock();
             this.rcvhwm = rcvhwm;
-        }
-        finally {
+        } finally {
             mutex.unlock();
         }
     }
@@ -244,23 +225,22 @@ public class ZContext implements Closeable
      * Set initial receive HWM for all new normal sockets created in context.
      * You can set this per-socket after the socket is created.
      * The default, no matter the underlying ZeroMQ version, is 1,000.
+     *
      * @param sndhwm the sndhwm
      */
-    public void setSndHWM(int sndhwm)
-    {
+    public void setSndHWM(int sndhwm) {
         try {
             mutex.lock();
             this.sndhwm = sndhwm;
-        }
-        finally {
+        } finally {
             mutex.unlock();
         }
     }
+
     /**
      * @return the main
      */
-    public boolean isMain()
-    {
+    public boolean isMain() {
         return main;
     }
 
@@ -269,23 +249,20 @@ public class ZContext implements Closeable
      * @deprecated This value should not be changed after the context is initialized.
      */
     @Deprecated
-    public void setMain(boolean main)
-    {
+    public void setMain(boolean main) {
         return;
     }
 
     /**
      * @return the context
      */
-    public Context getContext()
-    {
+    public Context getContext() {
         try {
             mutex.lock();
             if (this.context == null) {
                 this.context = ZMQ.context(this.ioThreads);
             }
-        }
-        finally {
+        } finally {
             mutex.unlock();
         }
         return this.context;
@@ -296,27 +273,23 @@ public class ZContext implements Closeable
      * @deprecated This value should not be changed after the ZContext is initialized.
      */
     @Deprecated
-    public void setContext(Context ctx)
-    {
+    public void setContext(Context ctx) {
         return;
     }
 
     /**
      * @return the sockets
      */
-    public List<Socket> getSockets()
-    {
+    public List<Socket> getSockets() {
         return sockets;
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         destroy();
     }
 
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         synchronized (this) {
             if (context == null) {
                 return true;

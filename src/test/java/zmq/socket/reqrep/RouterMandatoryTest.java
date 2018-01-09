@@ -13,11 +13,9 @@ import zmq.ZError;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class RouterMandatoryTest
-{
+public class RouterMandatoryTest {
     @Test
-    public void testRouterMandatory() throws Exception
-    {
+    public void testRouterMandatory() throws Exception {
         int sent;
         boolean rc;
 
@@ -83,8 +81,7 @@ public class RouterMandatoryTest
     private static final int BUF_SIZE = 65636;
 
     @Test
-    public void testRouterMandatoryHwm() throws Exception
-    {
+    public void testRouterMandatoryHwm() throws Exception {
         boolean rc;
 
         System.out.print("Starting router mandatory HWM test");

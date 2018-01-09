@@ -15,11 +15,9 @@ import zmq.Msg;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class TestReqRelaxed
-{
+public class TestReqRelaxed {
     @Test
-    public void testReqRelaxed() throws Exception
-    {
+    public void testReqRelaxed() throws Exception {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
 
@@ -114,8 +112,7 @@ public class TestReqRelaxed
     }
 
     @Test
-    public void testIssueLibzmq1965()
-    {
+    public void testIssueLibzmq1965() {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
 
@@ -161,8 +158,7 @@ public class TestReqRelaxed
         ctx.terminate();
     }
 
-    private void bounce(SocketBase socket)
-    {
+    private void bounce(SocketBase socket) {
         boolean more = false;
         do {
             Msg msg = socket.recv(0);

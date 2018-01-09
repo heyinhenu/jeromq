@@ -1,18 +1,15 @@
 package zmq.pipe;
 
-class YQueue<T>
-{
+class YQueue<T> {
     //  Individual memory chunk to hold N elements.
-    private static class Chunk<T>
-    {
-        final T[]   values;
+    private static class Chunk<T> {
+        final T[] values;
         final int[] pos;
-        Chunk<T>    prev;
-        Chunk<T>    next;
+        Chunk<T> prev;
+        Chunk<T> next;
 
         @SuppressWarnings("unchecked")
-        public Chunk(int size, int memoryPtr)
-        {
+        public Chunk(int size, int memoryPtr) {
             values = (T[]) new Object[size];
             pos = new int[size];
             for (int i = 0; i != values.length; i++) {
@@ -26,22 +23,21 @@ class YQueue<T>
     //  while begin & end positions are always valid. Begin position is
     //  accessed exclusively be queue reader (front/pop), while back and
     //  end positions are accessed exclusively by queue writer (back/push).
-    private Chunk<T>          beginChunk;
-    private int               beginPos;
-    private Chunk<T>          backChunk;
-    private int               backPos;
-    private Chunk<T>          endChunk;
-    private int               endPos;
+    private Chunk<T> beginChunk;
+    private int beginPos;
+    private Chunk<T> backChunk;
+    private int backPos;
+    private Chunk<T> endChunk;
+    private int endPos;
     private volatile Chunk<T> spareChunk;
-    private final int         size;
+    private final int size;
 
     //  People are likely to produce and consume at similar rates.  In
     //  this scenario holding onto the most recently freed chunk saves
     //  us from having to call malloc/free.
     private int memoryPtr;
 
-    public YQueue(int size)
-    {
+    public YQueue(int size) {
         this.size = size;
         memoryPtr = 0;
         beginChunk = new Chunk<>(size, memoryPtr);
@@ -54,33 +50,28 @@ class YQueue<T>
         endPos = 1;
     }
 
-    public int frontPos()
-    {
+    public int frontPos() {
         return beginChunk.pos[beginPos];
     }
 
     //  Returns reference to the front element of the queue.
     //  If the queue is empty, behaviour is undefined.
-    public T front()
-    {
+    public T front() {
         return beginChunk.values[beginPos];
     }
 
-    public int backPos()
-    {
+    public int backPos() {
         return backChunk.pos[backPos];
     }
 
     //  Returns reference to the back element of the queue.
     //  If the queue is empty, behaviour is undefined.
-    public T back()
-    {
+    public T back() {
         return backChunk.values[backPos];
     }
 
     //  Adds an element to the back end of the queue.
-    public void push(T val)
-    {
+    public void push(T val) {
         backChunk.values[backPos] = val;
         backChunk = endChunk;
         backPos = endPos;
@@ -94,8 +85,7 @@ class YQueue<T>
             spareChunk = spareChunk.next;
             endChunk.next = sc;
             sc.prev = endChunk;
-        }
-        else {
+        } else {
             endChunk.next = new Chunk<>(size, memoryPtr);
             memoryPtr += size;
             endChunk.next.prev = endChunk;
@@ -111,13 +101,11 @@ class YQueue<T>
     //  unpush is called. It cannot be done automatically as the read
     //  side of the queue can be managed by different, completely
     //  unsynchronised thread.
-    public void unpush()
-    {
+    public void unpush() {
         //  First, move 'back' one position backwards.
         if (backPos > 0) {
             --backPos;
-        }
-        else {
+        } else {
             backPos = size - 1;
             backChunk = backChunk.prev;
         }
@@ -128,8 +116,7 @@ class YQueue<T>
         //  instead of a simple free.
         if (endPos > 0) {
             --endPos;
-        }
-        else {
+        } else {
             endPos = size - 1;
             endChunk = endChunk.prev;
             endChunk.next = null;
@@ -137,8 +124,7 @@ class YQueue<T>
     }
 
     //  Removes an element from the front end of the queue.
-    public T pop()
-    {
+    public T pop() {
         T val = beginChunk.values[beginPos];
         beginChunk.values[beginPos] = null;
         beginPos++;

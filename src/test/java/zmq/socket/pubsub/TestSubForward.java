@@ -15,13 +15,11 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class TestSubForward
-{
+public class TestSubForward {
     //  Create REQ/ROUTER wiring.
 
     @Test
-    public void testSubForward() throws IOException
-    {
+    public void testSubForward() throws IOException {
         int port1 = Utils.findOpenPort();
         int port2 = Utils.findOpenPort();
 

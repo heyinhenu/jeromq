@@ -8,11 +8,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class InprocUnbindTest
-{
+public class InprocUnbindTest {
     @Test
-    public void testUnbindInproc() throws IOException, InterruptedException
-    {
+    public void testUnbindInproc() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.init(1);
         assert (ctx != null);
 

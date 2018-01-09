@@ -12,31 +12,28 @@ import org.zeromq.ZMQ;
 import org.zeromq.ZMsg;
 
 /**
-*  Majordomo Protocol broker
-*  A minimal implementation of http://rfc.zeromq.org/spec:7 and spec:8
-*/
-public class mdbroker
-{
+ * Majordomo Protocol broker
+ * A minimal implementation of http://rfc.zeromq.org/spec:7 and spec:8
+ */
+public class mdbroker {
 
     // We'd normally pull these from config data
     private static final String INTERNAL_SERVICE_PREFIX = "mmi.";
-    private static final int    HEARTBEAT_LIVENESS      = 3;                                      // 3-5 is reasonable
-    private static final int    HEARTBEAT_INTERVAL      = 2500;                                   // msecs
-    private static final int    HEARTBEAT_EXPIRY        = HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
+    private static final int HEARTBEAT_LIVENESS = 3;                                      // 3-5 is reasonable
+    private static final int HEARTBEAT_INTERVAL = 2500;                                   // msecs
+    private static final int HEARTBEAT_EXPIRY = HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
 
     // ---------------------------------------------------------------------
 
     /**
      * This defines a single service.
      */
-    private static class Service
-    {
+    private static class Service {
         public final String name;     // Service name
-        Deque<ZMsg>         requests; // List of client requests
-        Deque<Worker>       waiting;  // List of waiting workers
+        Deque<ZMsg> requests; // List of client requests
+        Deque<Worker> waiting;  // List of waiting workers
 
-        public Service(String name)
-        {
+        public Service(String name) {
             this.name = name;
             this.requests = new ArrayDeque<ZMsg>();
             this.waiting = new ArrayDeque<Worker>();
@@ -46,15 +43,13 @@ public class mdbroker
     /**
      * This defines one worker, idle or active.
      */
-    private static class Worker
-    {
-        String  identity;// Identity of worker
-        ZFrame  address; // Address frame to route to
+    private static class Worker {
+        String identity;// Identity of worker
+        ZFrame address; // Address frame to route to
         Service service; // Owning service, if known
-        long    expiry;  // Expires at unless heartbeat
+        long expiry;  // Expires at unless heartbeat
 
-        public Worker(String identity, ZFrame address)
-        {
+        public Worker(String identity, ZFrame address) {
             this.address = address;
             this.identity = identity;
             this.expiry = System.currentTimeMillis() + HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
@@ -63,24 +58,23 @@ public class mdbroker
 
     // ---------------------------------------------------------------------
 
-    private ZContext   ctx;    // Our context
+    private ZContext ctx;    // Our context
     private ZMQ.Socket socket; // Socket for clients & workers
 
-    private long                 heartbeatAt;// When to send HEARTBEAT
+    private long heartbeatAt;// When to send HEARTBEAT
     private Map<String, Service> services;   // known services
-    private Map<String, Worker>  workers;    // known workers
-    private Deque<Worker>        waiting;    // idle workers
+    private Map<String, Worker> workers;    // known workers
+    private Deque<Worker> waiting;    // idle workers
 
-    private boolean   verbose = false;                    // Print activity to stdout
-    private Formatter log     = new Formatter(System.out);
+    private boolean verbose = false;                    // Print activity to stdout
+    private Formatter log = new Formatter(System.out);
 
     // ---------------------------------------------------------------------
 
     /**
      * Main method - create and start new broker.
      */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         mdbroker broker = new mdbroker(args.length > 0 && "-v".equals(args[0]));
         // Can be called multiple times with different endpoints
         broker.bind("tcp://*:5555");
@@ -90,8 +84,7 @@ public class mdbroker
     /**
      * Initialize broker state.
      */
-    public mdbroker(boolean verbose)
-    {
+    public mdbroker(boolean verbose) {
         this.verbose = verbose;
         this.services = new HashMap<String, Service>();
         this.workers = new HashMap<String, Worker>();
@@ -106,8 +99,7 @@ public class mdbroker
     /**
      * Main broker work happens here
      */
-    public void mediate()
-    {
+    public void mediate() {
         while (!Thread.currentThread().isInterrupted()) {
             ZMQ.Poller items = ctx.createPoller(1);
             items.register(socket, ZMQ.Poller.POLLIN);
@@ -129,8 +121,7 @@ public class mdbroker
 
                 if (MDP.C_CLIENT.frameEquals(header)) {
                     processClient(sender, msg);
-                }
-                else if (MDP.W_WORKER.frameEquals(header))
+                } else if (MDP.W_WORKER.frameEquals(header))
                     processWorker(sender, msg);
                 else {
                     log.format("E: invalid message:\n");
@@ -153,8 +144,7 @@ public class mdbroker
     /**
      * Disconnect all workers, destroy context.
      */
-    private void destroy()
-    {
+    private void destroy() {
         Worker[] deleteList = workers.entrySet().toArray(new Worker[0]);
         for (Worker worker : deleteList) {
             deleteWorker(worker, true);
@@ -165,23 +155,22 @@ public class mdbroker
     /**
      * Process a request coming from a client.
      */
-    private void processClient(ZFrame sender, ZMsg msg)
-    {
+    private void processClient(ZFrame sender, ZMsg msg) {
         assert (msg.size() >= 2); // Service name + body
         ZFrame serviceFrame = msg.pop();
         // Set reply return address to client sender
         msg.wrap(sender.duplicate());
         if (serviceFrame.toString().startsWith(INTERNAL_SERVICE_PREFIX))
             serviceInternal(serviceFrame, msg);
-        else dispatch(requireService(serviceFrame), msg);
+        else
+            dispatch(requireService(serviceFrame), msg);
         serviceFrame.destroy();
     }
 
     /**
      * Process message sent to us by a worker.
      */
-    private void processWorker(ZFrame sender, ZMsg msg)
-    {
+    private void processWorker(ZFrame sender, ZMsg msg) {
         assert (msg.size() >= 1); // At least, command
 
         ZFrame command = msg.pop();
@@ -201,8 +190,7 @@ public class mdbroker
                 workerWaiting(worker);
                 serviceFrame.destroy();
             }
-        }
-        else if (MDP.W_REPLY.frameEquals(command)) {
+        } else if (MDP.W_REPLY.frameEquals(command)) {
             if (workerReady) {
                 // Remove & save client return envelope and insert the
                 // protocol header and service name, then rewrap envelope.
@@ -212,20 +200,16 @@ public class mdbroker
                 msg.wrap(client);
                 msg.send(socket);
                 workerWaiting(worker);
-            }
-            else {
+            } else {
                 deleteWorker(worker, true);
             }
-        }
-        else if (MDP.W_HEARTBEAT.frameEquals(command)) {
+        } else if (MDP.W_HEARTBEAT.frameEquals(command)) {
             if (workerReady) {
                 worker.expiry = System.currentTimeMillis() + HEARTBEAT_EXPIRY;
-            }
-            else {
+            } else {
                 deleteWorker(worker, true);
             }
-        }
-        else if (MDP.W_DISCONNECT.frameEquals(command))
+        } else if (MDP.W_DISCONNECT.frameEquals(command))
             deleteWorker(worker, false);
         else {
             log.format("E: invalid message:\n");
@@ -237,8 +221,7 @@ public class mdbroker
     /**
      * Deletes worker from all data structures, and destroys worker.
      */
-    private void deleteWorker(Worker worker, boolean disconnect)
-    {
+    private void deleteWorker(Worker worker, boolean disconnect) {
         assert (worker != null);
         if (disconnect) {
             sendToWorker(worker, MDP.W_DISCONNECT, null, null);
@@ -252,8 +235,7 @@ public class mdbroker
     /**
      * Finds the worker (creates if necessary).
      */
-    private Worker requireWorker(ZFrame address)
-    {
+    private Worker requireWorker(ZFrame address) {
         assert (address != null);
         String identity = address.strhex();
         Worker worker = workers.get(identity);
@@ -269,8 +251,7 @@ public class mdbroker
     /**
      * Locates the service (creates if necessary).
      */
-    private Service requireService(ZFrame serviceFrame)
-    {
+    private Service requireService(ZFrame serviceFrame) {
         assert (serviceFrame != null);
         String name = serviceFrame.toString();
         Service service = services.get(name);
@@ -285,8 +266,7 @@ public class mdbroker
      * Bind broker to endpoint, can call this multiple times. We use a single
      * socket for both clients and workers.
      */
-    private void bind(String endpoint)
-    {
+    private void bind(String endpoint) {
         socket.bind(endpoint);
         log.format("I: MDP broker/0.1.1 is active at %s\n", endpoint);
     }
@@ -294,8 +274,7 @@ public class mdbroker
     /**
      * Handle internal service according to 8/MMI specification
      */
-    private void serviceInternal(ZFrame serviceFrame, ZMsg msg)
-    {
+    private void serviceInternal(ZFrame serviceFrame, ZMsg msg) {
         String returnCode = "501";
         if ("mmi.service".equals(serviceFrame.toString())) {
             String name = msg.peekLast().toString();
@@ -314,8 +293,7 @@ public class mdbroker
     /**
      * Send heartbeats to idle workers if it's time
      */
-    public synchronized void sendHeartbeats()
-    {
+    public synchronized void sendHeartbeats() {
         // Send heartbeats to idle workers if it's time
         if (System.currentTimeMillis() >= heartbeatAt) {
             for (Worker worker : waiting) {
@@ -329,10 +307,8 @@ public class mdbroker
      * Look for & kill expired workers. Workers are oldest to most recent, so we
      * stop at the first alive worker.
      */
-    public synchronized void purgeWorkers()
-    {
-        for (Worker w = waiting.peekFirst(); w != null
-                && w.expiry < System.currentTimeMillis(); w = waiting.peekFirst()) {
+    public synchronized void purgeWorkers() {
+        for (Worker w = waiting.peekFirst(); w != null && w.expiry < System.currentTimeMillis(); w = waiting.peekFirst()) {
             log.format("I: deleting expired worker: %s\n", w.identity);
             deleteWorker(waiting.pollFirst(), false);
         }
@@ -341,8 +317,7 @@ public class mdbroker
     /**
      * This worker is now waiting for work.
      */
-    public synchronized void workerWaiting(Worker worker)
-    {
+    public synchronized void workerWaiting(Worker worker) {
         // Queue to broker and service waiting lists
         waiting.addLast(worker);
         worker.service.waiting.addLast(worker);
@@ -353,8 +328,7 @@ public class mdbroker
     /**
      * Dispatch requests to waiting workers as possible
      */
-    private void dispatch(Service service, ZMsg msg)
-    {
+    private void dispatch(Service service, ZMsg msg) {
         assert (service != null);
         if (msg != null)// Queue message if any
             service.requests.offerLast(msg);
@@ -372,8 +346,7 @@ public class mdbroker
      * Send message to worker. If message is provided, sends that message. Does
      * not destroy the message, this is the caller's job.
      */
-    public void sendToWorker(Worker worker, MDP command, String option, ZMsg msgp)
-    {
+    public void sendToWorker(Worker worker, MDP command, String option, ZMsg msgp) {
 
         ZMsg msg = msgp == null ? new ZMsg() : msgp.duplicate();
 

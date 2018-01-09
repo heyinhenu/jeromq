@@ -12,97 +12,81 @@ import zmq.io.mechanism.Mechanism;
 import zmq.io.mechanism.Mechanisms;
 import zmq.io.net.Address;
 
-public class PlainServerMechanism extends Mechanism
-{
-    private enum State
-    {
-        WAITING_FOR_HELLO,
-        SENDING_WELCOME,
-        WAITING_FOR_INITIATE,
-        SENDING_READY,
-        WAITING_FOR_ZAP_REPLY,
-        SENDING_ERROR,
-        ERROR_COMMAND_SENT,
-        READY
+public class PlainServerMechanism extends Mechanism {
+    private enum State {
+        WAITING_FOR_HELLO, SENDING_WELCOME, WAITING_FOR_INITIATE, SENDING_READY, WAITING_FOR_ZAP_REPLY, SENDING_ERROR, ERROR_COMMAND_SENT, READY
     }
 
     private State state;
 
-    public PlainServerMechanism(SessionBase session, Address peerAddress, Options options)
-    {
+    public PlainServerMechanism(SessionBase session, Address peerAddress, Options options) {
         super(session, peerAddress, options);
         this.state = State.WAITING_FOR_HELLO;
     }
 
     @Override
-    public int nextHandshakeCommand(Msg msg)
-    {
+    public int nextHandshakeCommand(Msg msg) {
         int rc;
         switch (state) {
-        case SENDING_WELCOME:
-            rc = produceWelcome(msg);
-            if (rc == 0) {
-                state = State.WAITING_FOR_INITIATE;
-            }
-            break;
-        case SENDING_READY:
-            rc = produceReady(msg);
-            if (rc == 0) {
-                state = State.READY;
-            }
-            break;
-        case SENDING_ERROR:
-            rc = produceError(msg);
-            if (rc == 0) {
-                state = State.ERROR_COMMAND_SENT;
-            }
-            break;
-        default:
-            rc = ZError.EAGAIN;
-            break;
+            case SENDING_WELCOME:
+                rc = produceWelcome(msg);
+                if (rc == 0) {
+                    state = State.WAITING_FOR_INITIATE;
+                }
+                break;
+            case SENDING_READY:
+                rc = produceReady(msg);
+                if (rc == 0) {
+                    state = State.READY;
+                }
+                break;
+            case SENDING_ERROR:
+                rc = produceError(msg);
+                if (rc == 0) {
+                    state = State.ERROR_COMMAND_SENT;
+                }
+                break;
+            default:
+                rc = ZError.EAGAIN;
+                break;
 
         }
         return rc;
     }
 
     @Override
-    public int processHandshakeCommand(Msg msg)
-    {
+    public int processHandshakeCommand(Msg msg) {
         int rc;
         switch (state) {
-        case WAITING_FOR_HELLO:
-            rc = produceHello(msg);
-            break;
-        case WAITING_FOR_INITIATE:
-            rc = produceInitiate(msg);
-            break;
-        default:
-            //  Temporary support for security debugging
-            puts("PLAIN Server I: invalid handshake command");
-            rc = ZError.EPROTO;
-            break;
+            case WAITING_FOR_HELLO:
+                rc = produceHello(msg);
+                break;
+            case WAITING_FOR_INITIATE:
+                rc = produceInitiate(msg);
+                break;
+            default:
+                //  Temporary support for security debugging
+                puts("PLAIN Server I: invalid handshake command");
+                rc = ZError.EPROTO;
+                break;
 
         }
         return rc;
     }
 
     @Override
-    public Status status()
-    {
+    public Status status() {
         if (state == State.READY) {
             return Status.READY;
-        }
-        else if (state == State.ERROR_COMMAND_SENT) {
+        } else if (state == State.ERROR_COMMAND_SENT) {
             return Status.ERROR;
-        }
-        else {
+        } else {
             return Status.HANDSHAKING;
         }
     }
 
     @Override
-    public int zapMsgAvailable()
-    {
+    public int zapMsgAvailable() {
         if (state != State.WAITING_FOR_ZAP_REPLY) {
             return ZError.EFSM;
         }
@@ -114,8 +98,7 @@ public class PlainServerMechanism extends Mechanism
         return rc;
     }
 
-    private int produceHello(Msg msg)
-    {
+    private int produceHello(Msg msg) {
         int bytesLeft = msg.size();
         int index = 0;
         if (bytesLeft < 6 || !compare(msg, "HELLO", true)) {
@@ -171,29 +154,24 @@ public class PlainServerMechanism extends Mechanism
             rc = receiveAndProcessZapReply();
             if (rc == 0) {
                 state = "200".equals(statusCode) ? State.SENDING_WELCOME : State.SENDING_ERROR;
-            }
-            else if (rc == ZError.EAGAIN) {
+            } else if (rc == ZError.EAGAIN) {
                 state = State.WAITING_FOR_ZAP_REPLY;
-            }
-            else {
+            } else {
                 return -1;
             }
-        }
-        else {
+        } else {
             state = State.SENDING_WELCOME;
         }
 
         return 0;
     }
 
-    private int produceWelcome(Msg msg)
-    {
+    private int produceWelcome(Msg msg) {
         appendData(msg, "WELCOME");
         return 0;
     }
 
-    private int produceInitiate(Msg msg)
-    {
+    private int produceInitiate(Msg msg) {
         int bytesLeft = msg.size();
         if (bytesLeft < 9 || !compare(msg, "INITIATE", true)) {
             //  Temporary support for security debugging
@@ -208,8 +186,7 @@ public class PlainServerMechanism extends Mechanism
         return rc;
     }
 
-    private int produceReady(Msg msg)
-    {
+    private int produceReady(Msg msg) {
         //  Add command name
         appendData(msg, "READY");
 
@@ -225,8 +202,7 @@ public class PlainServerMechanism extends Mechanism
         return 0;
     }
 
-    private int produceError(Msg msg)
-    {
+    private int produceError(Msg msg) {
         assert (statusCode != null && statusCode.length() == 3);
 
         appendData(msg, "ERROR");
@@ -235,8 +211,7 @@ public class PlainServerMechanism extends Mechanism
         return 0;
     }
 
-    private void sendZapRequest(byte[] username, byte[] password)
-    {
+    private void sendZapRequest(byte[] username, byte[] password) {
         sendZapRequest(Mechanisms.PLAIN, true);
 
         //  Username frame

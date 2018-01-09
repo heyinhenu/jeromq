@@ -17,8 +17,7 @@ import zmq.util.ValueReference;
 //  This class implements the state machine that parses the incoming buffer.
 //  Derived class should implement individual state machine actions.
 
-public abstract class DecoderBase implements IDecoder
-{
+public abstract class DecoderBase implements IDecoder {
     //  Where to store the read data.
     private ByteBuffer readPos;
 
@@ -36,8 +35,7 @@ public abstract class DecoderBase implements IDecoder
 
     private final Errno errno;
 
-    public DecoderBase(Errno errno, int bufsize)
-    {
+    public DecoderBase(Errno errno, int bufsize) {
         next = null;
         readPos = null;
         toRead = 0;
@@ -49,8 +47,7 @@ public abstract class DecoderBase implements IDecoder
 
     //  Returns a buffer to be filled with binary data.
     @Override
-    public ByteBuffer getBuffer()
-    {
+    public ByteBuffer getBuffer() {
         //  If we are expected to read large message, we'll opt for zero-
         //  copy, i.e. we'll ask caller to fill the data directly to the
         //  message. Note that subsequent read(s) are non-blocking, thus
@@ -62,8 +59,7 @@ public abstract class DecoderBase implements IDecoder
         if (toRead >= bufsize) {
             zeroCopy = true;
             return readPos.duplicate();
-        }
-        else {
+        } else {
             zeroCopy = false;
             buf.clear();
             return buf;
@@ -75,8 +71,7 @@ public abstract class DecoderBase implements IDecoder
     //  actually filled into the buffer. Function returns number of
     //  bytes actually processed.
     @Override
-    public Step.Result decode(ByteBuffer data, int size, ValueReference<Integer> processed)
-    {
+    public Step.Result decode(ByteBuffer data, int size, ValueReference<Integer> processed) {
         processed.set(0);
 
         //  In case of zero-copy simply adjust the pointers, no copying
@@ -120,39 +115,33 @@ public abstract class DecoderBase implements IDecoder
         return Step.Result.MORE_DATA;
     }
 
-    protected void nextStep(Msg msg, Step next)
-    {
+    protected void nextStep(Msg msg, Step next) {
         nextStep(msg.buf(), next);
     }
 
     @Deprecated
-    protected void nextStep(byte[] buf, int toRead, Step next)
-    {
+    protected void nextStep(byte[] buf, int toRead, Step next) {
         readPos = ByteBuffer.wrap(buf);
         readPos.limit(toRead);
         this.toRead = toRead;
         this.next = next;
     }
 
-    protected void nextStep(ByteBuffer buf, Step next)
-    {
+    protected void nextStep(ByteBuffer buf, Step next) {
         readPos = buf;
         this.toRead = buf.remaining();
         this.next = next;
     }
 
-    protected void errno(int err)
-    {
+    protected void errno(int err) {
         this.errno.set(err);
     }
 
-    public int errno()
-    {
+    public int errno() {
         return errno.get();
     }
 
     @Override
-    public void destroy()
-    {
+    public void destroy() {
     }
 }

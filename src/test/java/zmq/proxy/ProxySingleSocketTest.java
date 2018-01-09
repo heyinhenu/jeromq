@@ -17,22 +17,18 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class ProxySingleSocketTest
-{
-    private static class ServerTask implements Runnable
-    {
-        private final Ctx    ctx;
+public class ProxySingleSocketTest {
+    private static class ServerTask implements Runnable {
+        private final Ctx ctx;
         private final String host;
 
-        public ServerTask(Ctx ctx, String host)
-        {
+        public ServerTask(Ctx ctx, String host) {
             this.ctx = ctx;
             this.host = host;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             SocketBase rep = ZMQ.socket(ctx, ZMQ.ZMQ_REP);
             assertThat(rep, notNullValue());
 
@@ -56,8 +52,7 @@ public class ProxySingleSocketTest
     }
 
     @Test
-    public void testProxySingleSocket() throws IOException, InterruptedException
-    {
+    public void testProxySingleSocket() throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://127.0.0.1:" + port;
 

@@ -19,53 +19,43 @@ import zmq.io.net.Address;
 import zmq.pipe.Pipe;
 import zmq.util.Errno;
 
-public class Helper
-{
+public class Helper {
     public static AtomicInteger counter = new AtomicInteger(2);
 
-    private Helper()
-    {
+    private Helper() {
     }
 
-    public static class DummyCtx extends Ctx
-    {
+    public static class DummyCtx extends Ctx {
     }
 
-    public static class DummySocketChannel implements WritableByteChannel
-    {
-        private int    bufsize;
+    public static class DummySocketChannel implements WritableByteChannel {
+        private int bufsize;
         private byte[] buf;
 
-        public DummySocketChannel()
-        {
+        public DummySocketChannel() {
             this(64);
         }
 
-        public DummySocketChannel(int bufsize)
-        {
+        public DummySocketChannel(int bufsize) {
             this.bufsize = bufsize;
             buf = new byte[bufsize];
         }
 
-        public byte[] data()
-        {
+        public byte[] data() {
             return buf;
         }
 
         @Override
-        public void close() throws IOException
-        {
+        public void close() throws IOException {
         }
 
         @Override
-        public boolean isOpen()
-        {
+        public boolean isOpen() {
             return true;
         }
 
         @Override
-        public int write(ByteBuffer src) throws IOException
-        {
+        public int write(ByteBuffer src) throws IOException {
             int remaining = src.remaining();
             if (remaining > bufsize) {
                 src.get(buf);
@@ -79,59 +69,48 @@ public class Helper
 
     public static DummyCtx ctx = new DummyCtx();
 
-    public static class DummyIOThread extends IOThread
-    {
-        public DummyIOThread()
-        {
+    public static class DummyIOThread extends IOThread {
+        public DummyIOThread() {
             super(ctx, 2);
         }
     }
 
-    public static class DummySocket extends SocketBase
-    {
-        public DummySocket()
-        {
+    public static class DummySocket extends SocketBase {
+        public DummySocket() {
             super(ctx, counter.get(), counter.get());
             counter.incrementAndGet();
         }
 
         @Override
-        protected void xattachPipe(Pipe pipe, boolean icanhasall)
-        {
+        protected void xattachPipe(Pipe pipe, boolean icanhasall) {
         }
 
         @Override
-        protected void xpipeTerminated(Pipe pipe)
-        {
+        protected void xpipeTerminated(Pipe pipe) {
         }
 
     }
 
-    public static class DummySession extends SessionBase
-    {
+    public static class DummySession extends SessionBase {
         public List<Msg> out = new ArrayList<Msg>();
 
-        public DummySession()
-        {
+        public DummySession() {
             this(new DummyIOThread(), false, new DummySocket(), new Options(), new Address("tcp", "localhost:9090"));
         }
 
-        public DummySession(IOThread ioThread, boolean connect, SocketBase socket, Options options, Address addr)
-        {
+        public DummySession(IOThread ioThread, boolean connect, SocketBase socket, Options options, Address addr) {
             super(ioThread, connect, socket, options, addr);
         }
 
         @Override
-        public boolean pushMsg(Msg msg)
-        {
+        public boolean pushMsg(Msg msg) {
             System.out.println("session.write " + msg);
             out.add(msg);
             return true;
         }
 
         @Override
-        public Msg pullMsg()
-        {
+        public Msg pullMsg() {
             System.out.println("session.read " + out);
             if (out.size() == 0) {
                 return null;
@@ -143,8 +122,7 @@ public class Helper
 
     }
 
-    public static void bounce(SocketBase sb, SocketBase sc)
-    {
+    public static void bounce(SocketBase sb, SocketBase sc) {
         byte[] content = "12345678ABCDEFGH12345678abcdefgh".getBytes(ZMQ.CHARSET);
 
         //  Send the message.
@@ -181,8 +159,7 @@ public class Helper
         //assert (memcmp (buf2, content, 32) == 0);
     }
 
-    public static void expectBounceFail(SocketBase server, SocketBase client)
-    {
+    public static void expectBounceFail(SocketBase server, SocketBase client) {
         final byte[] content = "12345678ABCDEFGH12345678abcdefgh".getBytes(ZMQ.CHARSET);
         final int timeout = 250;
         final Errno errno = new Errno();
@@ -218,18 +195,15 @@ public class Helper
         assert errno.is(ZError.EAGAIN);
     }
 
-    public static int send(SocketBase socket, String data)
-    {
+    public static int send(SocketBase socket, String data) {
         return ZMQ.send(socket, data, 0);
     }
 
-    public static int sendMore(SocketBase socket, String data)
-    {
+    public static int sendMore(SocketBase socket, String data) {
         return ZMQ.send(socket, data, ZMQ.ZMQ_SNDMORE);
     }
 
-    public static String recv(SocketBase socket)
-    {
+    public static String recv(SocketBase socket) {
         Msg msg = ZMQ.recv(socket, 0);
         assert (msg != null);
         return new String(msg.data(), ZMQ.CHARSET);
@@ -238,8 +212,7 @@ public class Helper
     //  Sends a message composed of frames that are C strings or null frames.
     //  The list must be terminated by SEQ_END.
     //  Example: s_send_seq (req, "ABC", 0, "DEF", SEQ_END);
-    public static void sendSeq(SocketBase socket, String... data)
-    {
+    public static void sendSeq(SocketBase socket, String... data) {
         int rc = 0;
         for (int idx = 0; idx < data.length - 1; ++idx) {
             rc = sendMore(socket, data[idx]);
@@ -253,8 +226,7 @@ public class Helper
     //  the given data which can be either C strings or 0 for a null frame.
     //  The list must be terminated by SEQ_END.
     //  Example: s_recv_seq (rep, "ABC", 0, "DEF", SEQ_END);
-    public static void recvSeq(SocketBase socket, String... data)
-    {
+    public static void recvSeq(SocketBase socket, String... data) {
         String rc;
         for (int idx = 0; idx < data.length; ++idx) {
             rc = recv(socket);
@@ -262,8 +234,7 @@ public class Helper
         }
     }
 
-    public static void send(Socket sa, String data) throws IOException
-    {
+    public static void send(Socket sa, String data) throws IOException {
         byte[] content = data.getBytes(ZMQ.CHARSET);
 
         byte[] length = String.format("%04d", content.length).getBytes(ZMQ.CHARSET);
@@ -290,8 +261,7 @@ public class Helper
         System.out.println(String.format("%02x %02x %02x %02x", buf[0], buf[1], buf[2], buf[3]));
         try {
             Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         reslen = Integer.valueOf(new String(buf, 0, 4, ZMQ.CHARSET));

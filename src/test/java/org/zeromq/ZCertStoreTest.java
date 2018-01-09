@@ -13,15 +13,13 @@ import org.junit.Test;
 import org.zeromq.auth.TestUtils;
 
 @Ignore // FIXME tests are passing on local machine but not on Travis
-public class ZCertStoreTest
-{
+public class ZCertStoreTest {
     private ZCertStore certStore;
 
     private static final String CERTSTORE_LOCATION = "target/testCurveCerts";
 
     @Before
-    public void init()
-    {
+    public void init() {
         // first cleanup test-directory if still present
         TestUtils.cleanupDir(CERTSTORE_LOCATION);
 
@@ -36,8 +34,7 @@ public class ZCertStoreTest
     }
 
     @Test
-    public void testAddCertificates() throws IOException
-    {
+    public void testAddCertificates() throws IOException {
         final int beforeAmount = certStore.getCertificatesCount();
         assertThat(beforeAmount, is(0));
 
@@ -68,8 +65,7 @@ public class ZCertStoreTest
     }
 
     @Test
-    public void testRemoveCertificates() throws IOException
-    {
+    public void testRemoveCertificates() throws IOException {
         int beforeAmount = certStore.getCertificatesCount();
         assertThat(beforeAmount, is(0));
 
@@ -102,8 +98,7 @@ public class ZCertStoreTest
     }
 
     @Test
-    public void testcheckForCertificateChanges() throws IOException
-    {
+    public void testcheckForCertificateChanges() throws IOException {
         assertThat(certStore.getCertificatesCount(), is(0));
 
         ZCert cert1 = new ZCert();
@@ -151,14 +146,12 @@ public class ZCertStoreTest
     }
 
     @After
-    public void cleanup()
-    {
+    public void cleanup() {
         TestUtils.cleanupDir(CERTSTORE_LOCATION);
     }
 
-//    @Test
-    public void testRepeated() throws IOException
-    {
+    //    @Test
+    public void testRepeated() throws IOException {
         for (int idx = 0; idx < 1000; ++idx) {
             System.out.println("+++++++ " + idx);
             init();

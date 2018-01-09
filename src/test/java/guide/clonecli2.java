@@ -9,16 +9,13 @@ import org.zeromq.ZMQ.Socket;
 
 /**
  * Clone client Model Two
- * 
+ *
  * @author Danish Shrestha <dshrestha06@gmail.com>
- * 
  */
-public class clonecli2
-{
+public class clonecli2 {
     private static Map<String, kvsimple> kvMap = new HashMap<String, kvsimple>();
 
-    public void run()
-    {
+    public void run() {
         Context ctx = ZMQ.context(1);
         Socket snapshot = ctx.socket(ZMQ.DEALER);
         snapshot.connect("tcp://localhost:5556");
@@ -59,8 +56,7 @@ public class clonecli2
         }
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonecli2().run();
     }
 }

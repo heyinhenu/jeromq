@@ -10,13 +10,10 @@ import zmq.socket.FQ;
 import zmq.socket.pubsub.Trie.ITrieHandler;
 import zmq.util.Blob;
 
-public class XSub extends SocketBase
-{
-    private final class SendSubscription implements ITrieHandler
-    {
+public class XSub extends SocketBase {
+    private final class SendSubscription implements ITrieHandler {
         @Override
-        public void added(byte[] data, int size, Pipe pipe)
-        {
+        public void added(byte[] data, int size, Pipe pipe) {
             sendSubscription(data, size, pipe);
         }
     }
@@ -33,7 +30,7 @@ public class XSub extends SocketBase
     //  If true, 'message' contains a matching message to return on the
     //  next recv call.
     private boolean hasMessage;
-    private Msg     message;
+    private Msg message;
 
     //  If true, part of a multipart message was already received, but
     //  there are following parts still waiting.
@@ -41,8 +38,7 @@ public class XSub extends SocketBase
 
     private final ITrieHandler sendSubscription = new SendSubscription();
 
-    public XSub(Ctx parent, int tid, int sid)
-    {
+    public XSub(Ctx parent, int tid, int sid) {
         super(parent, tid, sid);
 
         options.type = ZMQ.ZMQ_XSUB;
@@ -61,8 +57,7 @@ public class XSub extends SocketBase
     }
 
     @Override
-    protected void xattachPipe(Pipe pipe, boolean subscribe2all)
-    {
+    protected void xattachPipe(Pipe pipe, boolean subscribe2all) {
         assert (pipe != null);
         fq.attach(pipe);
         dist.attach(pipe);
@@ -73,35 +68,30 @@ public class XSub extends SocketBase
     }
 
     @Override
-    protected void xreadActivated(Pipe pipe)
-    {
+    protected void xreadActivated(Pipe pipe) {
         fq.activated(pipe);
     }
 
     @Override
-    protected void xwriteActivated(Pipe pipe)
-    {
+    protected void xwriteActivated(Pipe pipe) {
         dist.activated(pipe);
     }
 
     @Override
-    protected void xpipeTerminated(Pipe pipe)
-    {
+    protected void xpipeTerminated(Pipe pipe) {
         fq.terminated(pipe);
         dist.terminated(pipe);
     }
 
     @Override
-    protected void xhiccuped(Pipe pipe)
-    {
+    protected void xhiccuped(Pipe pipe) {
         //  Send all the cached subscriptions to the hiccuped pipe.
         subscriptions.apply(sendSubscription, pipe);
         pipe.flush();
     }
 
     @Override
-    protected boolean xsend(Msg msg)
-    {
+    protected boolean xsend(Msg msg) {
         final int size = msg.size();
 
         if (size > 0 && msg.get(0) == 1) {
@@ -112,14 +102,12 @@ public class XSub extends SocketBase
             //  when there are forwarding devices involved.
             subscriptions.add(msg, 1, size - 1);
             return dist.sendToAll(msg);
-        }
-        else if (size > 0 && msg.get(0) == 0) {
+        } else if (size > 0 && msg.get(0) == 0) {
             //  Process unsubscribe message
             if (subscriptions.rm(msg, 1, size - 1)) {
                 return dist.sendToAll(msg);
             }
-        }
-        else {
+        } else {
             //  User message sent upstream to XPUB socket
             return dist.sendToAll(msg);
         }
@@ -127,15 +115,13 @@ public class XSub extends SocketBase
     }
 
     @Override
-    protected boolean xhasOut()
-    {
+    protected boolean xhasOut() {
         //  Subscription can be added/removed anytime.
         return true;
     }
 
     @Override
-    protected Msg xrecv()
-    {
+    protected Msg xrecv() {
         Msg msg;
 
         //  If there's already a message prepared by a previous call to zmq_poll,
@@ -177,8 +163,7 @@ public class XSub extends SocketBase
     }
 
     @Override
-    protected boolean xhasIn()
-    {
+    protected boolean xhasIn() {
         //  There are subsequent parts of the partly-read message available.
         if (more) {
             return true;
@@ -219,18 +204,15 @@ public class XSub extends SocketBase
     }
 
     @Override
-    protected Blob getCredential()
-    {
+    protected Blob getCredential() {
         return fq.getCredential();
     }
 
-    private boolean match(Msg msg)
-    {
+    private boolean match(Msg msg) {
         return subscriptions.check(msg.buf());
     }
 
-    private boolean sendSubscription(byte[] data, int size, Pipe pipe)
-    {
+    private boolean sendSubscription(byte[] data, int size, Pipe pipe) {
         //  Create the subscription message.
         Msg msg = new Msg(size + 1);
         msg.put((byte) 1).put(data, 0, size);

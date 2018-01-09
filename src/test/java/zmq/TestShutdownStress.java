@@ -10,24 +10,20 @@ import org.junit.Test;
 
 import zmq.util.Utils;
 
-public class TestShutdownStress
-{
+public class TestShutdownStress {
     private static final int THREAD_COUNT = 100;
 
-    class Worker implements Runnable
-    {
-        int        port;
+    class Worker implements Runnable {
+        int port;
         SocketBase s;
 
-        Worker(SocketBase s) throws IOException
-        {
+        Worker(SocketBase s) throws IOException {
             this.port = Utils.findOpenPort();
             this.s = s;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             boolean rc = ZMQ.connect(s, "tcp://127.0.0.1:" + port);
             assertThat(rc, is(true));
 
@@ -37,8 +33,7 @@ public class TestShutdownStress
     }
 
     @Test
-    public void testShutdownStress() throws Exception
-    {
+    public void testShutdownStress() throws Exception {
         Thread[] threads = new Thread[THREAD_COUNT];
 
         int randomPort = Utils.findOpenPort();

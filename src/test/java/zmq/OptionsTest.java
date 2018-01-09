@@ -11,19 +11,16 @@ import org.junit.Test;
 import zmq.msg.MsgAllocatorDirect;
 import zmq.msg.MsgAllocatorThreshold;
 
-public class OptionsTest
-{
+public class OptionsTest {
     private Options options;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         options = new Options();
     }
 
     @Test
-    public void testDefaultValues()
-    {
+    public void testDefaultValues() {
         assertThat(options.affinity, is(0L));
         assertThat(options.allocator, notNullValue());
         assertThat(options.allocator, is(instanceOf(MsgAllocatorThreshold.class)));
@@ -32,67 +29,58 @@ public class OptionsTest
     }
 
     @Test
-    public void testAffinity()
-    {
+    public void testAffinity() {
         options.setSocketOpt(ZMQ.ZMQ_AFFINITY, 1000L);
         assertThat(options.getSocketOpt(ZMQ.ZMQ_AFFINITY), is((Object) 1000L));
     }
 
     @Test
-    public void testAllocator()
-    {
+    public void testAllocator() {
         options.setSocketOpt(ZMQ.ZMQ_MSG_ALLOCATOR, new MsgAllocatorDirect());
         assertThat(options.getSocketOpt(ZMQ.ZMQ_MSG_ALLOCATOR), is((Object) options.allocator));
     }
 
     @Test
-    public void testBacklog()
-    {
+    public void testBacklog() {
         options.setSocketOpt(ZMQ.ZMQ_BACKLOG, 2000);
         assertThat(options.getSocketOpt(ZMQ.ZMQ_BACKLOG), is((Object) 2000));
     }
 
     @Test
-    public void testConflate()
-    {
+    public void testConflate() {
         options.setSocketOpt(ZMQ.ZMQ_CONFLATE, true);
         assertThat(options.getSocketOpt(ZMQ.ZMQ_CONFLATE), is((Object) options.conflate));
     }
 
     @Test
-    public void testCurvePublicKey()
-    {
+    public void testCurvePublicKey() {
         byte[] key = new byte[32];
         options.setSocketOpt(ZMQ.ZMQ_CURVE_PUBLICKEY, key);
         assertThat(options.getSocketOpt(ZMQ.ZMQ_CURVE_PUBLICKEY), is((Object) options.curvePublicKey));
     }
 
     @Test
-    public void testCurveSecretKey()
-    {
+    public void testCurveSecretKey() {
         byte[] key = new byte[32];
         options.setSocketOpt(ZMQ.ZMQ_CURVE_SECRETKEY, key);
         assertThat(options.getSocketOpt(ZMQ.ZMQ_CURVE_SECRETKEY), is((Object) options.curveSecretKey));
     }
 
     @Test
-    public void testCurveServerKey()
-    {
+    public void testCurveServerKey() {
         byte[] key = new byte[32];
         options.setSocketOpt(ZMQ.ZMQ_CURVE_SERVERKEY, key);
         assertThat(options.getSocketOpt(ZMQ.ZMQ_CURVE_SERVERKEY), is((Object) options.curveServerKey));
     }
 
     @Test
-    public void testGssPlaintext()
-    {
+    public void testGssPlaintext() {
         options.setSocketOpt(ZMQ.ZMQ_GSSAPI_PLAINTEXT, true);
         assertThat(options.getSocketOpt(ZMQ.ZMQ_GSSAPI_PLAINTEXT), is((Object) options.gssPlaintext));
     }
 
     @Test
-    public void testDefaultValu()
-    {
+    public void testDefaultValu() {
         //        assertThat(options.getSocketOpt(ZMQ.ZMQ_DECODER), is((Object)options.decoder));
         //        assertThat(options.getSocketOpt(ZMQ.ZMQ_ENCODER), is((Object)options.encoder));
         assertThat(options.getSocketOpt(ZMQ.ZMQ_GSSAPI_PRINCIPAL), is((Object) options.gssPrincipal));

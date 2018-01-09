@@ -16,39 +16,31 @@ import zmq.msg.MsgAllocatorThreshold;
 import zmq.util.Errno;
 import zmq.util.ValueReference;
 
-public class CustomDecoderTest
-{
-    static class CustomDecoder extends Decoder
-    {
-        private final Step readHeader = new Step()
-                                      {
-                                          @Override
-                                          public Step.Result apply()
-                                          {
-                                              return readHeader();
-                                          }
-                                      };
-        private final Step readBody   = new Step()
-                                      {
-                                          @Override
-                                          public Step.Result apply()
-                                          {
-                                              return readBody();
-                                          }
-                                      };
+public class CustomDecoderTest {
+    static class CustomDecoder extends Decoder {
+        private final Step readHeader = new Step() {
+            @Override
+            public Step.Result apply() {
+                return readHeader();
+            }
+        };
+        private final Step readBody = new Step() {
+            @Override
+            public Step.Result apply() {
+                return readBody();
+            }
+        };
 
         byte[] header = new byte[10];
-        Msg    msg;
-        int    size   = -1;
+        Msg msg;
+        int size = -1;
 
-        public CustomDecoder(int bufsize, long maxmsgsize)
-        {
+        public CustomDecoder(int bufsize, long maxmsgsize) {
             super(new Errno(), bufsize, maxmsgsize, new MsgAllocatorThreshold());
             nextStep(header, 10, readHeader);
         }
 
-        private Step.Result readHeader()
-        {
+        private Step.Result readHeader() {
             assertThat(new String(header, 0, 6, ZMQ.CHARSET), is("HEADER"));
             ByteBuffer b = ByteBuffer.wrap(header, 6, 4);
             size = b.getInt();
@@ -59,16 +51,14 @@ public class CustomDecoderTest
             return Step.Result.MORE_DATA;
         }
 
-        private Step.Result readBody()
-        {
+        private Step.Result readBody() {
             nextStep(header, 10, readHeader);
             return Step.Result.DECODED;
         }
     }
 
     @Test
-    public void testCustomDecoder()
-    {
+    public void testCustomDecoder() {
         CustomDecoder cdecoder = new CustomDecoder(32, 64);
 
         ByteBuffer in = cdecoder.getBuffer();
@@ -84,14 +74,12 @@ public class CustomDecoderTest
         assertThat(result, is(Step.Result.DECODED));
     }
 
-    private void readBody(ByteBuffer in)
-    {
+    private void readBody(ByteBuffer in) {
         in.put("1234567890".getBytes(ZMQ.CHARSET));
         in.put("1234567890".getBytes(ZMQ.CHARSET));
     }
 
-    private int readHeader(ByteBuffer in)
-    {
+    private int readHeader(ByteBuffer in) {
         in.put("HEADER".getBytes(ZMQ.CHARSET));
         in.putInt(20);
         return in.position();
@@ -99,8 +87,7 @@ public class CustomDecoderTest
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testAssignCustomDecoder()
-    {
+    public void testAssignCustomDecoder() {
         Ctx ctx = ZMQ.createContext();
 
         SocketBase socket = ctx.createSocket(ZMQ.ZMQ_PAIR);
@@ -112,18 +99,15 @@ public class CustomDecoderTest
         ZMQ.term(ctx);
     }
 
-    private static class WrongDecoder extends CustomDecoder
-    {
-        public WrongDecoder(int bufsize)
-        {
+    private static class WrongDecoder extends CustomDecoder {
+        public WrongDecoder(int bufsize) {
             super(bufsize, 0);
         }
     }
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testAssignWrongCustomDecoder()
-    {
+    public void testAssignWrongCustomDecoder() {
         Ctx ctx = ZMQ.createContext();
 
         SocketBase socket = ctx.createSocket(ZMQ.ZMQ_PAIR);

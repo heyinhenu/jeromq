@@ -7,11 +7,9 @@ import java.nio.ByteBuffer;
 
 import org.junit.Test;
 
-public class WireTest
-{
+public class WireTest {
     @Test
-    public void testUint16()
-    {
+    public void testUint16() {
         testUint16(0);
         testUint16(0xff);
         testUint16(0xff + 1);
@@ -21,8 +19,7 @@ public class WireTest
     }
 
     @Test
-    public void testUint32()
-    {
+    public void testUint32() {
         testUint32(0);
         testUint32(0xff);
         testUint32(0xff + 1);
@@ -43,24 +40,21 @@ public class WireTest
         testUint32(Integer.MIN_VALUE);
     }
 
-    private void testUint32(int expected)
-    {
+    private void testUint32(int expected) {
         ByteBuffer buf = ByteBuffer.allocate(8);
         Wire.putUInt32(buf, expected);
         int actual = Wire.getUInt32(buf);
         assertThat(actual, is(expected));
     }
 
-    private void testUint16(int expected)
-    {
+    private void testUint16(int expected) {
         byte[] buf = Wire.putUInt16(expected);
         int actual = Wire.getUInt16(buf);
         assertThat(actual, is(expected));
     }
 
     @Test
-    public void testUnsignedInteger64()
-    {
+    public void testUnsignedInteger64() {
         testUnsignedLong(0);
         testUnsignedLong(0xff);
         testUnsignedLong(0xff + 1);
@@ -80,8 +74,7 @@ public class WireTest
         testUnsignedLong(Long.MIN_VALUE);
     }
 
-    private void testUnsignedLong(long expected)
-    {
+    private void testUnsignedLong(long expected) {
         ByteBuffer buf = ByteBuffer.allocate(8);
         Wire.putUInt64(buf, expected);
         long actual = Wire.getUInt64(buf, 0);

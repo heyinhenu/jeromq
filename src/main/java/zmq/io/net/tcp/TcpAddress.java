@@ -10,40 +10,33 @@ import zmq.io.net.Address;
 import zmq.io.net.ProtocolFamily;
 import zmq.io.net.StandardProtocolFamily;
 
-public class TcpAddress implements Address.IZAddress
-{
-    public static class TcpAddressMask extends TcpAddress
-    {
-        public TcpAddressMask(String addr, boolean ipv6)
-        {
+public class TcpAddress implements Address.IZAddress {
+    public static class TcpAddressMask extends TcpAddress {
+        public TcpAddressMask(String addr, boolean ipv6) {
             super(addr, ipv6);
         }
 
-        public boolean matchAddress(SocketAddress addr)
-        {
+        public boolean matchAddress(SocketAddress addr) {
             return address().equals(addr);
         }
     }
 
     private final InetSocketAddress address;
-    private final SocketAddress     sourceAddress;
+    private final SocketAddress sourceAddress;
 
-    public TcpAddress(String addr, boolean ipv6)
-    {
+    public TcpAddress(String addr, boolean ipv6) {
         String[] strings = addr.split(";");
 
         address = resolve(strings[0], ipv6, false);
         if (strings.length == 2 && !"".equals(strings[1])) {
             sourceAddress = resolve(strings[1], ipv6, false);
-        }
-        else {
+        } else {
             sourceAddress = null;
         }
     }
 
     @Override
-    public ProtocolFamily family()
-    {
+    public ProtocolFamily family() {
         if (address.getAddress() instanceof Inet6Address) {
             return StandardProtocolFamily.INET6;
         }
@@ -52,16 +45,14 @@ public class TcpAddress implements Address.IZAddress
 
     // The opposite to resolve()
     @Override
-    public String toString()
-    {
+    public String toString() {
         if (address == null) {
             return "";
         }
 
         if (address.getAddress() instanceof Inet6Address) {
             return "tcp://[" + address.getAddress().getHostAddress() + "]:" + address.getPort();
-        }
-        else {
+        } else {
             return "tcp://" + address.getAddress().getHostAddress() + ":" + address.getPort();
         }
     }
@@ -70,8 +61,7 @@ public class TcpAddress implements Address.IZAddress
     // additional cidr-like(/xx) mask value at the end of the name string.
     // Works only with remote hostnames.
     @Override
-    public InetSocketAddress resolve(String name, boolean ipv6, boolean local)
-    {
+    public InetSocketAddress resolve(String name, boolean ipv6, boolean local) {
         //  Find the ':' at end that separates address from the port number.
         int delimiter = name.lastIndexOf(':');
         if (delimiter < 0) {
@@ -92,8 +82,7 @@ public class TcpAddress implements Address.IZAddress
         if (portStr.equals("*") || portStr.equals("0")) {
             //  Resolve wildcard to 0 to allow autoselection of port
             port = 0;
-        }
-        else {
+        } else {
             //  Parse the port number (0 is not a valid port).
             port = Integer.parseInt(portStr);
             if (port == 0) {
@@ -114,8 +103,7 @@ public class TcpAddress implements Address.IZAddress
                 addrNet = ia;
                 break;
             }
-        }
-        catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {
             throw new IllegalArgumentException(e);
         }
 
@@ -127,14 +115,12 @@ public class TcpAddress implements Address.IZAddress
     }
 
     @Override
-    public SocketAddress address()
-    {
+    public SocketAddress address() {
         return address;
     }
 
     @Override
-    public SocketAddress sourceAddress()
-    {
+    public SocketAddress sourceAddress() {
         return sourceAddress;
     }
 }

@@ -16,40 +16,31 @@ import zmq.util.Errno;
 //  This class implements the state machine that parses the incoming buffer.
 //  Derived class should implement individual state machine actions.
 
-public abstract class Decoder extends DecoderBase
-{
-    private final class MessageReady implements Step
-    {
+public abstract class Decoder extends DecoderBase {
+    private final class MessageReady implements Step {
         @Override
-        public Step.Result apply()
-        {
+        public Step.Result apply() {
             return messageReady();
         }
     }
 
-    private final class FlagsReady implements Step
-    {
+    private final class FlagsReady implements Step {
         @Override
-        public Step.Result apply()
-        {
+        public Step.Result apply() {
             return flagsReady();
         }
     }
 
-    private final class EightByteSizeReady implements Step
-    {
+    private final class EightByteSizeReady implements Step {
         @Override
-        public Step.Result apply()
-        {
+        public Step.Result apply() {
             return eightByteSizeReady();
         }
     }
 
-    private final class OneByteSizeReady implements Step
-    {
+    private final class OneByteSizeReady implements Step {
         @Override
-        public Step.Result apply()
-        {
+        public Step.Result apply() {
             return oneByteSizeReady();
         }
     }
@@ -59,22 +50,20 @@ public abstract class Decoder extends DecoderBase
     // the message decoded so far
     protected Msg inProgress;
 
-    protected final Step oneByteSizeReady   = new OneByteSizeReady();
+    protected final Step oneByteSizeReady = new OneByteSizeReady();
     protected final Step eightByteSizeReady = new EightByteSizeReady();
-    protected final Step flagsReady         = new FlagsReady();
-    protected final Step messageReady       = new MessageReady();
+    protected final Step flagsReady = new FlagsReady();
+    protected final Step messageReady = new MessageReady();
 
     private final MsgAllocator allocator;
 
-    public Decoder(Errno errno, int bufsize, long maxmsgsize, MsgAllocator allocator)
-    {
+    public Decoder(Errno errno, int bufsize, long maxmsgsize, MsgAllocator allocator) {
         super(errno, bufsize);
         this.maxmsgsize = maxmsgsize;
         this.allocator = allocator;
     }
 
-    protected final Step.Result sizeReady(final long size)
-    {
+    protected final Step.Result sizeReady(final long size) {
         //  Message size must not exceed the maximum allowed size.
         if (maxmsgsize >= 0) {
             if (size > maxmsgsize) {
@@ -97,39 +86,32 @@ public abstract class Decoder extends DecoderBase
         return Step.Result.MORE_DATA;
     }
 
-    protected Msg allocate(final int size)
-    {
+    protected Msg allocate(final int size) {
         return allocator.allocate(size);
     }
 
-    protected Step.Result oneByteSizeReady()
-    {
+    protected Step.Result oneByteSizeReady() {
         throw new UnsupportedOperationException("Have you forgot to implement oneByteSizeReady ?");
     }
 
-    protected Step.Result eightByteSizeReady()
-    {
+    protected Step.Result eightByteSizeReady() {
         throw new UnsupportedOperationException("Have you forgot to implement eightByteSizeReady ?");
     }
 
-    protected Step.Result flagsReady()
-    {
+    protected Step.Result flagsReady() {
         throw new UnsupportedOperationException("Have you forgot to implement flagsReady ?");
     }
 
-    protected Step.Result messageReady()
-    {
+    protected Step.Result messageReady() {
         throw new UnsupportedOperationException("Have you forgot to implement messageReady ?");
     }
 
-    protected Step.Result messageIncomplete()
-    {
+    protected Step.Result messageIncomplete() {
         return Step.Result.MORE_DATA;
     }
 
     @Override
-    public Msg msg()
-    {
+    public Msg msg() {
         return inProgress;
     }
 }

@@ -8,11 +8,9 @@ import org.zeromq.ZMsg;
 
 //  Binary Star server proof-of-concept implementation. This server does no
 //  real work; it just demonstrates the Binary Star failover model.
-public class bstarsrv
-{
+public class bstarsrv {
     //  States we can be in at any point in time
-    enum State
-    {
+    enum State {
         STATE_PRIMARY, //  Primary, waiting for peer to connect
         STATE_BACKUP, //  Backup, waiting for peer to connect
         STATE_ACTIVE, //  Active - accepting connections
@@ -20,8 +18,7 @@ public class bstarsrv
     }
 
     //  Events, which start with the states our peer can be in
-    enum Event
-    {
+    enum Event {
         PEER_PRIMARY, //  HA peer is pending primary
         PEER_BACKUP, //  HA peer is pending backup
         PEER_ACTIVE, //  HA peer is active
@@ -32,7 +29,7 @@ public class bstarsrv
     //  Our finite state machine
     private State state;      //  Current state
     private Event event;      //  Current event
-    private long  peerExpiry; //  When peer is considered 'dead'
+    private long peerExpiry; //  When peer is considered 'dead'
 
     //  We send state information this often
     //  If peer doesn't respond in two heartbeats, it is 'dead'
@@ -43,8 +40,7 @@ public class bstarsrv
     //  The FSM runs one event at a time. We apply an event to the current state,
     //  which checks if the event is accepted, and if so, sets a new state:
 
-    private boolean stateMachine()
-    {
+    private boolean stateMachine() {
         boolean exception = false;
 
         //  These are the PRIMARY and BACKUP states; we're waiting to become
@@ -53,66 +49,57 @@ public class bstarsrv
             if (event == Event.PEER_BACKUP) {
                 System.out.printf("I: connected to backup (passive), ready active\n");
                 state = State.STATE_ACTIVE;
-            }
-            else if (event == Event.PEER_ACTIVE) {
+            } else if (event == Event.PEER_ACTIVE) {
                 System.out.printf("I: connected to backup (active), ready passive\n");
                 state = State.STATE_PASSIVE;
             }
             //  Accept client connections
-        }
-        else if (state == State.STATE_BACKUP) {
+        } else if (state == State.STATE_BACKUP) {
             if (event == Event.PEER_ACTIVE) {
                 System.out.printf("I: connected to primary (active), ready passive\n");
                 state = State.STATE_PASSIVE;
-            }
-            else
-            //  Reject client connections when acting as backup
-            if (event == Event.CLIENT_REQUEST)
-                exception = true;
-        }
-        else
-        //  .split active and passive states
-        //  These are the ACTIVE and PASSIVE states:
-        if (state == State.STATE_ACTIVE) {
-            if (event == Event.PEER_ACTIVE) {
-                //  Two actives would mean split-brain
-                System.out.printf("E: fatal error - dual actives, aborting\n");
-                exception = true;
-            }
-        }
-        else
-        //  Server is passive
-        //  CLIENT_REQUEST events can trigger failover if peer looks dead
-        if (state == State.STATE_PASSIVE) {
-            if (event == Event.PEER_PRIMARY) {
-                //  Peer is restarting - become active, peer will go passive
-                System.out.printf("I: primary (passive) is restarting, ready active\n");
-                state = State.STATE_ACTIVE;
-            }
-            else if (event == Event.PEER_BACKUP) {
-                //  Peer is restarting - become active, peer will go passive
-                System.out.printf("I: backup (passive) is restarting, ready active\n");
-                state = State.STATE_ACTIVE;
-            }
-            else if (event == Event.PEER_PASSIVE) {
-                //  Two passives would mean cluster would be non-responsive
-                System.out.printf("E: fatal error - dual passives, aborting\n");
-                exception = true;
-            }
-            else if (event == Event.CLIENT_REQUEST) {
-                //  Peer becomes active if timeout has passed
-                //  It's the client request that triggers the failover
-                assert (peerExpiry > 0);
-                if (System.currentTimeMillis() >= peerExpiry) {
-                    //  If peer is dead, switch to the active state
-                    System.out.printf("I: failover successful, ready active\n");
-                    state = State.STATE_ACTIVE;
-                }
-                else
-                    //  If peer is alive, reject connections
+            } else
+                //  Reject client connections when acting as backup
+                if (event == Event.CLIENT_REQUEST)
                     exception = true;
-            }
-        }
+        } else
+            //  .split active and passive states
+            //  These are the ACTIVE and PASSIVE states:
+            if (state == State.STATE_ACTIVE) {
+                if (event == Event.PEER_ACTIVE) {
+                    //  Two actives would mean split-brain
+                    System.out.printf("E: fatal error - dual actives, aborting\n");
+                    exception = true;
+                }
+            } else
+                //  Server is passive
+                //  CLIENT_REQUEST events can trigger failover if peer looks dead
+                if (state == State.STATE_PASSIVE) {
+                    if (event == Event.PEER_PRIMARY) {
+                        //  Peer is restarting - become active, peer will go passive
+                        System.out.printf("I: primary (passive) is restarting, ready active\n");
+                        state = State.STATE_ACTIVE;
+                    } else if (event == Event.PEER_BACKUP) {
+                        //  Peer is restarting - become active, peer will go passive
+                        System.out.printf("I: backup (passive) is restarting, ready active\n");
+                        state = State.STATE_ACTIVE;
+                    } else if (event == Event.PEER_PASSIVE) {
+                        //  Two passives would mean cluster would be non-responsive
+                        System.out.printf("E: fatal error - dual passives, aborting\n");
+                        exception = true;
+                    } else if (event == Event.CLIENT_REQUEST) {
+                        //  Peer becomes active if timeout has passed
+                        //  It's the client request that triggers the failover
+                        assert (peerExpiry > 0);
+                        if (System.currentTimeMillis() >= peerExpiry) {
+                            //  If peer is dead, switch to the active state
+                            System.out.printf("I: failover successful, ready active\n");
+                            state = State.STATE_ACTIVE;
+                        } else
+                            //  If peer is alive, reject connections
+                            exception = true;
+                    }
+                }
         return exception;
     }
 
@@ -122,8 +109,7 @@ public class bstarsrv
     //  three sockets; one to publish state, one to subscribe to state, and
     //  one for client requests/replies:
 
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         //  Arguments can be either of:
         //      -p  primary server, at tcp://localhost:5001
         //      -b  backup server, at tcp://localhost:5002
@@ -140,15 +126,13 @@ public class bstarsrv
             statepub.bind("tcp://*:5003");
             statesub.connect("tcp://localhost:5004");
             fsm.state = State.STATE_PRIMARY;
-        }
-        else if (argv.length == 1 && argv[0].equals("-b")) {
+        } else if (argv.length == 1 && argv[0].equals("-b")) {
             System.out.printf("I: Backup passive, waiting for primary (active)\n");
             frontend.bind("tcp://*:5002");
             statepub.bind("tcp://*:5004");
             statesub.connect("tcp://localhost:5003");
             fsm.state = State.STATE_BACKUP;
-        }
-        else {
+        } else {
             System.out.printf("Usage: bstarsrv { -p | -b }\n");
             ctx.destroy();
             System.exit(0);
@@ -178,7 +162,8 @@ public class bstarsrv
                 if (fsm.stateMachine() == false)
                     //  Answer client by echoing request back
                     msg.send(frontend);
-                else msg.destroy();
+                else
+                    msg.destroy();
             }
             if (poller.pollin(1)) {
                 //  Have state from our peer, execute as event

@@ -7,13 +7,11 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-public class ZDigestTest
-{
+public class ZDigestTest {
     @Test
-    public void testData()
-    {
+    public void testData() {
         byte[] buf = new byte[1024];
-        Arrays.fill(buf , (byte) 0xAA);
+        Arrays.fill(buf, (byte) 0xAA);
 
         ZDigest digest = new ZDigest();
 
@@ -26,10 +24,9 @@ public class ZDigestTest
     }
 
     @Test
-    public void testSize()
-    {
+    public void testSize() {
         byte[] buf = new byte[1024];
-        Arrays.fill(buf , (byte) 0xAA);
+        Arrays.fill(buf, (byte) 0xAA);
 
         ZDigest digest = new ZDigest();
 
@@ -38,16 +35,14 @@ public class ZDigestTest
         assertThat(size, is(20));
     }
 
-    private int byt(byte data)
-    {
+    private int byt(byte data) {
         return data & 0xff;
     }
 
     @Test
-    public void testString()
-    {
+    public void testString() {
         byte[] buf = new byte[1024];
-        Arrays.fill(buf , (byte) 0xAA);
+        Arrays.fill(buf, (byte) 0xAA);
 
         ZDigest digest = new ZDigest();
 

@@ -13,24 +13,20 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class ProxyTerminateTest
-{
-    private static class ServerTask implements Runnable
-    {
-        private final Ctx    ctx;
+public class ProxyTerminateTest {
+    private static class ServerTask implements Runnable {
+        private final Ctx ctx;
         private final String hostFrontend;
-        private String       hostBackend;
+        private String hostBackend;
 
-        public ServerTask(Ctx ctx, String hostFrontend, String hostBackend)
-        {
+        public ServerTask(Ctx ctx, String hostFrontend, String hostBackend) {
             this.ctx = ctx;
             this.hostFrontend = hostFrontend;
             this.hostBackend = hostBackend;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             SocketBase frontend = ZMQ.socket(ctx, ZMQ.ZMQ_SUB);
             assertThat(frontend, notNullValue());
             ZMQ.setSocketOption(frontend, ZMQ.ZMQ_SUBSCRIBE, "");
@@ -63,8 +59,7 @@ public class ProxyTerminateTest
     }
 
     @Test
-    public void testProxyTerminate() throws IOException, InterruptedException
-    {
+    public void testProxyTerminate() throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String frontend = "tcp://127.0.0.1:" + port;
         port = Utils.findOpenPort();

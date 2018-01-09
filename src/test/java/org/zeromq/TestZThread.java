@@ -13,17 +13,13 @@ import org.zeromq.ZThread.IAttachedRunnable;
 
 import zmq.ZError;
 
-public class TestZThread
-{
+public class TestZThread {
     @Test
-    public void testDetached()
-    {
+    public void testDetached() {
         final CountDownLatch stopped = new CountDownLatch(1);
-        ZThread.IDetachedRunnable detached = new ZThread.IDetachedRunnable()
-        {
+        ZThread.IDetachedRunnable detached = new ZThread.IDetachedRunnable() {
             @Override
-            public void run(Object[] args)
-            {
+            public void run(Object[] args) {
                 ZContext ctx = new ZContext();
 
                 Socket push = ctx.createSocket(ZMQ.PUSH);
@@ -37,23 +33,19 @@ public class TestZThread
         ZThread.start(detached);
         try {
             stopped.await();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             e.printStackTrace();
         }
     }
 
     @Test
-    public void testFork()
-    {
+    public void testFork() {
         final ZContext ctx = new ZContext();
 
-        ZThread.IAttachedRunnable attached = new ZThread.IAttachedRunnable()
-        {
+        ZThread.IAttachedRunnable attached = new ZThread.IAttachedRunnable() {
             @Override
-            public void run(Object[] args, ZContext ctx, Socket pipe)
-            {
+            public void run(Object[] args, ZContext ctx, Socket pipe) {
                 //  Create a socket to check it'll be automatically deleted
                 ctx.createSocket(ZMQ.PUSH);
                 pipe.recvStr();
@@ -75,14 +67,11 @@ public class TestZThread
 
     @Test
     @Ignore
-    public void testClosePipe()
-    {
+    public void testClosePipe() {
         ZContext ctx = new ZContext();
-        IAttachedRunnable runnable = new IAttachedRunnable()
-        {
+        IAttachedRunnable runnable = new IAttachedRunnable() {
             @Override
-            public void run(Object[] args, ZContext ctx, Socket pipe)
-            {
+            public void run(Object[] args, ZContext ctx, Socket pipe) {
                 pipe.recvStr();
                 pipe.send("pong");
             }
@@ -101,8 +90,7 @@ public class TestZThread
         try {
             rc = pipe.send("boom ?!");
             assertThat("pipe was closed pretty fast", rc, is(true));
-        }
-        catch (ZMQException e) {
+        } catch (ZMQException e) {
             int errno = e.getErrorCode();
             assertThat("Expected exception has the wrong code", ZError.ETERM, is(errno));
         }

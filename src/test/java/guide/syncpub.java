@@ -5,17 +5,15 @@ import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
 /**
-* Synchronized publisher.
-*/
-public class syncpub
-{
+ * Synchronized publisher.
+ */
+public class syncpub {
     /**
      * We wait for 10 subscribers
      */
     protected static int SUBSCRIBERS_EXPECTED = 10;
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         Context context = ZMQ.context(1);
 
         //  Socket to talk to clients

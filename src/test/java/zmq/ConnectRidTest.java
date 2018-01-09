@@ -10,11 +10,9 @@ import org.junit.Test;
 
 import zmq.util.Utils;
 
-public class ConnectRidTest
-{
+public class ConnectRidTest {
     @Test
-    public void testStream2stream() throws IOException, InterruptedException
-    {
+    public void testStream2stream() throws IOException, InterruptedException {
         System.out.println("Test Stream 2 stream");
         int port = Utils.findOpenPort();
         String host = "tcp://localhost:" + port;
@@ -74,21 +72,18 @@ public class ConnectRidTest
     }
 
     @Test
-    public void testRouter2routerNamed() throws IOException, InterruptedException
-    {
+    public void testRouter2routerNamed() throws IOException, InterruptedException {
         System.out.println("Test Router 2 Router named");
         testRouter2router(true);
     }
 
     @Test
-    public void testRouter2routerUnnamed() throws IOException, InterruptedException
-    {
+    public void testRouter2routerUnnamed() throws IOException, InterruptedException {
         System.out.println("Test Router 2 Router unnamed");
         testRouter2router(false);
     }
 
-    private void testRouter2router(boolean named) throws IOException, InterruptedException
-    {
+    private void testRouter2router(boolean named) throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://localhost:" + port;
 
@@ -144,8 +139,7 @@ public class ConnectRidTest
         assert (name != null);
         if (named) {
             assertThat(name.data()[0], is((byte) 'Y'));
-        }
-        else {
+        } else {
             assertThat(name.data()[0], is((byte) 0));
         }
 
@@ -157,8 +151,7 @@ public class ConnectRidTest
         if (named) {
             ret = ZMQ.send(bind, name, ZMQ.ZMQ_SNDMORE);
             assertThat(ret, is(1));
-        }
-        else {
+        } else {
             ret = ZMQ.send(bind, name, ZMQ.ZMQ_SNDMORE);
             assertThat(ret, is(5));
         }

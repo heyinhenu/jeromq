@@ -19,11 +19,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class XpubXsubTest
-{
+public class XpubXsubTest {
     @Test
-    public void testXpubSub() throws InterruptedException, IOException, ExecutionException
-    {
+    public void testXpubSub() throws InterruptedException, IOException, ExecutionException {
         final int port = Utils.findOpenPort();
 
         final Ctx ctx = zmq.ZMQ.createContext();
@@ -94,8 +92,7 @@ public class XpubXsubTest
     }
 
     @Test
-    public void testXpubXSub() throws InterruptedException, IOException, ExecutionException
-    {
+    public void testXpubXSub() throws InterruptedException, IOException, ExecutionException {
         final int port = Utils.findOpenPort();
 
         final Ctx ctx = zmq.ZMQ.createContext();
@@ -128,26 +125,26 @@ public class XpubXsubTest
 
         System.out.print("Recv.");
 
-//        msg = sub.recv(0);
-//        assertThat(msg.size(), is(5));
-//
-//        msg = sub.recv(0);
-//        assertThat(msg.size(), is(3));
-//
+        //        msg = sub.recv(0);
+        //        assertThat(msg.size(), is(5));
+        //
+        //        msg = sub.recv(0);
+        //        assertThat(msg.size(), is(3));
+        //
         rc = sub.send(new Msg("\0topic".getBytes(ZMQ.CHARSET)), 0);
         assertThat(rc, is(true));
 
-//        rc = pub.send(new Msg("topix".getBytes(ZMQ.CHARSET)), ZMQ.ZMQ_SNDMORE);
-//        assertThat(rc, is(true));
-//
-//        rc = pub.send(new Msg("hop".getBytes(ZMQ.CHARSET)), 0);
-//        assertThat(rc, is(true));
-//
-//        rc = zmq.ZMQ.setSocketOption(sub, zmq.ZMQ.ZMQ_RCVTIMEO, 500);
-//        assertThat(rc, is(true));
-//
-//        msg = sub.recv(0);
-//        assertThat(msg, nullValue());
+        //        rc = pub.send(new Msg("topix".getBytes(ZMQ.CHARSET)), ZMQ.ZMQ_SNDMORE);
+        //        assertThat(rc, is(true));
+        //
+        //        rc = pub.send(new Msg("hop".getBytes(ZMQ.CHARSET)), 0);
+        //        assertThat(rc, is(true));
+        //
+        //        rc = zmq.ZMQ.setSocketOption(sub, zmq.ZMQ.ZMQ_RCVTIMEO, 500);
+        //        assertThat(rc, is(true));
+        //
+        //        msg = sub.recv(0);
+        //        assertThat(msg, nullValue());
 
         zmq.ZMQ.close(sub);
         zmq.ZMQ.close(pub);
@@ -155,8 +152,7 @@ public class XpubXsubTest
     }
 
     @Test
-    public void testIssue476() throws InterruptedException, IOException, ExecutionException
-    {
+    public void testIssue476() throws InterruptedException, IOException, ExecutionException {
         final int front = Utils.findOpenPort();
         final int back = Utils.findOpenPort();
 
@@ -177,11 +173,9 @@ public class XpubXsubTest
 
         ExecutorService service = Executors.newFixedThreadPool(1);
 
-        Future<?> proxy = service.submit(new Runnable()
-        {
+        Future<?> proxy = service.submit(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 zmq.ZMQ.proxy(proxySub, proxyPub, null, ctrl);
             }
         });

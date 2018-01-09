@@ -5,51 +5,47 @@ import java.util.Arrays;
 
 import org.zeromq.ZMQ;
 
-public class ZData
-{
+public class ZData {
     private static final String HEX_CHAR = "0123456789ABCDEF";
 
     private final byte[] data;
 
-    public ZData(byte[] data)
-    {
+    public ZData(byte[] data) {
         this.data = data;
     }
 
     /**
      * String equals.
      * Uses String compareTo for the comparison (lexigraphical)
+     *
      * @param str String to compare with data
      * @return True if data matches given string
      */
-    public boolean streq(String str)
-    {
+    public boolean streq(String str) {
         return streq(data, str);
     }
 
     /**
      * String equals.
      * Uses String compareTo for the comparison (lexigraphical)
-     * @param str String to compare with data
+     *
+     * @param str  String to compare with data
      * @param data the binary data to compare
      * @return True if data matches given string
      */
-    public static boolean streq(byte[] data, String str)
-    {
+    public static boolean streq(byte[] data, String str) {
         if (data == null) {
             return false;
         }
         return new String(data, ZMQ.CHARSET).compareTo(str) == 0;
     }
 
-    public boolean equals(byte[] that)
-    {
+    public boolean equals(byte[] that) {
         return Arrays.equals(data, that);
     }
 
     @Override
-    public boolean equals(Object other)
-    {
+    public boolean equals(Object other) {
         if (this == other) {
             return true;
         }
@@ -67,23 +63,20 @@ public class ZData
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Arrays.hashCode(data);
     }
 
     /**
      * Returns a human - readable representation of data
-     * @return
-     *          A text string or hex-encoded string if data contains any non-printable ASCII characters
+     *
+     * @return A text string or hex-encoded string if data contains any non-printable ASCII characters
      */
-    public String toString()
-    {
+    public String toString() {
         return toString(data);
     }
 
-    public static String toString(byte[] data)
-    {
+    public static String toString(byte[] data) {
         if (data == null) {
             return "";
         }
@@ -97,8 +90,7 @@ public class ZData
         }
         if (isText) {
             return new String(data, ZMQ.CHARSET);
-        }
-        else {
+        } else {
             return strhex(data);
         }
     }
@@ -106,13 +98,11 @@ public class ZData
     /**
      * @return data as a printable hex string
      */
-    public String strhex()
-    {
+    public String strhex() {
         return strhex(data);
     }
 
-    public static String strhex(byte[] data)
-    {
+    public static String strhex(byte[] data) {
         if (data == null) {
             return "";
         }
@@ -126,13 +116,11 @@ public class ZData
         return b.toString();
     }
 
-    public void print(PrintStream out, String prefix)
-    {
+    public void print(PrintStream out, String prefix) {
         print(out, prefix, data, data.length);
     }
 
-    public static void print(PrintStream out, String prefix, byte[] data, int size)
-    {
+    public static void print(PrintStream out, String prefix, byte[] data, int size) {
         if (data == null) {
             return;
         }
@@ -157,8 +145,7 @@ public class ZData
         for (charNbr = 0; charNbr < size; charNbr++) {
             if (isBin) {
                 out.printf("%02X", data[charNbr]);
-            }
-            else {
+            } else {
                 out.printf("%c", data[charNbr]);
             }
         }

@@ -16,23 +16,19 @@ import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 import org.zeromq.util.ZData;
 
-public class TestProxy
-{
-    static class Client implements Runnable
-    {
-        private final String        frontend;
-        private final String        name;
+public class TestProxy {
+    static class Client implements Runnable {
+        private final String frontend;
+        private final String name;
         private final AtomicBoolean result = new AtomicBoolean();
 
-        public Client(String name, String frontend)
-        {
+        public Client(String name, String frontend) {
             this.name = name;
             this.frontend = frontend;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Context ctx = ZMQ.context(1);
             assertThat(ctx, notNullValue());
 
@@ -53,8 +49,7 @@ public class TestProxy
             System.out.println("Stop " + name);
         }
 
-        private boolean process(Socket socket)
-        {
+        private boolean process(Socket socket) {
             boolean rc = socket.send("hello");
             if (!rc) {
                 System.out.println(name + " unable to send first message");
@@ -81,21 +76,18 @@ public class TestProxy
         }
     }
 
-    static class Dealer implements Runnable
-    {
-        private final String        backend;
-        private final String        name;
+    static class Dealer implements Runnable {
+        private final String backend;
+        private final String name;
         private final AtomicBoolean result = new AtomicBoolean();
 
-        public Dealer(String name, String backend)
-        {
+        public Dealer(String name, String backend) {
             this.name = name;
             this.backend = backend;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Context ctx = ZMQ.context(1);
             assertThat(ctx, notNullValue());
 
@@ -115,8 +107,7 @@ public class TestProxy
             System.out.println("Stop " + name);
         }
 
-        private boolean process(Socket socket)
-        {
+        private boolean process(Socket socket) {
             int count = 0;
             while (count < 2) {
                 byte[] msg = socket.recv(0);
@@ -156,23 +147,20 @@ public class TestProxy
         }
     }
 
-    static class Proxy extends Thread
-    {
-        private final String        frontend;
-        private final String        backend;
-        private final String        control;
+    static class Proxy extends Thread {
+        private final String frontend;
+        private final String backend;
+        private final String control;
         private final AtomicBoolean result = new AtomicBoolean();
 
-        Proxy(String frontend, String backend, String control)
-        {
+        Proxy(String frontend, String backend, String control) {
             this.frontend = frontend;
             this.backend = backend;
             this.control = control;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Context ctx = ZMQ.context(1);
             assert (ctx != null);
 
@@ -200,8 +188,7 @@ public class TestProxy
         }
     }
 
-    private static byte[] id(String name)
-    {
+    private static byte[] id(String name) {
         Random random = new Random();
         byte[] id = new byte[10 + random.nextInt(245)];
         random.nextBytes(id);
@@ -210,8 +197,7 @@ public class TestProxy
     }
 
     @Test
-    public void testProxy() throws Exception
-    {
+    public void testProxy() throws Exception {
         String frontend = "tcp://localhost:" + Utils.findOpenPort();
         String backend = "tcp://localhost:" + Utils.findOpenPort();
         String controlEndpoint = "tcp://localhost:" + Utils.findOpenPort();
@@ -249,8 +235,7 @@ public class TestProxy
         assertThat(proxy.result.get(), is(true));
     }
 
-    public void testRepeated() throws Exception
-    {
+    public void testRepeated() throws Exception {
         for (int idx = 0; idx < 470; ++idx) {
             System.out.println("---------- " + idx);
             testProxy();

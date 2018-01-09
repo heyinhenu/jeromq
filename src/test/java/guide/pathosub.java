@@ -8,15 +8,14 @@ import org.zeromq.ZMQ.Socket;
 
 //  Pathological subscriber
 //  Subscribes to one random topic and prints received messages
-public class pathosub
-{
-    public static void main(String[] args)
-    {
+public class pathosub {
+    public static void main(String[] args) {
         ZContext context = new ZContext();
         Socket subscriber = context.createSocket(ZMQ.SUB);
         if (args.length == 1)
             subscriber.connect(args[0]);
-        else subscriber.connect("tcp://localhost:5556");
+        else
+            subscriber.connect("tcp://localhost:5556");
 
         Random rand = new Random(System.currentTimeMillis());
         String subscription = String.format("%03d", rand.nextInt(1000));

@@ -16,8 +16,7 @@ import org.zeromq.ZMsg;
 //it easier to start and stop the example. Each task has its own
 //context and conceptually acts as a separate process.
 
-public class asyncsrv
-{
+public class asyncsrv {
     //---------------------------------------------------------------------
     //This is our client task
     //It connects to the server, and then sends a request once per second
@@ -26,12 +25,10 @@ public class asyncsrv
 
     private static Random rand = new Random(System.nanoTime());
 
-    private static class client_task implements Runnable
-    {
+    private static class client_task implements Runnable {
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
             Socket client = ctx.createSocket(ZMQ.DEALER);
 
@@ -66,11 +63,9 @@ public class asyncsrv
     //one request at a time but one client can talk to multiple workers at
     //once.
 
-    private static class server_task implements Runnable
-    {
+    private static class server_task implements Runnable {
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
 
             //  Frontend socket talks to clients over TCP
@@ -95,18 +90,15 @@ public class asyncsrv
     //Each worker task works on one request at a time and sends a random number
     //of replies back, with random delays between replies:
 
-    private static class server_worker implements Runnable
-    {
+    private static class server_worker implements Runnable {
         private ZContext ctx;
 
-        public server_worker(ZContext ctx)
-        {
+        public server_worker(ZContext ctx) {
             this.ctx = ctx;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Socket worker = ctx.createSocket(ZMQ.DEALER);
             worker.connect("inproc://backend");
 
@@ -124,8 +116,7 @@ public class asyncsrv
                     //  Sleep for some fraction of a second
                     try {
                         Thread.sleep(rand.nextInt(1000) + 1);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                     }
                     address.send(worker, ZFrame.REUSE + ZFrame.MORE);
                     content.send(worker, ZFrame.REUSE);
@@ -140,8 +131,7 @@ public class asyncsrv
     //The main thread simply starts several clients, and a server, and then
     //waits for the server to finish.
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         ZContext ctx = new ZContext();
         new Thread(new client_task()).start();
         new Thread(new client_task()).start();

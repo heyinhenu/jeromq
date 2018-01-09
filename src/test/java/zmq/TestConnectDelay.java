@@ -9,11 +9,9 @@ import org.junit.Test;
 import zmq.util.Utils;
 
 @SuppressWarnings("deprecation")
-public class TestConnectDelay
-{
+public class TestConnectDelay {
     @Test
-    public void testConnectDelay1() throws Exception
-    {
+    public void testConnectDelay1() throws Exception {
         System.out.println("Scenario 1");
         // TEST 1.
         // First we're going to attempt to send messages to two
@@ -82,8 +80,7 @@ public class TestConnectDelay
     }
 
     @Test
-    public void testConnectDelay2() throws Exception
-    {
+    public void testConnectDelay2() throws Exception {
         System.out.println("Scenario 2");
         // TEST 2
         // This time we will do the same thing, connect two pipes,
@@ -150,8 +147,7 @@ public class TestConnectDelay
     }
 
     @Test
-    public void testConnectDelay3() throws Exception
-    {
+    public void testConnectDelay3() throws Exception {
         System.out.print("Scenario 3");
         // TEST 3
         // This time we want to validate that the same blocking behaviour

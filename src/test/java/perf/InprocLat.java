@@ -5,26 +5,21 @@ import zmq.Msg;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class InprocLat
-{
-    private InprocLat()
-    {
+public class InprocLat {
+    private InprocLat() {
     }
 
-    static class Worker implements Runnable
-    {
+    static class Worker implements Runnable {
         private Ctx ctx;
         private int roundtripCount;
 
-        Worker(Ctx ctx, int roundtripCount)
-        {
+        Worker(Ctx ctx, int roundtripCount) {
             this.ctx = ctx;
             this.roundtripCount = roundtripCount;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             SocketBase s = ZMQ.socket(ctx, ZMQ.ZMQ_REP);
             if (s == null) {
                 printf("error in socket: %s\n");
@@ -55,14 +50,12 @@ public class InprocLat
             ZMQ.close(s);
         }
 
-        private void exit(int i)
-        {
+        private void exit(int i) {
             // TODO Auto-generated method stub
         }
     }
 
-    public static void main(String[] argv) throws Exception
-    {
+    public static void main(String[] argv) throws Exception {
         if (argv.length != 2) {
             printf("usage: inproc_lat <message-size> <roundtrip-count>\n");
             return;
@@ -129,18 +122,15 @@ public class InprocLat
         ZMQ.term(ctx);
     }
 
-    private static int atoi(String string)
-    {
+    private static int atoi(String string) {
         return Integer.parseInt(string);
     }
 
-    private static void printf(String string)
-    {
+    private static void printf(String string) {
         System.out.println(string);
     }
 
-    private static void printf(String string, Object... args)
-    {
+    private static void printf(String string, Object... args) {
         System.out.println(String.format(string, args));
     }
 }

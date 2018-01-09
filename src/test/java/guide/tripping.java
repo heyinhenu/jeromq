@@ -7,17 +7,14 @@ import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZMsg;
 
 /**
-* Round-trip demonstrator. Broker, Worker and Client are mocked as separate
-* threads.
-*/
-public class tripping
-{
+ * Round-trip demonstrator. Broker, Worker and Client are mocked as separate
+ * threads.
+ */
+public class tripping {
 
-    static class Broker implements Runnable
-    {
+    static class Broker implements Runnable {
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
             Socket frontend = ctx.createSocket(ZMQ.ROUTER);
             Socket backend = ctx.createSocket(ZMQ.ROUTER);
@@ -59,12 +56,10 @@ public class tripping
 
     }
 
-    static class Worker implements Runnable
-    {
+    static class Worker implements Runnable {
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
             Socket worker = ctx.createSocket(ZMQ.DEALER);
             worker.setHWM(0);
@@ -81,13 +76,11 @@ public class tripping
 
     }
 
-    static class Client implements Runnable
-    {
+    static class Client implements Runnable {
         private static int SAMPLE_SIZE = 10000;
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
             Socket client = ctx.createSocket(ZMQ.DEALER);
             client.setHWM(0);
@@ -96,8 +89,7 @@ public class tripping
             System.out.println("Setting up test");
             try {
                 Thread.sleep(100);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
@@ -135,8 +127,7 @@ public class tripping
 
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
 
         if (args.length == 1)
             Client.SAMPLE_SIZE = Integer.parseInt(args[0]);
@@ -157,8 +148,7 @@ public class tripping
             workerThread.interrupt();
             brokerThread.interrupt();
             Thread.sleep(200);// give them some time
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
         }
     }
 

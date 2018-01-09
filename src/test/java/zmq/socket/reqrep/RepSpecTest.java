@@ -20,11 +20,9 @@ import zmq.ZMQ;
 import zmq.socket.AbstractSpecTest;
 import zmq.util.Utils;
 
-public class RepSpecTest extends AbstractSpecTest
-{
+public class RepSpecTest extends AbstractSpecTest {
     @Test
-    public void testSpecFairQueueIn() throws IOException, InterruptedException
-    {
+    public void testSpecFairQueueIn() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -39,8 +37,7 @@ public class RepSpecTest extends AbstractSpecTest
     }
 
     @Test
-    public void testSpecEnvelope() throws IOException, InterruptedException
-    {
+    public void testSpecEnvelope() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -58,9 +55,8 @@ public class RepSpecTest extends AbstractSpecTest
         ZMQ.term(ctx);
     }
 
-    private void envelope(Ctx ctx, String address, int bindType, int connectType)
-            throws IOException, InterruptedException
-    {
+    private void envelope(Ctx ctx, String address, int bindType,
+            int connectType) throws IOException, InterruptedException {
         SocketBase rep = ZMQ.socket(ctx, bindType);
         boolean rc = ZMQ.bind(rep, address);
         assertThat(rc, is(true));
@@ -90,9 +86,8 @@ public class RepSpecTest extends AbstractSpecTest
         ZMQ.msleep(100);
     }
 
-    private void fairQueueIn(Ctx ctx, String address, int bindType, int connectType)
-            throws IOException, InterruptedException
-    {
+    private void fairQueueIn(Ctx ctx, String address, int bindType,
+            int connectType) throws IOException, InterruptedException {
         //  Server socket will accept connections
         SocketBase rep = ZMQ.socket(ctx, bindType);
         assertThat(rep, notNullValue());

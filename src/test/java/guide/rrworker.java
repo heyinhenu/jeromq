@@ -7,10 +7,8 @@ import org.zeromq.ZMQ.Socket;
 //  Hello World worker
 //  Connects REP socket to tcp://*:5560
 //  Expects "Hello" from client, replies with "World"
-public class rrworker
-{
-    public static void main(String[] args) throws Exception
-    {
+public class rrworker {
+    public static void main(String[] args) throws Exception {
         Context context = ZMQ.context(1);
 
         //  Socket to talk to server

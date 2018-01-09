@@ -5,13 +5,11 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public class PollerBaseTest
-{
+public class PollerBaseTest {
     private IPollEvents sink = new PollEvents();
 
     @Test
-    public void testNoTimer()
-    {
+    public void testNoTimer() {
         PollerBase poller = new PollerBaseTested();
 
         long timeout = poller.executeTimers();
@@ -21,8 +19,7 @@ public class PollerBaseTest
     }
 
     @Test
-    public void testOneTimer()
-    {
+    public void testOneTimer() {
         final PollerBaseTested poller = new PollerBaseTested();
 
         poller.addTimer(1000, sink, 1);
@@ -45,8 +42,7 @@ public class PollerBaseTest
     }
 
     @Test
-    public void testCancelTimer()
-    {
+    public void testCancelTimer() {
         final PollerBaseTested poller = new PollerBaseTested();
 
         poller.addTimer(1000, sink, 1);
@@ -63,15 +59,12 @@ public class PollerBaseTest
     }
 
     @Test
-    public void testCancelTimerInTimerEvent()
-    {
+    public void testCancelTimerInTimerEvent() {
         final PollerBaseTested poller = new PollerBaseTested();
 
-        PollEvents sink = new PollEvents()
-        {
+        PollEvents sink = new PollEvents() {
             @Override
-            public void timerEvent(int id)
-            {
+            public void timerEvent(int id) {
                 poller.cancelTimer(this, id);
             }
         };
@@ -85,17 +78,14 @@ public class PollerBaseTest
     }
 
     @Test
-    public void testAddTimer()
-    {
+    public void testAddTimer() {
         final PollerBaseTested poller = new PollerBaseTested();
 
-        poller.addTimer(1000, new PollEvents()
-        {
+        poller.addTimer(1000, new PollEvents() {
             private boolean first = true;
 
             @Override
-            public void timerEvent(int id)
-            {
+            public void timerEvent(int id) {
                 if (first) {
                     // expires at 2000 + 1000
                     poller.addTimer(2000, this, id);

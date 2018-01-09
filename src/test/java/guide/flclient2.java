@@ -8,8 +8,7 @@ import org.zeromq.ZMsg;
 
 //  Freelance client - Model 2
 //  Uses DEALER socket to blast one or more services
-public class flclient2
-{
+public class flclient2 {
     //  If not a single service replies within this time, give up
     private static final int GLOBAL_TIMEOUT = 2500;
 
@@ -18,29 +17,25 @@ public class flclient2
     //  context, a DEALER socket it uses to talk to the servers, a counter
     //  of how many servers it's connected to, and a request getSequence number:
     private ZContext ctx;      //  Our context wrapper
-    private Socket   socket;   //  DEALER socket talking to servers
-    private int      servers;  //  How many servers we have connected to
-    private int      sequence; //  Number of requests ever sent
+    private Socket socket;   //  DEALER socket talking to servers
+    private int servers;  //  How many servers we have connected to
+    private int sequence; //  Number of requests ever sent
 
-    public flclient2()
-    {
+    public flclient2() {
         ctx = new ZContext();
         socket = ctx.createSocket(ZMQ.DEALER);
     }
 
-    public void destroy()
-    {
+    public void destroy() {
         ctx.destroy();
     }
 
-    private void connect(String endpoint)
-    {
+    private void connect(String endpoint) {
         socket.connect(endpoint);
         servers++;
     }
 
-    private ZMsg request(ZMsg request)
-    {
+    private ZMsg request(ZMsg request) {
         //  Prefix request with getSequence number and empty envelope
         String sequenceText = String.format("%d", ++sequence);
         request.push(sequenceText);
@@ -80,8 +75,7 @@ public class flclient2
 
     }
 
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         if (argv.length == 0) {
             System.out.printf("I: syntax: flclient2 <endpoint> ...\n");
             System.exit(0);

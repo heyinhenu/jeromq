@@ -7,12 +7,10 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.zeromq.ZMQ.Socket;
 
-public class TestZContext
-{
+public class TestZContext {
     @SuppressWarnings("deprecation")
     @Test
-    public void testZContext()
-    {
+    public void testZContext() {
         ZContext ctx = new ZContext();
         ctx.createSocket(ZMQ.PAIR);
         ctx.createSocket(ZMQ.XREQ);
@@ -25,8 +23,7 @@ public class TestZContext
     }
 
     @Test
-    public void testZContextSocketCloseBeforeContextClose()
-    {
+    public void testZContextSocketCloseBeforeContextClose() {
         ZContext ctx = new ZContext();
         Socket s1 = ctx.createSocket(ZMQ.PUSH);
         Socket s2 = ctx.createSocket(ZMQ.PULL);
@@ -36,8 +33,7 @@ public class TestZContext
     }
 
     @Test
-    public void testZContextLinger()
-    {
+    public void testZContextLinger() {
         ZContext ctx = new ZContext();
         int linger = ctx.getLinger();
         assertThat(linger, is(0));
@@ -50,8 +46,7 @@ public class TestZContext
     }
 
     @Test
-    public void testConstruction()
-    {
+    public void testConstruction() {
         ZContext ctx = new ZContext();
         assertThat(ctx, notNullValue());
         assertThat(ctx.getIoThreads(), is(1));
@@ -61,8 +56,7 @@ public class TestZContext
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testDestruction()
-    {
+    public void testDestruction() {
         ZContext ctx = new ZContext();
         ctx.close();
         assertThat(ctx.getSockets().isEmpty(), is(true));
@@ -70,16 +64,14 @@ public class TestZContext
         // Ensure context is not destroyed if not in main thread
         ZContext ctx1 = new ZContext();
         ctx1.setMain(false);
-        @SuppressWarnings("unused")
-        Socket s = ctx1.createSocket(ZMQ.PAIR);
+        @SuppressWarnings("unused") Socket s = ctx1.createSocket(ZMQ.PAIR);
         ctx1.close();
         assertThat(ctx1.getSockets().isEmpty(), is(true));
         assertThat(ctx1.getContext(), notNullValue());
     }
 
     @Test
-    public void testAddingSockets() throws ZMQException
-    {
+    public void testAddingSockets() throws ZMQException {
         ZContext ctx = new ZContext();
         try {
             Socket s = ctx.createSocket(ZMQ.PUB);
@@ -89,15 +81,13 @@ public class TestZContext
             assertThat(s1, notNullValue());
             assertThat(s1.getType(), is(ZMQ.REQ));
             assertThat(ctx.getSockets().size(), is(2));
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testRemovingSockets() throws ZMQException
-    {
+    public void testRemovingSockets() throws ZMQException {
         ZContext ctx = new ZContext();
         try {
             Socket s = ctx.createSocket(ZMQ.PUB);
@@ -106,16 +96,14 @@ public class TestZContext
 
             ctx.destroySocket(s);
             assertThat(ctx.getSockets().size(), is(0));
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testShadow()
-    {
+    public void testShadow() {
         ZContext ctx = new ZContext();
         Socket s = ctx.createSocket(ZMQ.PUB);
         assertThat(s, notNullValue());
@@ -124,8 +112,7 @@ public class TestZContext
         ZContext shadowCtx = ZContext.shadow(ctx);
         shadowCtx.setMain(false);
         assertThat(shadowCtx.getSockets().size(), is(0));
-        @SuppressWarnings("unused")
-        Socket s1 = shadowCtx.createSocket(ZMQ.SUB);
+        @SuppressWarnings("unused") Socket s1 = shadowCtx.createSocket(ZMQ.SUB);
         assertThat(shadowCtx.getSockets().size(), is(1));
         assertThat(ctx.getSockets().size(), is(1));
 

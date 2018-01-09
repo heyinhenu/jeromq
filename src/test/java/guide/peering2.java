@@ -14,11 +14,10 @@ import org.zeromq.ZMsg;
 //  Broker peering simulation (part 2)
 //  Prototypes the request-reply flow
 
-public class peering2
-{
+public class peering2 {
 
-    private static final int    NBR_CLIENTS  = 10;
-    private static final int    NBR_WORKERS  = 3;
+    private static final int NBR_CLIENTS = 10;
+    private static final int NBR_WORKERS = 3;
     private static final String WORKER_READY = "\001"; //  Signals worker is ready
 
     //  Our own name; in practice this would be configured per node
@@ -26,11 +25,9 @@ public class peering2
 
     //  The client task does a request-reply dialog using a standard
     //  synchronous REQ socket:
-    private static class client_task extends Thread
-    {
+    private static class client_task extends Thread {
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
             Socket client = ctx.createSocket(ZMQ.REQ);
             client.connect(String.format("ipc://%s-localfe.ipc", self));
@@ -44,8 +41,7 @@ public class peering2
                 System.out.printf("Client: %s\n", reply);
                 try {
                     Thread.sleep(1000);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                 }
             }
             ctx.close();
@@ -55,11 +51,9 @@ public class peering2
     //  The worker task plugs into the LRU routing dialog using a REQ
     //  socket:
 
-    private static class worker_task extends Thread
-    {
+    private static class worker_task extends Thread {
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
             Socket worker = ctx.createSocket(ZMQ.REQ);
             worker.connect(String.format("ipc://%s-localbe.ipc", self));
@@ -84,8 +78,7 @@ public class peering2
 
     //  The main task begins by setting-up its frontend and backend sockets
     //  and then starting its client and worker tasks:
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         //  First argument is this broker's name
         //  Other arguments are our peers' names
         //
@@ -124,8 +117,7 @@ public class peering2
         System.out.println("Press Enter when all brokers are started: ");
         try {
             System.in.read();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -214,12 +206,11 @@ public class peering2
                 if (frontends.pollin(1)) {
                     msg = ZMsg.recvMsg(cloudfe);
                     reroutable = 0;
-                }
-                else if (frontends.pollin(0)) {
+                } else if (frontends.pollin(0)) {
                     msg = ZMsg.recvMsg(localfe);
                     reroutable = 1;
-                }
-                else break; //  No work, go back to backends
+                } else
+                    break; //  No work, go back to backends
 
                 //  If reroutable, send to cloud 20% of the time
                 //  Here we'd normally use cloud status information
@@ -229,8 +220,7 @@ public class peering2
                     int random_peer = rand.nextInt(argv.length - 1) + 1;
                     msg.push(argv[random_peer]);
                     msg.send(cloudbe);
-                }
-                else {
+                } else {
                     ZFrame frame = workers.remove(0);
                     msg.wrap(frame);
                     msg.send(localbe);

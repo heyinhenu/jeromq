@@ -18,25 +18,23 @@ import zmq.util.Utils;
 //  to signal_fd there can be at most one signal in the signaler at any
 //  given moment. Attempt to send a signal before receiving the previous
 //  one will result in undefined behaviour.
-final class Signaler implements Closeable
-{
+final class Signaler implements Closeable {
     //  Underlying write & read file descriptor.
-    private final Pipe.SinkChannel   w;
+    private final Pipe.SinkChannel w;
     private final Pipe.SourceChannel r;
-    private final Selector           selector;
-    private final ByteBuffer         wdummy = ByteBuffer.allocate(1);
-    private final ByteBuffer         rdummy = ByteBuffer.allocate(1);
+    private final Selector selector;
+    private final ByteBuffer wdummy = ByteBuffer.allocate(1);
+    private final ByteBuffer rdummy = ByteBuffer.allocate(1);
 
     // Selector.selectNow at every sending message doesn't show enough performance
     private final AtomicInteger wcursor = new AtomicInteger(0);
-    private int                 rcursor = 0;
+    private int rcursor = 0;
 
     private final Errno errno;
-    private final int   pid;
-    private final Ctx   ctx;
+    private final int pid;
+    private final Ctx ctx;
 
-    Signaler(Ctx ctx, int pid, Errno errno)
-    {
+    Signaler(Ctx ctx, int pid, Errno errno) {
         this.ctx = ctx;
         this.pid = pid;
         this.errno = errno;
@@ -53,27 +51,23 @@ final class Signaler implements Closeable
 
             selector = ctx.createSelector();
             r.register(selector, SelectionKey.OP_READ);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new ZError.IOException(e);
         }
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         IOException exception = null;
         try {
             r.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             exception = e;
         }
         try {
             w.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             exception = e;
         }
@@ -83,21 +77,18 @@ final class Signaler implements Closeable
         }
     }
 
-    SelectableChannel getFd()
-    {
+    SelectableChannel getFd() {
         return r;
     }
 
-    void send()
-    {
+    void send() {
         int nbytes;
 
         while (true) {
             try {
                 wdummy.clear();
                 nbytes = w.write(wdummy);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 throw new ZError.IOException(e);
             }
@@ -110,8 +101,7 @@ final class Signaler implements Closeable
         }
     }
 
-    boolean waitEvent(long timeout)
-    {
+    boolean waitEvent(long timeout) {
         int rc;
         boolean brc = (rcursor < wcursor.get());
         if (brc) {
@@ -125,15 +115,12 @@ final class Signaler implements Closeable
                 errno.set(ZError.EAGAIN);
                 return false;
 
-            }
-            else if (timeout < 0) {
+            } else if (timeout < 0) {
                 rc = selector.select(0);
-            }
-            else {
+            } else {
                 rc = selector.select(timeout);
             }
-        }
-        catch (ClosedSelectorException | IOException e) {
+        } catch (ClosedSelectorException | IOException e) {
             e.printStackTrace();
             errno.set(ZError.EINTR);
             return false;
@@ -149,21 +136,18 @@ final class Signaler implements Closeable
         return true;
     }
 
-    void recv()
-    {
+    void recv() {
         int nbytes = 0;
         // On windows, there may be a need to try several times until it succeeds
         while (nbytes == 0) {
             try {
                 rdummy.clear();
                 nbytes = r.read(rdummy);
-            }
-            catch (ClosedChannelException e) {
+            } catch (ClosedChannelException e) {
                 e.printStackTrace();
                 errno.set(ZError.EINTR);
                 return;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new ZError.IOException(e);
             }
         }
@@ -172,8 +156,7 @@ final class Signaler implements Closeable
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Signaler[" + pid + "]";
     }
 }

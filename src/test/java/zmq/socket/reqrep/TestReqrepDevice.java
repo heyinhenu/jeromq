@@ -14,13 +14,11 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class TestReqrepDevice
-{
+public class TestReqrepDevice {
     //  Create REQ/ROUTER wiring.
 
     @Test
-    public void testReprepDevice() throws IOException
-    {
+    public void testReprepDevice() throws IOException {
         int routerPort = Utils.findOpenPort();
         int dealerPort = Utils.findOpenPort();
 

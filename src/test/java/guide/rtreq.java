@@ -9,17 +9,14 @@ import org.zeromq.ZMQ.Socket;
 /**
  * ROUTER-TO-REQ example
  */
-public class rtreq
-{
-    private static Random    rand        = new Random();
+public class rtreq {
+    private static Random rand = new Random();
     private static final int NBR_WORKERS = 10;
 
-    private static class Worker extends Thread
-    {
+    private static class Worker extends Thread {
 
         @Override
-        public void run()
-        {
+        public void run() {
 
             Context context = ZMQ.context(1);
             Socket worker = context.socket(ZMQ.REQ);
@@ -44,8 +41,7 @@ public class rtreq
                 //  Do some random work
                 try {
                     Thread.sleep(rand.nextInt(500) + 1);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                 }
             }
             worker.close();
@@ -58,8 +54,7 @@ public class rtreq
      * it easier to start and stop the example. Each thread has its own
      * context and conceptually acts as a separate process.
      */
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         Context context = ZMQ.context(1);
         Socket broker = context.socket(ZMQ.ROUTER);
         broker.bind("tcp://*:5671");

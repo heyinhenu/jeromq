@@ -8,10 +8,8 @@ import org.zeromq.ZMsg;
 
 //  Freelance server - Model 3
 //  Uses an ROUTER/ROUTER socket but just one thread
-public class flserver3
-{
-    public static void main(String[] args)
-    {
+public class flserver3 {
+    public static void main(String[] args) {
         boolean verbose = (args.length > 0 && args[0].equals("-v"));
 
         ZContext ctx = new ZContext();

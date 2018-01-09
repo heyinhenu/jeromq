@@ -8,15 +8,14 @@ import org.zeromq.ZMQ.Socket;
 
 //  Pathological publisher
 //  Sends out 1,000 topics and then one random update per second
-public class pathopub
-{
-    public static void main(String[] args) throws Exception
-    {
+public class pathopub {
+    public static void main(String[] args) throws Exception {
         ZContext context = new ZContext();
         Socket publisher = context.createSocket(ZMQ.PUB);
         if (args.length == 1)
             publisher.connect(args[0]);
-        else publisher.bind("tcp://*:5556");
+        else
+            publisher.bind("tcp://*:5556");
 
         //  Ensure subscriber connection has time to complete
         Thread.sleep(1000);

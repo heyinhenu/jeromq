@@ -13,11 +13,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class RouterHandoverTest
-{
+public class RouterHandoverTest {
     @Test
-    public void testRouterHandover() throws Exception
-    {
+    public void testRouterHandover() throws Exception {
         int rc;
         boolean brc;
 

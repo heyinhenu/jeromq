@@ -13,12 +13,10 @@ import org.zeromq.ZMQ.Socket;
 /**
  * Clone server Model Four
  */
-public class clonesrv4
-{
+public class clonesrv4 {
     private static Map<String, kvsimple> kvMap = new LinkedHashMap<String, kvsimple>();
 
-    public void run()
-    {
+    public void run() {
 
         ZContext ctx = new ZContext();
 
@@ -87,15 +85,13 @@ public class clonesrv4
         ctx.close();
     }
 
-    private void sendMessage(kvsimple msg, byte[] identity, String subtree, Socket snapshot)
-    {
+    private void sendMessage(kvsimple msg, byte[] identity, String subtree, Socket snapshot) {
         snapshot.send(identity, ZMQ.SNDMORE);
         snapshot.send(subtree, ZMQ.SNDMORE);
         msg.send(snapshot);
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonesrv4().run();
     }
 }

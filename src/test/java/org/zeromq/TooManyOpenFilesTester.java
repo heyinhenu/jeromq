@@ -17,37 +17,32 @@ import org.zeromq.ZMQ.Socket;
 /**
  * Tests exhaustion of java file pipes,
  * each component being on a separate thread.
- *
  */
 @Ignore
-public class TooManyOpenFilesTester
-{
+public class TooManyOpenFilesTester {
     private static final long REQUEST_TIMEOUT = 2000; // msecs
 
     /**
      * A simple server for one reply only.
-     *
      */
-    private class Server extends Thread
-    {
+    private class Server extends Thread {
         private final int port;
         private final int idx;
 
         /**
          * Creates a new server.
+         *
          * @param port the port to which to connect.
-         * @param idx the index of the server
+         * @param idx  the index of the server
          */
-        public Server(int port, int idx)
-        {
+        public Server(int port, int idx) {
             this.port = port;
             this.idx = idx;
             setName("Server-" + idx);
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext(1);
 
             Socket server = ctx.createSocket(ZMQ.ROUTER);
@@ -80,10 +75,8 @@ public class TooManyOpenFilesTester
 
     /**
      * Simple client.
-     *
      */
-    private class Client extends Thread
-    {
+    private class Client extends Thread {
         private final int port;
 
         final AtomicBoolean finished = new AtomicBoolean();
@@ -92,18 +85,17 @@ public class TooManyOpenFilesTester
 
         /**
          * Creates a new client.
+         *
          * @param port the port to which to connect.
          */
-        public Client(int port, int idx)
-        {
+        public Client(int port, int idx) {
             this.port = port;
             this.idx = idx;
             setName("Client-" + idx);
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext(1);
 
             Socket client = ctx.createSocket(ZMQ.REQ);
@@ -127,22 +119,22 @@ public class TooManyOpenFilesTester
 
         /**
          * Called between the request-reply cycle.
-         * @param client the socket participating to the cycle of request-reply
+         *
+         * @param client   the socket participating to the cycle of request-reply
          * @param selector the selector used for polling
          */
-        protected void inBetween(ZContext ctx, Socket client)
-        {
+        protected void inBetween(ZContext ctx, Socket client) {
             poll(ctx, client);
         }
     }
 
     /**
      * Polls while keeping the selector opened.
-     * @param socket the socket to poll
+     *
+     * @param socket   the socket to poll
      * @param selector the selector used for polling
      */
-    private void poll(ZContext ctx, Socket socket)
-    {
+    private void poll(ZContext ctx, Socket socket) {
         // Poll socket for a reply, with timeout
         Poller poller = ctx.createPoller(1);
         poller.register(socket, Poller.POLLIN);
@@ -159,11 +151,11 @@ public class TooManyOpenFilesTester
      * Test exhaustion of java pipes.
      * Exhaustion can currently come from {@link zmq.Signaler} that are not closed
      * or from {@link java.nio.Selector} that are not closed.
+     *
      * @throws Exception if something bad occurs.
      */
     @Test
-    public void testReqRouterTcpPoll() throws Exception
-    {
+    public void testReqRouterTcpPoll() throws Exception {
         // we have no direct way to test this, except by running a bunch of tests and waiting for the failure to happen...
         // crashed on iteration 3000-ish in my machine for poll selectors; on iteration 16-ish for sockets
         for (int index = 0; index < 10000; ++index) {
@@ -194,14 +186,12 @@ public class TooManyOpenFilesTester
     /**
      * Dummy class to help keep relation between client and server.
      */
-    private class Pair
-    {
+    private class Pair {
         private Client client;
         private Server server;
     }
 
-    private Pair testWithPoll(int idx) throws IOException
-    {
+    private Pair testWithPoll(int idx) throws IOException {
         int port = Utils.findOpenPort();
 
         Server server = new Server(port, idx);

@@ -8,10 +8,8 @@ import zmq.util.Blob;
 //  Note that pipe can be stored in three different arrays.
 //  The array of inbound pipes (1), the array of outbound pipes (2) and
 //  the generic array of pipes to deallocate (3).
-public class Pipe extends ZObject
-{
-    public interface IPipeEvents
-    {
+public class Pipe extends ZObject {
+    public interface IPipeEvents {
         void readActivated(Pipe pipe);
 
         void writeActivated(Pipe pipe);
@@ -60,14 +58,8 @@ public class Pipe extends ZObject
     //  term_req_sent1: 'terminate' was explicitly called by the user,
     //  term_req_sent2: user called 'terminate' and then we've got
     //      term command from the peer as well.
-    enum State
-    {
-        ACTIVE,
-        DELIMITER_RECEIVED,
-        WAITING_FOR_DELIMITER,
-        TERM_ACK_SENT,
-        TERM_REQ_SENT_1,
-        TERM_REQ_SENT_2
+    enum State {
+        ACTIVE, DELIMITER_RECEIVED, WAITING_FOR_DELIMITER, TERM_ACK_SENT, TERM_REQ_SENT_1, TERM_REQ_SENT_2
     }
 
     private State state;
@@ -90,8 +82,8 @@ public class Pipe extends ZObject
 
     //  Constructor is private. Pipe can only be created using
     //  pipepair function.
-    private Pipe(ZObject parent, YPipeBase<Msg> inpipe, YPipeBase<Msg> outpipe, int inhwm, int outhwm, boolean conflate)
-    {
+    private Pipe(ZObject parent, YPipeBase<Msg> inpipe, YPipeBase<Msg> outpipe, int inhwm, int outhwm,
+            boolean conflate) {
         super(parent);
         this.inpipe = inpipe;
         this.outpipe = outpipe;
@@ -118,16 +110,15 @@ public class Pipe extends ZObject
     //  Conflate specifies how the pipe behaves when the peer terminates. If true
     //  pipe receives all the pending messages before terminating, otherwise it
     //  terminates straight away.
-    public static Pipe[] pair(ZObject[] parents, int[] hwms, boolean[] conflates)
-    {
+    public static Pipe[] pair(ZObject[] parents, int[] hwms, boolean[] conflates) {
         Pipe[] pipes = new Pipe[2];
         //   Creates two pipe objects. These objects are connected by two ypipes,
         //   each to pass messages in one direction.
 
-        YPipeBase<Msg> upipe1 = conflates[0] ? new YPipeConflate<>()
-                : new YPipe<Msg>(Config.MESSAGE_PIPE_GRANULARITY.getValue());
-        YPipeBase<Msg> upipe2 = conflates[1] ? new YPipeConflate<>()
-                : new YPipe<Msg>(Config.MESSAGE_PIPE_GRANULARITY.getValue());
+        YPipeBase<Msg> upipe1 = conflates[0] ? new YPipeConflate<>() : new YPipe<Msg>(
+                Config.MESSAGE_PIPE_GRANULARITY.getValue());
+        YPipeBase<Msg> upipe2 = conflates[1] ? new YPipeConflate<>() : new YPipe<Msg>(
+                Config.MESSAGE_PIPE_GRANULARITY.getValue());
 
         pipes[0] = new Pipe(parents[0], upipe1, upipe2, hwms[1], hwms[0], conflates[0]);
         pipes[1] = new Pipe(parents[1], upipe2, upipe1, hwms[0], hwms[1], conflates[1]);
@@ -140,8 +131,7 @@ public class Pipe extends ZObject
 
     //  Pipepair uses this function to let us know about
     //  the peer pipe object.
-    private void setPeer(Pipe peer)
-    {
+    private void setPeer(Pipe peer) {
         //  Peer can be set once only.
         assert (this.peer == null);
         assert (peer != null);
@@ -149,31 +139,26 @@ public class Pipe extends ZObject
     }
 
     //  Specifies the object to send events to.
-    public void setEventSink(IPipeEvents sink)
-    {
+    public void setEventSink(IPipeEvents sink) {
         assert (this.sink == null);
         this.sink = sink;
     }
 
     //  Pipe endpoint can store an opaque ID to be used by its clients.
-    public void setIdentity(Blob identity)
-    {
+    public void setIdentity(Blob identity) {
         this.identity = identity;
     }
 
-    public Blob getIdentity()
-    {
+    public Blob getIdentity() {
         return identity;
     }
 
-    public Blob getCredential()
-    {
+    public Blob getCredential() {
         return credential;
     }
 
     //  Returns true if there is at least one message to read in the pipe.
-    public boolean checkRead()
-    {
+    public boolean checkRead() {
         if (!inActive) {
             return false;
 
@@ -201,8 +186,7 @@ public class Pipe extends ZObject
     }
 
     //  Reads a message to the underlying pipe.
-    public Msg read()
-    {
+    public Msg read() {
         if (!inActive) {
             return null;
         }
@@ -243,8 +227,7 @@ public class Pipe extends ZObject
 
     //  Checks whether messages can be written to the pipe. If writing
     //  the message would cause high watermark the function returns false.
-    public boolean checkWrite()
-    {
+    public boolean checkWrite() {
         if (!outActive || state != State.ACTIVE) {
             return false;
         }
@@ -262,8 +245,7 @@ public class Pipe extends ZObject
 
     //  Writes a message to the underlying pipe. Returns false if the
     //  message cannot be written because high watermark was reached.
-    public boolean write(Msg msg)
-    {
+    public boolean write(Msg msg) {
         if (!checkWrite()) {
             return false;
         }
@@ -280,8 +262,7 @@ public class Pipe extends ZObject
     }
 
     //  Remove unfinished parts of the outbound message from the pipe.
-    public void rollback()
-    {
+    public void rollback() {
         //  Remove incomplete message from the outbound pipe.
         Msg msg;
         if (outpipe != null) {
@@ -292,8 +273,7 @@ public class Pipe extends ZObject
     }
 
     //  Flush the messages downstream.
-    public void flush()
-    {
+    public void flush() {
         //  The peer does not exist anymore at this point.
         if (state == State.TERM_ACK_SENT) {
             return;
@@ -305,8 +285,7 @@ public class Pipe extends ZObject
     }
 
     @Override
-    protected void processActivateRead()
-    {
+    protected void processActivateRead() {
         if (!inActive && (state == State.ACTIVE || state == State.WAITING_FOR_DELIMITER)) {
             inActive = true;
             sink.readActivated(this);
@@ -314,8 +293,7 @@ public class Pipe extends ZObject
     }
 
     @Override
-    protected void processActivateWrite(long msgsRead)
-    {
+    protected void processActivateWrite(long msgsRead) {
         //  Remember the peers's message sequence number.
         peersMsgsRead = msgsRead;
 
@@ -326,8 +304,7 @@ public class Pipe extends ZObject
     }
 
     @Override
-    protected void processHiccup(YPipeBase<Msg> pipe)
-    {
+    protected void processHiccup(YPipeBase<Msg> pipe) {
         //  Destroy old outpipe. Note that the read end of the pipe was already
         //  migrated to this thread.
         assert (outpipe != null);
@@ -351,8 +328,7 @@ public class Pipe extends ZObject
     }
 
     @Override
-    protected void processPipeTerm()
-    {
+    protected void processPipeTerm() {
         assert (state == State.ACTIVE || state == State.DELIMITER_RECEIVED || state == State.TERM_REQ_SENT_1);
 
         //  This is the simple case of peer-induced termination. If there are no
@@ -363,35 +339,31 @@ public class Pipe extends ZObject
         if (state == State.ACTIVE) {
             if (delay) {
                 state = State.WAITING_FOR_DELIMITER;
-            }
-            else {
+            } else {
                 state = State.TERM_ACK_SENT;
                 outpipe = null;
                 sendPipeTermAck(peer);
             }
-        }
-        else
-        //  Delimiter happened to arrive before the term command. Now we have the
-        //  term command as well, so we can move straight to term_ack_sent state.
-        if (state == State.DELIMITER_RECEIVED) {
-            state = State.TERM_ACK_SENT;
-            outpipe = null;
-            sendPipeTermAck(peer);
-        }
-        else
-        //  This is the case where both ends of the pipe are closed in parallel.
-        //  We simply reply to the request by ack and continue waiting for our
-        //  own ack.
-        if (state == State.TERM_REQ_SENT_1) {
-            state = State.TERM_REQ_SENT_2;
-            outpipe = null;
-            sendPipeTermAck(peer);
-        }
+        } else
+            //  Delimiter happened to arrive before the term command. Now we have the
+            //  term command as well, so we can move straight to term_ack_sent state.
+            if (state == State.DELIMITER_RECEIVED) {
+                state = State.TERM_ACK_SENT;
+                outpipe = null;
+                sendPipeTermAck(peer);
+            } else
+                //  This is the case where both ends of the pipe are closed in parallel.
+                //  We simply reply to the request by ack and continue waiting for our
+                //  own ack.
+                if (state == State.TERM_REQ_SENT_1) {
+                    state = State.TERM_REQ_SENT_2;
+                    outpipe = null;
+                    sendPipeTermAck(peer);
+                }
     }
 
     @Override
-    protected void processPipeTermAck()
-    {
+    protected void processPipeTermAck() {
         //  Notify the user that all the references to the pipe should be dropped.
         assert (sink != null);
         sink.pipeTerminated(this);
@@ -403,8 +375,7 @@ public class Pipe extends ZObject
         if (state == State.TERM_REQ_SENT_1) {
             outpipe = null;
             sendPipeTermAck(peer);
-        }
-        else {
+        } else {
             assert (state == State.TERM_ACK_SENT || state == State.TERM_REQ_SENT_2);
         }
 
@@ -429,8 +400,7 @@ public class Pipe extends ZObject
         inpipe = null;
     }
 
-    public void setNoDelay()
-    {
+    public void setNoDelay() {
         this.delay = false;
     }
 
@@ -438,8 +408,7 @@ public class Pipe extends ZObject
     //  and user will be notified about actual deallocation by 'terminated'
     //  event. If delay is true, the pending messages will be processed
     //  before actual shutdown.
-    public void terminate(boolean delay)
-    {
+    public void terminate(boolean delay) {
         //  Overload the value specified at pipe creation.
         this.delay = delay;
 
@@ -499,14 +468,12 @@ public class Pipe extends ZObject
     }
 
     //  Returns true if the message is delimiter; false otherwise.
-    private static boolean isDelimiter(Msg msg)
-    {
+    private static boolean isDelimiter(Msg msg) {
         return msg.isDelimiter();
     }
 
     //  Computes appropriate low watermark from the given high watermark.
-    private static int computeLwm(int hwm)
-    {
+    private static int computeLwm(int hwm) {
         //  Compute the low water mark. Following point should be taken
         //  into consideration:
         //
@@ -532,14 +499,12 @@ public class Pipe extends ZObject
     }
 
     //  Handler for delimiter read from the pipe.
-    private void processDelimiter()
-    {
+    private void processDelimiter() {
         assert (state == State.ACTIVE || state == State.WAITING_FOR_DELIMITER);
 
         if (state == State.ACTIVE) {
             state = State.DELIMITER_RECEIVED;
-        }
-        else {
+        } else {
             outpipe = null;
             sendPipeTermAck(peer);
             state = State.TERM_ACK_SENT;
@@ -549,8 +514,7 @@ public class Pipe extends ZObject
     //  Temporarily disconnects the inbound message stream and drops
     //  all the messages on the fly. Causes 'hiccuped' event to be generated
     //  in the peer.
-    public void hiccup()
-    {
+    public void hiccup() {
         //  If termination is already under way do nothing.
         if (state != State.ACTIVE) {
             return;
@@ -563,8 +527,7 @@ public class Pipe extends ZObject
         //  Create new inpipe.
         if (conflate) {
             inpipe = new YPipeConflate<>();
-        }
-        else {
+        } else {
             inpipe = new YPipe<>(Config.MESSAGE_PIPE_GRANULARITY.getValue());
         }
         inActive = true;
@@ -573,23 +536,19 @@ public class Pipe extends ZObject
         sendHiccup(peer, inpipe);
     }
 
-    public void setHwms(int inhwm, int outhwm)
-    {
+    public void setHwms(int inhwm, int outhwm) {
         lwm = computeLwm(inhwm);
         hwm = outhwm;
     }
 
-    public boolean checkHwm()
-    {
+    public boolean checkHwm() {
         // TODO DIFF V4 small change, it is done like this in 4.2.2
         boolean full = hwm > 0 && (msgsWritten - peersMsgsRead) >= hwm;
         return !full;
     }
 
     @Override
-    public String toString()
-    {
-        return super.toString() + "(" + parent.getClass().getSimpleName() + "[" + parent.getTid() + "]->"
-                + peer.parent.getClass().getSimpleName() + "[" + peer.parent.getTid() + "])";
+    public String toString() {
+        return super.toString() + "(" + parent.getClass().getSimpleName() + "[" + parent.getTid() + "]->" + peer.parent.getClass().getSimpleName() + "[" + peer.parent.getTid() + "])";
     }
 }

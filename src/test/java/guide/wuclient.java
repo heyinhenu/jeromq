@@ -9,11 +9,9 @@ import org.zeromq.ZMQ;
 //  Connects SUB socket to tcp://localhost:5556
 //  Collects weather updates and finds avg temp in zipcode
 //
-public class wuclient
-{
+public class wuclient {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZMQ.Context context = ZMQ.context(1);
 
         //  Socket to talk to server

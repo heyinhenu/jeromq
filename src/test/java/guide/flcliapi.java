@@ -15,8 +15,7 @@ import org.zeromq.ZThread.IAttachedRunnable;
 
 //  flcliapi class - Freelance Pattern agent class
 //  Implements the Freelance Protocol at http://rfc.zeromq.org/spec:10
-public class flcliapi
-{
+public class flcliapi {
     //  If not a single service replies within this time, give up
     private static final int GLOBAL_TIMEOUT = 2500;
     //  PING interval for servers we think are alive
@@ -33,17 +32,15 @@ public class flcliapi
 
     //  Structure of our frontend class
     private ZContext ctx;  //  Our context wrapper
-    private Socket   pipe; //  Pipe through to flcliapi agent
+    private Socket pipe; //  Pipe through to flcliapi agent
 
-    public flcliapi()
-    {
+    public flcliapi() {
         ctx = new ZContext();
         FreelanceAgent agent = new FreelanceAgent();
         pipe = ZThread.fork(ctx, agent);
     }
 
-    public void destroy()
-    {
+    public void destroy() {
         ctx.destroy();
     }
 
@@ -53,8 +50,7 @@ public class flcliapi
     //  the second part is the endpoint. It waits 100msec for the connection to
     //  come up, which isn't pretty, but saves us from sending all requests to a
     //  single server, at startup time:
-    public void connect(String endpoint)
-    {
+    public void connect(String endpoint) {
         ZMsg msg = new ZMsg();
         msg.add("CONNECT");
         msg.add(endpoint);
@@ -62,16 +58,14 @@ public class flcliapi
         msg.send(pipe);
         try {
             Thread.sleep(100); //  Allow connection to come up
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
         }
     }
 
     //  .split request method
     //  To implement the request method, the frontend object sends a message
     //  to the backend, specifying a command "REQUEST" and the request message:
-    public ZMsg request(ZMsg request)
-    {
+    public ZMsg request(ZMsg request) {
         request.push("REQUEST");
         request.send(pipe);
         ZMsg reply = ZMsg.recvMsg(pipe);
@@ -90,27 +84,23 @@ public class flcliapi
     //  servers, using our familiar class approach:
 
     //  Simple class for one server we talk to
-    private static class Server
-    {
-        private String  endpoint; //  Server identity/endpoint
+    private static class Server {
+        private String endpoint; //  Server identity/endpoint
         private boolean alive;    //  1 if known to be alive
-        private long    pingAt;   //  Next ping at this time
-        private long    expires;  //  Expires at this time
+        private long pingAt;   //  Next ping at this time
+        private long expires;  //  Expires at this time
 
-        protected Server(String endpoint)
-        {
+        protected Server(String endpoint) {
             this.endpoint = endpoint;
             alive = false;
             pingAt = System.currentTimeMillis() + PING_INTERVAL;
             expires = System.currentTimeMillis() + SERVER_TTL;
         }
 
-        protected void destroy()
-        {
+        protected void destroy() {
         }
 
-        private void ping(Socket socket)
-        {
+        private void ping(Socket socket) {
             if (System.currentTimeMillis() >= pingAt) {
                 ZMsg ping = new ZMsg();
                 ping.add(endpoint);
@@ -120,8 +110,7 @@ public class flcliapi
             }
         }
 
-        private long tickless(long tickless)
-        {
+        private long tickless(long tickless) {
             if (tickless > pingAt)
                 return pingAt;
             return -1;
@@ -133,20 +122,18 @@ public class flcliapi
     //  coming in from its various sockets:
 
     //  Simple class for one background agent
-    private static class Agent
-    {
-        private ZContext            ctx;      //  Own context
-        private Socket              pipe;     //  Socket to talk back to application
-        private Socket              router;   //  Socket to talk to servers
+    private static class Agent {
+        private ZContext ctx;      //  Own context
+        private Socket pipe;     //  Socket to talk back to application
+        private Socket router;   //  Socket to talk to servers
         private Map<String, Server> servers;  //  Servers we've connected to
-        private List<Server>        actives;  //  Servers we know are alive
-        private int                 sequence; //  Number of requests ever sent
-        private ZMsg                request;  //  Current request if any
-        private ZMsg                reply;    //  Current reply if any
-        private long                expires;  //  Timeout for request/reply
+        private List<Server> actives;  //  Servers we know are alive
+        private int sequence; //  Number of requests ever sent
+        private ZMsg request;  //  Current request if any
+        private ZMsg reply;    //  Current reply if any
+        private long expires;  //  Timeout for request/reply
 
-        protected Agent(ZContext ctx, Socket pipe)
-        {
+        protected Agent(ZContext ctx, Socket pipe) {
             this.ctx = ctx;
             this.pipe = pipe;
             router = ctx.createSocket(ZMQ.ROUTER);
@@ -154,8 +141,7 @@ public class flcliapi
             actives = new ArrayList<Server>();
         }
 
-        protected void destroy()
-        {
+        protected void destroy() {
             for (Server server : servers.values())
                 server.destroy();
         }
@@ -165,8 +151,7 @@ public class flcliapi
         //  (it's going to be CONNECT or REQUEST):
 
         //  Callback when we remove server from agent 'servers' hash table
-        private void controlMessage()
-        {
+        private void controlMessage() {
             ZMsg msg = ZMsg.recvMsg(pipe);
             String command = msg.popString();
 
@@ -179,8 +164,7 @@ public class flcliapi
                 actives.add(server);
                 server.pingAt = System.currentTimeMillis() + PING_INTERVAL;
                 server.expires = System.currentTimeMillis() + SERVER_TTL;
-            }
-            else if (command.equals("REQUEST")) {
+            } else if (command.equals("REQUEST")) {
                 assert (request == null); //  Strict request-reply cycle
                 //  Prefix request with getSequence number and empty envelope
                 String sequenceText = String.format("%d", ++sequence);
@@ -198,8 +182,7 @@ public class flcliapi
         //  .split router messages
         //  This method processes one message from a connected
         //  server:
-        private void routerMessage()
-        {
+        private void routerMessage() {
             ZMsg reply = ZMsg.recvMsg(router);
 
             //  Frame 0 is server that replied
@@ -220,8 +203,8 @@ public class flcliapi
                 reply.send(pipe);
                 request.destroy();
                 request = null;
-            }
-            else reply.destroy();
+            } else
+                reply.destroy();
 
         }
 
@@ -230,12 +213,10 @@ public class flcliapi
     //  .split backend agent implementation
     //  Finally, here's the agent task itself, which polls its two sockets
     //  and processes incoming messages:
-    static private class FreelanceAgent implements IAttachedRunnable
-    {
+    static private class FreelanceAgent implements IAttachedRunnable {
 
         @Override
-        public void run(Object[] args, ZContext ctx, Socket pipe)
-        {
+        public void run(Object[] args, ZContext ctx, Socket pipe) {
             Agent agent = new Agent(ctx, pipe);
 
             Poller poller = ctx.createPoller(2);
@@ -271,16 +252,14 @@ public class flcliapi
                         agent.pipe.send("FAILED");
                         agent.request.destroy();
                         agent.request = null;
-                    }
-                    else {
+                    } else {
                         //  Find server to talk to, remove any expired ones
                         while (!agent.actives.isEmpty()) {
                             Server server = agent.actives.get(0);
                             if (System.currentTimeMillis() >= server.expires) {
                                 agent.actives.remove(0);
                                 server.alive = false;
-                            }
-                            else {
+                            } else {
                                 ZMsg request = agent.request.duplicate();
                                 request.push(server.endpoint);
                                 request.send(agent.router);

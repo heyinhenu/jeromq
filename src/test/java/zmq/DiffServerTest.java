@@ -7,11 +7,9 @@ import org.junit.Test;
 
 import zmq.util.Utils;
 
-public class DiffServerTest
-{
+public class DiffServerTest {
     @Test
-    public void test() throws IOException, InterruptedException
-    {
+    public void test() throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://localhost:" + port;
         int tos = 0x28;

@@ -10,21 +10,17 @@ package guide;
 import org.zeromq.ZFrame;
 import org.zeromq.ZMsg;
 
-public class ticlient
-{
-    static ZMsg serviceCall(mdcliapi session, String service, ZMsg request)
-    {
+public class ticlient {
+    static ZMsg serviceCall(mdcliapi session, String service, ZMsg request) {
         ZMsg reply = session.send(service, request);
         if (reply != null) {
             ZFrame status = reply.pop();
             if (status.streq("200")) {
                 status.destroy();
                 return reply;
-            }
-            else if (status.streq("400")) {
+            } else if (status.streq("400")) {
                 System.out.println("E: client fatal error, aborting");
-            }
-            else if (status.streq("500")) {
+            } else if (status.streq("500")) {
                 System.out.println("E: server fatal error, aborting");
             }
             reply.destroy();
@@ -32,8 +28,7 @@ public class ticlient
         return null; //  Didn't succeed; don't care why not
     }
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         boolean verbose = (args.length > 0 && args[0].equals("-v"));
         mdcliapi session = new mdcliapi("tcp://localhost:5555", verbose);
 
@@ -67,8 +62,7 @@ public class ticlient
                 reply = serviceCall(session, "titanic.close", request);
                 reply.destroy();
                 break;
-            }
-            else {
+            } else {
                 System.out.println("I: no reply yet, trying again...");
                 Thread.sleep(5000); //  Try again in 5 seconds
             }

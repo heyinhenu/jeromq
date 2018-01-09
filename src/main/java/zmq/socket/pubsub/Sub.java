@@ -6,10 +6,8 @@ import zmq.Options;
 import zmq.ZError;
 import zmq.ZMQ;
 
-public class Sub extends XSub
-{
-    public Sub(Ctx parent, int tid, int sid)
-    {
+public class Sub extends XSub {
+    public Sub(Ctx parent, int tid, int sid) {
         super(parent, tid, sid);
 
         options.type = ZMQ.ZMQ_SUB;
@@ -20,8 +18,7 @@ public class Sub extends XSub
     }
 
     @Override
-    public boolean xsetsockopt(int option, Object optval)
-    {
+    public boolean xsetsockopt(int option, Object optval) {
         if (option != ZMQ.ZMQ_SUBSCRIBE && option != ZMQ.ZMQ_UNSUBSCRIBE) {
             errno.set(ZError.EINVAL);
             return false;
@@ -37,8 +34,7 @@ public class Sub extends XSub
         Msg msg = new Msg(val.length + 1);
         if (option == ZMQ.ZMQ_SUBSCRIBE) {
             msg.put((byte) 1);
-        }
-        else {
+        } else {
             // option = ZMQ.ZMQ_UNSUBSCRIBE
             msg.put((byte) 0);
         }
@@ -55,16 +51,14 @@ public class Sub extends XSub
     }
 
     @Override
-    protected boolean xsend(Msg msg)
-    {
+    protected boolean xsend(Msg msg) {
         errno.set(ZError.ENOTSUP);
         //  Overload the XSUB's send.
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected boolean xhasOut()
-    {
+    protected boolean xhasOut() {
         //  Overload the XSUB's send.
         return false;
     }

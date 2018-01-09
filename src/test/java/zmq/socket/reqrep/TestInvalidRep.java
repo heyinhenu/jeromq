@@ -11,12 +11,10 @@ import zmq.Msg;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class TestInvalidRep
-{
+public class TestInvalidRep {
     //  Create REQ/ROUTER wiring.
     @Test
-    public void testInvalidRep()
-    {
+    public void testInvalidRep() {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
         SocketBase routerSocket = ZMQ.socket(ctx, ZMQ.ZMQ_ROUTER);

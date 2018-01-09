@@ -11,11 +11,9 @@ import zmq.SocketBase;
 import zmq.ZError;
 import zmq.ZMQ;
 
-public class PubTest
-{
+public class PubTest {
     @Test
-    public void testHasIn()
-    {
+    public void testHasIn() {
         Ctx ctx = ZMQ.createContext();
         SocketBase pub = null;
         try {
@@ -23,16 +21,14 @@ public class PubTest
 
             int events = pub.getSocketOpt(ZMQ.ZMQ_EVENTS);
             assertThat(events, is(2));
-        }
-        finally {
+        } finally {
             ZMQ.close(pub);
             ZMQ.term(ctx);
         }
     }
 
     @Test
-    public void testRecv()
-    {
+    public void testRecv() {
         Ctx ctx = ZMQ.createContext();
         SocketBase pub = null;
         try {
@@ -40,11 +36,9 @@ public class PubTest
 
             pub.recv(ZMQ.ZMQ_DONTWAIT);
             Assert.fail("Pub cannot receive message");
-        }
-        catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException e) {
             assertThat(ctx.errno().get(), is(ZError.ENOTSUP));
-        }
-        finally {
+        } finally {
             ZMQ.close(pub);
             ZMQ.term(ctx);
         }

@@ -15,32 +15,27 @@ import org.zeromq.ZMQ.Socket;
 /**
  * Tests a REQ-ROUTER dialog with several methods,
  * each component being on a separate thread.
- *
  */
-public class TestReqRouterThreadedTcp
-{
+public class TestReqRouterThreadedTcp {
     private static final long REQUEST_TIMEOUT = 1000; // msecs
 
     /**
      * A very simple server for one reply only.
-     *
      */
-    private class Server implements Runnable
-    {
+    private class Server implements Runnable {
         private final int port;
 
         /**
          * Creates a new server.
+         *
          * @param port the port to which to connect.
          */
-        public Server(int port)
-        {
+        public Server(int port) {
             this.port = port;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
 
             ZMQ.Socket server = ctx.createSocket(ZMQ.ROUTER);
@@ -62,24 +57,22 @@ public class TestReqRouterThreadedTcp
         }
     }
 
-    private class Client implements Runnable
-    {
+    private class Client implements Runnable {
         private final int port;
 
         final AtomicBoolean finished = new AtomicBoolean();
 
         /**
          * Creates a new client.
+         *
          * @param port the port to which to connect.
          */
-        public Client(int port)
-        {
+        public Client(int port) {
             this.port = port;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
 
             ZMQ.Socket client = ctx.createSocket(ZMQ.REQ);
@@ -106,18 +99,16 @@ public class TestReqRouterThreadedTcp
 
         /**
          * Called between the request-reply cycle.
+         *
          * @param client the socket participating to the cycle of request-reply
          */
-        protected void inBetween(ZContext ctx, Socket client)
-        {
+        protected void inBetween(ZContext ctx, Socket client) {
             // to be overriden
         }
     }
 
-    private class ClientPoll extends Client
-    {
-        public ClientPoll(int port)
-        {
+    private class ClientPoll extends Client {
+        public ClientPoll(int port) {
             super(port);
         }
 
@@ -133,13 +124,13 @@ public class TestReqRouterThreadedTcp
         //            assertThat(readable, is(true));
         //        }
         //
+
         /**
          * Here we use a poller to check for readability of the message.
          * This should activate the prefetching mechanism.
          */
         @Override
-        protected void inBetween(ZContext ctx, Socket client)
-        {
+        protected void inBetween(ZContext ctx, Socket client) {
             // Poll socket for a reply, with timeout
             ZMQ.Poller poller = ctx.createPoller(1);
             poller.register(client, ZMQ.Poller.POLLIN);
@@ -157,11 +148,11 @@ public class TestReqRouterThreadedTcp
 
     /**
      * Test dialog directly.
+     *
      * @throws Exception if something bad occurs.
      */
     @Test
-    public void testReqRouterTcp() throws Exception
-    {
+    public void testReqRouterTcp() throws Exception {
         System.out.println("test Req + Router");
         int port = Utils.findOpenPort();
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -182,11 +173,11 @@ public class TestReqRouterThreadedTcp
     /**
      * Test dialog with a polling access in between request-reply.
      * This should activate the prefetching mechanism.
+     *
      * @throws Exception if something bad occurs.
      */
     @Test
-    public void testReqRouterTcpPoll() throws Exception
-    {
+    public void testReqRouterTcpPoll() throws Exception {
         System.out.println("test Req + Router with polling");
         int port = Utils.findOpenPort();
         ExecutorService executor = Executors.newFixedThreadPool(2);

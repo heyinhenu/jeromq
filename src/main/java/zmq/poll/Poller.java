@@ -16,20 +16,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import zmq.Ctx;
 import zmq.ZError;
 
-public final class Poller extends PollerBase implements Runnable
-{
+public final class Poller extends PollerBase implements Runnable {
     // opaque class to mimic libzmq behaviour.
     // extra interest is we do not need to look through the fdTable to perform common operations.
-    public static final class Handle
-    {
+    public static final class Handle {
         private final SelectableChannel fd;
-        private final IPollEvents       handler;
+        private final IPollEvents handler;
 
-        private int     ops;
+        private int ops;
         private boolean cancelled;
 
-        public Handle(SelectableChannel fd, IPollEvents handler)
-        {
+        public Handle(SelectableChannel fd, IPollEvents handler) {
             assert (fd != null);
             assert (handler != null);
             this.fd = fd;
@@ -37,8 +34,7 @@ public final class Poller extends PollerBase implements Runnable
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             final int prime = 31;
             int result = 1;
             result = prime * result + fd.hashCode();
@@ -47,8 +43,7 @@ public final class Poller extends PollerBase implements Runnable
         }
 
         @Override
-        public boolean equals(Object other)
-        {
+        public boolean equals(Object other) {
             if (this == other) {
                 return true;
             }
@@ -63,8 +58,7 @@ public final class Poller extends PollerBase implements Runnable
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "Handle-" + fd;
         }
     }
@@ -79,13 +73,12 @@ public final class Poller extends PollerBase implements Runnable
     private boolean retired = false;
 
     //  If true, thread is in the process of shutting down.
-    private final AtomicBoolean  stopping = new AtomicBoolean();
-    private final CountDownLatch stopped  = new CountDownLatch(1);
+    private final AtomicBoolean stopping = new AtomicBoolean();
+    private final CountDownLatch stopped = new CountDownLatch(1);
 
     private Selector selector;
 
-    public Poller(Ctx ctx, String name)
-    {
+    public Poller(Ctx ctx, String name) {
         super(name);
         this.ctx = ctx;
 
@@ -93,24 +86,20 @@ public final class Poller extends PollerBase implements Runnable
         selector = ctx.createSelector();
     }
 
-    public void destroy()
-    {
+    public void destroy() {
         try {
             stop();
             stopped.await();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
             // Re-interrupt the thread so the caller can handle it.
             Thread.currentThread().interrupt();
-        }
-        finally {
+        } finally {
             ctx.closeSelector(selector);
         }
     }
 
-    public Handle addHandle(SelectableChannel fd, IPollEvents events)
-    {
+    public Handle addHandle(SelectableChannel fd, IPollEvents events) {
         assert (Thread.currentThread() == worker || !worker.isAlive());
 
         Handle handle = new Handle(fd, events);
@@ -121,8 +110,7 @@ public final class Poller extends PollerBase implements Runnable
         return handle;
     }
 
-    public void removeHandle(Handle handle)
-    {
+    public void removeHandle(Handle handle) {
         assert (Thread.currentThread() == worker || !worker.isAlive());
 
         //  Mark the fd as unused.
@@ -133,64 +121,53 @@ public final class Poller extends PollerBase implements Runnable
         adjustLoad(-1);
     }
 
-    public void setPollIn(Handle handle)
-    {
+    public void setPollIn(Handle handle) {
         register(handle, SelectionKey.OP_READ, true);
     }
 
-    public void resetPollIn(Handle handle)
-    {
+    public void resetPollIn(Handle handle) {
         register(handle, SelectionKey.OP_READ, false);
     }
 
-    public void setPollOut(Handle handle)
-    {
+    public void setPollOut(Handle handle) {
         register(handle, SelectionKey.OP_WRITE, true);
     }
 
-    public void resetPollOut(Handle handle)
-    {
+    public void resetPollOut(Handle handle) {
         register(handle, SelectionKey.OP_WRITE, false);
     }
 
-    public void setPollConnect(Handle handle)
-    {
+    public void setPollConnect(Handle handle) {
         register(handle, SelectionKey.OP_CONNECT, true);
     }
 
-    public void setPollAccept(Handle handle)
-    {
+    public void setPollAccept(Handle handle) {
         register(handle, SelectionKey.OP_ACCEPT, true);
     }
 
-    private void register(Handle handle, int ops, boolean add)
-    {
+    private void register(Handle handle, int ops, boolean add) {
         assert (Thread.currentThread() == worker || !worker.isAlive());
 
         if (add) {
             handle.ops |= ops;
-        }
-        else {
+        } else {
             handle.ops &= ~ops;
         }
         retired = true;
     }
 
-    public void start()
-    {
+    public void start() {
         worker.start();
     }
 
-    public void stop()
-    {
+    public void stop() {
         stopping.set(true);
         retired = false;
         selector.wakeup();
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         int returnsImmediately = 0;
 
         while (!stopping.get()) {
@@ -215,13 +192,11 @@ public final class Poller extends PollerBase implements Runnable
                             try {
                                 key = handle.fd.register(selector, handle.ops, handle);
                                 assert (key != null);
-                            }
-                            catch (CancelledKeyException | ClosedSelectorException | ClosedChannelException e) {
+                            } catch (CancelledKeyException | ClosedSelectorException | ClosedChannelException e) {
                                 e.printStackTrace();
                             }
                         }
-                    }
-                    else if (key.isValid()) {
+                    } else if (key.isValid()) {
                         key.interestOps(handle.ops);
                     }
                 }
@@ -232,14 +207,12 @@ public final class Poller extends PollerBase implements Runnable
             long start = System.currentTimeMillis();
             try {
                 rc = selector.select(timeout);
-            }
-            catch (ClosedSelectorException e) {
+            } catch (ClosedSelectorException e) {
                 rebuildSelector();
                 e.printStackTrace();
                 ctx.errno().set(ZError.EINTR);
                 continue;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new ZError.IOException(e);
             }
 
@@ -272,12 +245,10 @@ public final class Poller extends PollerBase implements Runnable
                     if (key.isValid() && key.isReadable()) {
                         pollset.handler.inEvent();
                     }
-                }
-                catch (CancelledKeyException e) {
+                } catch (CancelledKeyException e) {
                     // key may have been cancelled (?)
                     e.printStackTrace();
-                }
-                catch (RuntimeException e) {
+                } catch (RuntimeException e) {
                     // avoid the thread death by continuing to iterate
                     e.printStackTrace();
                 }
@@ -286,13 +257,11 @@ public final class Poller extends PollerBase implements Runnable
         stopped.countDown();
     }
 
-    private int maybeRebuildSelector(int returnsImmediately, long timeout, long start)
-    {
+    private int maybeRebuildSelector(int returnsImmediately, long timeout, long start) {
         //  Guess JDK epoll bug
         if (timeout == 0 || System.currentTimeMillis() - start < timeout / 2) {
             returnsImmediately++;
-        }
-        else {
+        } else {
             returnsImmediately = 0;
         }
 
@@ -303,8 +272,7 @@ public final class Poller extends PollerBase implements Runnable
         return returnsImmediately;
     }
 
-    private void rebuildSelector()
-    {
+    private void rebuildSelector() {
         System.out.println(this + " rebuilding selector");
         Selector newSelector = ctx.createSelector();
         Selector oldSelector = selector;

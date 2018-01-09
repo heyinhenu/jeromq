@@ -5,14 +5,11 @@ import zmq.Msg;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class LocalLat
-{
-    private LocalLat()
-    {
+public class LocalLat {
+    private LocalLat() {
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         String bindTo;
         int roundtripCount;
         int messageSize;
@@ -73,18 +70,15 @@ public class LocalLat
         ZMQ.term(ctx);
     }
 
-    private static int atoi(String string)
-    {
+    private static int atoi(String string) {
         return Integer.parseInt(string);
     }
 
-    private static void printf(String string)
-    {
+    private static void printf(String string) {
         System.out.println(string);
     }
 
-    private static void printf(String string, Object... args)
-    {
+    private static void printf(String string, Object... args) {
         System.out.println(String.format(string, args));
     }
 }

@@ -22,11 +22,9 @@ import zmq.ZMQ;
 import zmq.socket.AbstractSpecTest;
 import zmq.util.Utils;
 
-public class PushPullSpecTest extends AbstractSpecTest
-{
+public class PushPullSpecTest extends AbstractSpecTest {
     @Test
-    public void testSpecPullFairQueueIn() throws IOException, InterruptedException
-    {
+    public void testSpecPullFairQueueIn() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -41,8 +39,7 @@ public class PushPullSpecTest extends AbstractSpecTest
     }
 
     @Test
-    public void testSpecPushRoundRobinOut() throws IOException, InterruptedException
-    {
+    public void testSpecPushRoundRobinOut() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -57,8 +54,7 @@ public class PushPullSpecTest extends AbstractSpecTest
     }
 
     @Test
-    public void testSpecPushBlockOnSendNoPeers() throws IOException, InterruptedException
-    {
+    public void testSpecPushBlockOnSendNoPeers() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -74,8 +70,7 @@ public class PushPullSpecTest extends AbstractSpecTest
 
     @Test
     @Ignore
-    public void testSpecDestroyQueueOnDisconnect() throws IOException, InterruptedException
-    {
+    public void testSpecDestroyQueueOnDisconnect() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -90,8 +85,7 @@ public class PushPullSpecTest extends AbstractSpecTest
         ZMQ.term(ctx);
     }
 
-    private void blockOnSendNoPeers(Ctx ctx, String address, int bindType) throws IOException, InterruptedException
-    {
+    private void blockOnSendNoPeers(Ctx ctx, String address, int bindType) throws IOException, InterruptedException {
         SocketBase push = ZMQ.socket(ctx, bindType);
 
         int timeout = 250;
@@ -120,9 +114,8 @@ public class PushPullSpecTest extends AbstractSpecTest
         ZMQ.close(push);
     }
 
-    private void roundRobinOut(Ctx ctx, String address, int bindType, int connectType)
-            throws IOException, InterruptedException
-    {
+    private void roundRobinOut(Ctx ctx, String address, int bindType,
+            int connectType) throws IOException, InterruptedException {
         SocketBase push = ZMQ.socket(ctx, bindType);
         boolean rc = ZMQ.bind(push, address);
         assertThat(rc, is(true));
@@ -171,9 +164,8 @@ public class PushPullSpecTest extends AbstractSpecTest
         ZMQ.msleep(100);
     }
 
-    private void fairQueueIn(Ctx ctx, String address, int bindType, int connectType)
-            throws IOException, InterruptedException
-    {
+    private void fairQueueIn(Ctx ctx, String address, int bindType,
+            int connectType) throws IOException, InterruptedException {
         //  Server socket will accept connections
         SocketBase pull = ZMQ.socket(ctx, bindType);
         assertThat(pull, notNullValue());

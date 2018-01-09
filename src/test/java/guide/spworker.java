@@ -13,13 +13,11 @@ import org.zeromq.ZMsg;
 // Connects REQ socket to tcp://*:5556
 // Implements worker part of load-balancing queueing
 //
-public class spworker
-{
+public class spworker {
 
     private final static String WORKER_READY = "\001"; //  Signals worker is ready
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         ZContext ctx = new ZContext();
         Socket worker = ctx.createSocket(ZMQ.REQ);
 
@@ -46,8 +44,7 @@ public class spworker
                 System.out.printf("I: (%s) simulating a crash\n", identity);
                 msg.destroy();
                 break;
-            }
-            else if (cycles > 3 && rand.nextInt(5) == 0) {
+            } else if (cycles > 3 && rand.nextInt(5) == 0) {
                 System.out.printf("I: (%s) simulating CPU overload\n", identity);
                 Thread.sleep(3000);
             }

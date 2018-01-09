@@ -13,13 +13,11 @@ import org.zeromq.ZMQ.Socket;
  * connected, listen, disconnected, etc. Socket events are only available
  * for sockets connecting or bound to ipc:// and tcp:// endpoints.
  */
-public class ZMonitor implements Closeable
-{
+public class ZMonitor implements Closeable {
     /**
      * High-level representation of an event.
      */
-    public static final class ZEvent
-    {
+    public static final class ZEvent {
         /**
          * The type of the event. (never null)
          */
@@ -41,8 +39,7 @@ public class ZMonitor implements Closeable
          */
         public final String value;
 
-        private ZEvent(ZMsg msg)
-        {
+        private ZEvent(ZMsg msg) {
             assert (msg != null);
             assert (msg.size() == 3 || msg.size() == 4);
 
@@ -52,15 +49,13 @@ public class ZMonitor implements Closeable
 
             if (msg.isEmpty()) {
                 value = null;
-            }
-            else {
+            } else {
                 value = msg.popString();
             }
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "ZEvent [type=" + type + ", code=" + code + ", address=" + address + ", value=" + value + "]";
         }
     }
@@ -68,31 +63,21 @@ public class ZMonitor implements Closeable
     /**
      * Enumerates types of monitoring events.
      */
-    public enum Event
-    {
-        CONNECTED(ZMQ.EVENT_CONNECTED),
-        CONNECT_DELAYED(ZMQ.EVENT_CONNECT_DELAYED),
-        CONNECT_RETRIED(ZMQ.EVENT_CONNECT_RETRIED),
-        LISTENING(ZMQ.EVENT_LISTENING),
-        BIND_FAILED(ZMQ.EVENT_BIND_FAILED),
-        ACCEPTED(ZMQ.EVENT_ACCEPTED),
-        ACCEPT_FAILED(ZMQ.EVENT_ACCEPT_FAILED),
-        CLOSED(ZMQ.EVENT_CLOSED),
-        CLOSE_FAILED(ZMQ.EVENT_CLOSE_FAILED),
-        DISCONNECTED(ZMQ.EVENT_DISCONNECTED),
-        MONITOR_STOPPED(ZMQ.EVENT_MONITOR_STOPPED),
-        HANDSHAKE_PROTOCOL(ZMQ.EVENT_HANDSHAKE_PROTOCOL),
-        ALL(ZMQ.EVENT_ALL);
+    public enum Event {
+        CONNECTED(ZMQ.EVENT_CONNECTED), CONNECT_DELAYED(ZMQ.EVENT_CONNECT_DELAYED), CONNECT_RETRIED(
+                ZMQ.EVENT_CONNECT_RETRIED), LISTENING(ZMQ.EVENT_LISTENING), BIND_FAILED(
+                ZMQ.EVENT_BIND_FAILED), ACCEPTED(ZMQ.EVENT_ACCEPTED), ACCEPT_FAILED(ZMQ.EVENT_ACCEPT_FAILED), CLOSED(
+                ZMQ.EVENT_CLOSED), CLOSE_FAILED(ZMQ.EVENT_CLOSE_FAILED), DISCONNECTED(
+                ZMQ.EVENT_DISCONNECTED), MONITOR_STOPPED(ZMQ.EVENT_MONITOR_STOPPED), HANDSHAKE_PROTOCOL(
+                ZMQ.EVENT_HANDSHAKE_PROTOCOL), ALL(ZMQ.EVENT_ALL);
 
         private final int events;
 
-        Event(int events)
-        {
+        Event(int events) {
             this.events = events;
         }
 
-        private static Event find(int event)
-        {
+        private static Event find(int event) {
             for (Event candidate : Event.values()) {
                 if ((candidate.events & event) != 0) {
                     return candidate;
@@ -108,10 +93,10 @@ public class ZMonitor implements Closeable
     /**
      * Starts the monitoring.
      * Event types have to be added before the start, or they will take no effect.
+     *
      * @return this instance.
      */
-    public final ZMonitor start()
-    {
+    public final ZMonitor start() {
         if (started) {
             System.out.println("ZMonitor: Unable to start while already started.");
             return this;
@@ -127,8 +112,7 @@ public class ZMonitor implements Closeable
      * When returning from that call, ZMonitor will be no more active.
      */
     @Override
-    public final void close() throws IOException
-    {
+    public final void close() throws IOException {
         destroy();
     }
 
@@ -136,8 +120,7 @@ public class ZMonitor implements Closeable
      * Stops the monitoring and closes the actor.
      * When returning from that call, ZMonitor will be no more active.
      */
-    public final void destroy()
-    {
+    public final void destroy() {
         agent.send(CLOSE);
         exit.awaitSilent();
         agent.close();
@@ -145,11 +128,11 @@ public class ZMonitor implements Closeable
 
     /**
      * Sets verbosity of the monitor.
+     *
      * @param verbose true for monitor to be verbose, otherwise false.
      * @return this instance.
      */
-    public final ZMonitor verbose(boolean verbose)
-    {
+    public final ZMonitor verbose(boolean verbose) {
         if (started) {
             System.out.println("ZMonitor: Unable to change verbosity while already started.");
             return this;
@@ -162,11 +145,11 @@ public class ZMonitor implements Closeable
 
     /**
      * Adds event types to monitor.
+     *
      * @param events the types of events to monitor.
      * @return this instance.
      */
-    public final ZMonitor add(Event... events)
-    {
+    public final ZMonitor add(Event... events) {
         if (started) {
             System.out.println("ZMonitor: Unable to add events while already started.");
             return this;
@@ -183,11 +166,11 @@ public class ZMonitor implements Closeable
 
     /**
      * Removes event types from monitor.
+     *
      * @param events the types of events to stop monitoring.
      * @return this instance.
      */
-    public final ZMonitor remove(Event... events)
-    {
+    public final ZMonitor remove(Event... events) {
         if (started) {
             System.out.println("ZMonitor: Unable to remove events while already started.");
             return this;
@@ -204,20 +187,20 @@ public class ZMonitor implements Closeable
 
     /**
      * Gets the next event, blocking for it until available.
+     *
      * @return the next monitored event or null if closed.
      */
-    public final ZEvent nextEvent()
-    {
+    public final ZEvent nextEvent() {
         return nextEvent(true);
     }
 
     /**
      * Gets the next event, blocking for it until available if requested.
+     *
      * @param wait true to block until next event is available, false to immediately return with null if there is no event.
      * @return the next event or null if there is currently none.
      */
-    public final ZEvent nextEvent(boolean wait)
-    {
+    public final ZEvent nextEvent(boolean wait) {
         if (!started) {
             System.out.println("ZMonitor: Start before getting events.");
             return null;
@@ -231,11 +214,11 @@ public class ZMonitor implements Closeable
 
     /**
      * Gets the next event, blocking for it until available if requested.
+     *
      * @param timeout the time in milliseconds to wait for a message before returning null, -1 to block.
      * @return the next event or null if there is currently none after the specified timeout.
      */
-    public final ZEvent nextEvent(int timeout)
-    {
+    public final ZEvent nextEvent(int timeout) {
         if (!started) {
             System.out.println("ZMonitor: Start before getting events.");
             return null;
@@ -247,22 +230,22 @@ public class ZMonitor implements Closeable
         return new ZEvent(msg);
     }
 
-    private static final String START         = "START";
-    private static final String CLOSE         = "CLOSE";
-    private static final String VERBOSE       = "VERBOSE";
-    private static final String ADD_EVENTS    = "ADD_EVENTS";
+    private static final String START = "START";
+    private static final String CLOSE = "CLOSE";
+    private static final String VERBOSE = "VERBOSE";
+    private static final String ADD_EVENTS = "ADD_EVENTS";
     private static final String REMOVE_EVENTS = "REMOVE_EVENTS";
 
-    private final ZAgent     agent;
+    private final ZAgent agent;
     private final ZStar.Exit exit;
 
     /**
      * Creates a monitoring actor for the given socket.
-     * @param ctx the context relative to this actor. Not null.
+     *
+     * @param ctx    the context relative to this actor. Not null.
      * @param socket the socket to monitor for events. Not null.
      */
-    public ZMonitor(ZContext ctx, Socket socket)
-    {
+    public ZMonitor(ZContext ctx, Socket socket) {
         assert (ctx != null);
         assert (socket != null);
         final MonitorActor actor = new MonitorActor(socket);
@@ -275,34 +258,30 @@ public class ZMonitor implements Closeable
         agent.recv().destroy();
     }
 
-    private static class MonitorActor extends ZActor.SimpleActor
-    {
+    private static class MonitorActor extends ZActor.SimpleActor {
         private static final String ERROR = "ERROR";
-        private static final String OK    = "OK";
+        private static final String OK = "OK";
 
         private final Socket monitored; // the monitored socket
         private final String address;   // the address where events will be collected
 
-        private Socket  monitor; // the monitoring socket
-        private int     events;  // the events to monitor
+        private Socket monitor; // the monitoring socket
+        private int events;  // the events to monitor
         private boolean verbose;
 
-        public MonitorActor(ZMQ.Socket socket)
-        {
+        public MonitorActor(ZMQ.Socket socket) {
             assert (socket != null);
             this.monitored = socket;
             this.address = String.format("inproc://zmonitor-%s-%s", socket.hashCode(), UUID.randomUUID().toString());
         }
 
         @Override
-        public String premiere(Socket pipe)
-        {
+        public String premiere(Socket pipe) {
             return "ZMonitor-" + monitored.toString();
         }
 
         @Override
-        public List<Socket> createSockets(ZContext ctx, Object... args)
-        {
+        public List<Socket> createSockets(ZContext ctx, Object... args) {
             monitor = ctx.createSocket(ZMQ.PAIR);
             assert (monitor != null);
 
@@ -310,14 +289,12 @@ public class ZMonitor implements Closeable
         }
 
         @Override
-        public void start(Socket pipe, List<Socket> sockets, ZPoller poller)
-        {
+        public void start(Socket pipe, List<Socket> sockets, ZPoller poller) {
             pipe.send("STARTED");
         }
 
         @Override
-        public boolean stage(Socket socket, Socket pipe, ZPoller poller, int evts)
-        {
+        public boolean stage(Socket socket, Socket pipe, ZPoller poller, int evts) {
             final ZMQ.Event event = ZMQ.Event.recv(socket);
             assert (event != null);
             final int code = event.getEvent();
@@ -340,34 +317,32 @@ public class ZMonitor implements Closeable
         }
 
         @Override
-        public boolean backstage(ZMQ.Socket pipe, ZPoller poller, int evts)
-        {
+        public boolean backstage(ZMQ.Socket pipe, ZPoller poller, int evts) {
             final String command = pipe.recvStr();
             if (command == null) {
                 System.out.printf("ZMonitor: Closing monitor %s : No command%n", monitored);
                 return false;
             }
             switch (command) {
-            case VERBOSE:
-                verbose = Boolean.parseBoolean(pipe.recvStr());
-                return pipe.send(OK);
-            case ADD_EVENTS:
-                return addEvents(pipe);
-            case REMOVE_EVENTS:
-                return removeEvents(pipe);
-            case START:
-                return start(poller, pipe);
-            case CLOSE:
-                return close(poller, pipe);
-            default:
-                System.out.printf("ZMonitor: Closing monitor %s : Unknown command %s%n", monitored, command);
-                pipe.send(ERROR);
-                return false;
+                case VERBOSE:
+                    verbose = Boolean.parseBoolean(pipe.recvStr());
+                    return pipe.send(OK);
+                case ADD_EVENTS:
+                    return addEvents(pipe);
+                case REMOVE_EVENTS:
+                    return removeEvents(pipe);
+                case START:
+                    return start(poller, pipe);
+                case CLOSE:
+                    return close(poller, pipe);
+                default:
+                    System.out.printf("ZMonitor: Closing monitor %s : Unknown command %s%n", monitored, command);
+                    pipe.send(ERROR);
+                    return false;
             }
         }
 
-        private boolean addEvents(Socket pipe)
-        {
+        private boolean addEvents(Socket pipe) {
             final ZMsg msg = ZMsg.recvMsg(pipe);
             if (msg == null) {
                 return false; // interrupted
@@ -383,8 +358,7 @@ public class ZMonitor implements Closeable
             return pipe.send(OK);
         }
 
-        private boolean removeEvents(Socket pipe)
-        {
+        private boolean removeEvents(Socket pipe) {
             final ZMsg msg = ZMsg.recvMsg(pipe);
             if (msg == null) {
                 return false; // interrupted
@@ -400,8 +374,7 @@ public class ZMonitor implements Closeable
             return pipe.send(OK);
         }
 
-        private boolean start(ZPoller poller, Socket pipe)
-        {
+        private boolean start(ZPoller poller, Socket pipe) {
             boolean rc = true;
             String err = "";
             if (rc) {
@@ -424,8 +397,7 @@ public class ZMonitor implements Closeable
             return false;
         }
 
-        private boolean close(ZPoller poller, Socket pipe)
-        {
+        private boolean close(ZPoller poller, Socket pipe) {
             boolean rc = poller.unregister(monitor);
             String err = "Unable to unregister monitoring socket " + monitor;
             if (rc) {
@@ -441,19 +413,13 @@ public class ZMonitor implements Closeable
             return false;
         }
 
-        private void log(String action, boolean rc, String err)
-        {
+        private void log(String action, boolean rc, String err) {
             if (verbose) {
                 if (rc) {
                     System.out.printf("ZMonitor: S%s monitor for events %s on %s%n", action, events, monitored);
-                }
-                else {
-                    System.out.printf(
-                                      "ZMonitor: Unable to s%s monitor for events %s (%s) on %s%n",
-                                      action,
-                                      events,
-                                      err,
-                                      monitored);
+                } else {
+                    System.out.printf("ZMonitor: Unable to s%s monitor for events %s (%s) on %s%n", action, events, err,
+                            monitored);
                 }
             }
         }

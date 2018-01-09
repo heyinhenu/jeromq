@@ -9,15 +9,13 @@ import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
-public class ZHelper
-{
+public class ZHelper {
     private static Random rand = new Random(System.currentTimeMillis());
 
     /**
      * Receives all message parts from socket, prints neatly
      */
-    public static void dump(Socket sock)
-    {
+    public static void dump(Socket sock) {
         System.out.println("----------------------------------------");
         while (true) {
             byte[] msg = sock.recv(0);
@@ -37,15 +35,13 @@ public class ZHelper
         }
     }
 
-    public static void setId(Socket sock)
-    {
+    public static void setId(Socket sock) {
         String identity = String.format("%04X-%04X", rand.nextInt(), rand.nextInt());
 
         sock.setIdentity(identity.getBytes(ZMQ.CHARSET));
     }
 
-    public static List<Socket> buildZPipe(Context ctx)
-    {
+    public static List<Socket> buildZPipe(Context ctx) {
         Socket socket1 = ctx.socket(ZMQ.PAIR);
         socket1.setLinger(0);
         socket1.setHWM(1);

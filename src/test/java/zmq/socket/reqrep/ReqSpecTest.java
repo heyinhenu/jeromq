@@ -20,11 +20,9 @@ import zmq.ZMQ;
 import zmq.socket.AbstractSpecTest;
 import zmq.util.Utils;
 
-public class ReqSpecTest extends AbstractSpecTest
-{
+public class ReqSpecTest extends AbstractSpecTest {
     @Test
-    public void testSpecMessageFormat() throws IOException, InterruptedException
-    {
+    public void testSpecMessageFormat() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -41,8 +39,7 @@ public class ReqSpecTest extends AbstractSpecTest
     }
 
     @Test
-    public void testSpecRoundRobinOut() throws IOException, InterruptedException
-    {
+    public void testSpecRoundRobinOut() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -57,8 +54,7 @@ public class ReqSpecTest extends AbstractSpecTest
     }
 
     @Test
-    public void testSpecBlockOnSendNoPeers() throws IOException, InterruptedException
-    {
+    public void testSpecBlockOnSendNoPeers() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -74,8 +70,7 @@ public class ReqSpecTest extends AbstractSpecTest
 
     @Test
     @Ignore
-    public void testSpecOnlyListensToCurrentPeer() throws IOException, InterruptedException
-    {
+    public void testSpecOnlyListensToCurrentPeer() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -92,8 +87,7 @@ public class ReqSpecTest extends AbstractSpecTest
         ZMQ.term(ctx);
     }
 
-    private void onlyListensToCurrentPeer(Ctx ctx, String bindAddress, int bindType, int connectType)
-    {
+    private void onlyListensToCurrentPeer(Ctx ctx, String bindAddress, int bindType, int connectType) {
         SocketBase socket = ZMQ.socket(ctx, bindType);
 
         boolean rc = ZMQ.setSocketOption(socket, ZMQ.ZMQ_IDENTITY, "A");
@@ -154,8 +148,7 @@ public class ReqSpecTest extends AbstractSpecTest
         ZMQ.msleep(100);
     }
 
-    private void blockOnSendNoPeers(Ctx ctx, String address, int bindType) throws IOException, InterruptedException
-    {
+    private void blockOnSendNoPeers(Ctx ctx, String address, int bindType) throws IOException, InterruptedException {
         SocketBase socket = ZMQ.socket(ctx, bindType);
 
         int timeout = 250;
@@ -184,9 +177,8 @@ public class ReqSpecTest extends AbstractSpecTest
         ZMQ.close(socket);
     }
 
-    private void roundRobinOut(Ctx ctx, String address, int bindType, int connectType)
-            throws IOException, InterruptedException
-    {
+    private void roundRobinOut(Ctx ctx, String address, int bindType,
+            int connectType) throws IOException, InterruptedException {
         SocketBase req = ZMQ.socket(ctx, bindType);
         boolean rc = ZMQ.bind(req, address);
         assertThat(rc, is(true));
@@ -233,9 +225,8 @@ public class ReqSpecTest extends AbstractSpecTest
         ZMQ.msleep(100);
     }
 
-    private void messageFormat(Ctx ctx, String address, int bindType, int connectType)
-            throws IOException, InterruptedException
-    {
+    private void messageFormat(Ctx ctx, String address, int bindType,
+            int connectType) throws IOException, InterruptedException {
         //  Server socket will accept connections
         SocketBase req = ZMQ.socket(ctx, bindType);
         assertThat(req, notNullValue());

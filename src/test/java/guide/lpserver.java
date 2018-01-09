@@ -13,11 +13,9 @@ import org.zeromq.ZMQ.Socket;
 //  - echoes request as-is
 //  - randomly runs slowly, or exits to simulate a crash.
 //
-public class lpserver
-{
+public class lpserver {
 
-    public static void main(String[] argv) throws Exception
-    {
+    public static void main(String[] argv) throws Exception {
         Random rand = new Random(System.nanoTime());
 
         Context context = ZMQ.context(1);
@@ -33,8 +31,7 @@ public class lpserver
             if (cycles > 3 && rand.nextInt(3) == 0) {
                 System.out.println("I: simulating a crash");
                 break;
-            }
-            else if (cycles > 3 && rand.nextInt(3) == 0) {
+            } else if (cycles > 3 && rand.nextInt(3) == 0) {
                 System.out.println("I: simulating CPU overload");
                 Thread.sleep(2000);
             }

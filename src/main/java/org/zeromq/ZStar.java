@@ -15,7 +15,7 @@ import org.zeromq.ZThread.IAttachedRunnable;
 
 /**
  * First implementation for the base of a remotely controlled background service for 0MQ.
- *
+ * <p>
  * <p>
  * A side or endpoint designates the same thing: the thread where lives one of the two parts of the system.
  * <br/>
@@ -29,7 +29,7 @@ import org.zeromq.ZThread.IAttachedRunnable;
  * <br/>
  * Note: Corbeille is a french word designing the most privileged places in the theater where the King was standing,
  * 1st floor, just above the orchestra (Wikipedia...).
- *
+ * <p>
  * <p>
  * - the Plateau side, or background side where all the performances are made by the provided star.
  * <br/>
@@ -60,17 +60,14 @@ import org.zeromq.ZThread.IAttachedRunnable;
  * PPS: I know nothing about theater!
  * <p>
  * For an example of code, please refer to the {@link ZActor} source code.
- *
  */
 // remote controlled background message processing API for 0MQ.
-public class ZStar implements ZAgent
-{
+public class ZStar implements ZAgent {
     /**
      * Contract interface when acting in plain sight.
      */
     // contract interface for acting with the spot lights on
-    public interface Star
-    {
+    public interface Star {
         /**
          * Called when the star is in the wings.<br/>
          * Hint:       Can be used to initialize the service, or ...<br/>
@@ -122,8 +119,7 @@ public class ZStar implements ZAgent
     /**
      * Utility class with callback for when the Star has finished its performances.
      */
-    public interface TimeTaker
-    {
+    public interface TimeTaker {
         /**
          * Called when the show is finished but no cleaning is still done.
          * Useful to make the background thread wait a little bit, for example.
@@ -135,23 +131,20 @@ public class ZStar implements ZAgent
     }
 
     // party time easily done. Wait for the specified amount of time
-    public static void party(long time, TimeUnit unit)
-    {
+    public static void party(long time, TimeUnit unit) {
         LockSupport.parkNanos(TimeUnit.NANOSECONDS.convert(time, unit));
     }
 
     // contract for a creator of stars
-    public interface Fortune extends TimeTaker
-    {
+    public interface Fortune extends TimeTaker {
         /**
          * This is the grand premiere!
          * Called when the star enters the plateau.
          * The show is about to begin. Inform the public about that.
          * Called before the creation of the first star and its sockets
          *
-         * @param mic   the pipe to the Corbeille side
-         * @param args  the arguments passed as parameters of the star constructor
-         *
+         * @param mic  the pipe to the Corbeille side
+         * @param args the arguments passed as parameters of the star constructor
          * @return the name of the upcoming performance.
          */
         String premiere(Socket mic, Object... args);
@@ -159,13 +152,12 @@ public class ZStar implements ZAgent
         /**
          * Creates a star.
          *
-         * @param ctx       the context used for the creation of the sockets
-         * @param mic       the pipe to the Corbeille side
-         * @param sel       the selector used for polling
-         * @param count     the number of times a star was created.
-         * @param previous  the previous star if any (null at the first creation)
-         * @param args      the arguments passed as parameters of the star constructor
-         *
+         * @param ctx      the context used for the creation of the sockets
+         * @param mic      the pipe to the Corbeille side
+         * @param sel      the selector used for polling
+         * @param count    the number of times a star was created.
+         * @param previous the previous star if any (null at the first creation)
+         * @param args     the arguments passed as parameters of the star constructor
          * @return a new star is born!
          */
         Star create(ZContext ctx, Socket mic, Selector sel, int count, Star previous, Object... args);
@@ -174,7 +166,7 @@ public class ZStar implements ZAgent
          * The show is over.
          * Called when the show is over.
          *
-         * @param mic  the pipe to the Corbeille side
+         * @param mic the pipe to the Corbeille side
          * @return true to allow to spread the word and close all future communications
          */
         boolean interview(Socket mic);
@@ -184,8 +176,7 @@ public class ZStar implements ZAgent
     /**
      * Control for the end of the remote operations.
      */
-    public interface Exit
-    {
+    public interface Exit {
         /**
          * Causes the current thread to wait in blocking mode until the end of the remote operations.
          */
@@ -194,7 +185,7 @@ public class ZStar implements ZAgent
         /**
          * Causes the current thread to wait in blocking mode until the end of the remote operations,
          * unless the thread is interrupted.
-         *
+         * <p>
          * <p>If the current thread:
          * <ul>
          * <li>has its interrupted status set on entry to this method; or
@@ -204,14 +195,14 @@ public class ZStar implements ZAgent
          * interrupted status is cleared.
          *
          * @throws InterruptedException if the current thread is interrupted
-         *         while waiting
+         *                              while waiting
          */
         void await() throws InterruptedException;
 
         /**
          * Causes the current thread to wait in blocking mode until the end of the remote operations,
          * unless the thread is interrupted, or the specified waiting time elapses.
-         *
+         * <p>
          * <p>If the current thread:
          * <ul>
          * <li>has its interrupted status set on entry to this method; or
@@ -219,22 +210,23 @@ public class ZStar implements ZAgent
          * </ul>
          * then {@link InterruptedException} is thrown and the current thread's
          * interrupted status is cleared.
-         *
+         * <p>
          * <p>If the specified waiting time elapses then the value {@code false}
          * is returned.  If the time is less than or equal to zero, the method
          * will not wait at all.
          *
          * @param timeout the maximum time to wait
-         * @param unit the time unit of the {@code timeout} argument
+         * @param unit    the time unit of the {@code timeout} argument
          * @return {@code true} if the remote operations ended and {@code false}
-         *         if the waiting time elapsed before the remote operations ended
+         * if the waiting time elapsed before the remote operations ended
          * @throws InterruptedException if the current thread is interrupted
-         *         while waiting
+         *                              while waiting
          */
         boolean await(long timeout, TimeUnit unit) throws InterruptedException;
 
         /**
          * Checks in non-blocking mode, if the remote operations have ended.
+         *
          * @return true if the runnable where the remote operations occurred if finished, otherwise false.
          */
         boolean isExited();
@@ -246,29 +238,27 @@ public class ZStar implements ZAgent
      *
      * @return the agent/mailbox used to send and receive control messages to and from the star.
      */
-    public ZAgent agent()
-    {
+    public ZAgent agent() {
         return agent;
     }
 
     /**
      * Returns the control of the proper exit of the remote operations.
+     *
      * @return a structure used for checking the end of the remote operations.
      */
-    public Exit exit()
-    {
+    public Exit exit() {
         return plateau;
     }
 
     /**
      * Creates a new ZStar.
      *
-     * @param actor    the creator of stars on the Plateau
-     * @param lock     the final word used to mark the end of the star. Null to disable this mechanism.
-     * @param args     the optional arguments that will be passed to the distant star
+     * @param actor the creator of stars on the Plateau
+     * @param lock  the final word used to mark the end of the star. Null to disable this mechanism.
+     * @param args  the optional arguments that will be passed to the distant star
      */
-    public ZStar(Fortune actor, String lock, Object... args)
-    {
+    public ZStar(Fortune actor, String lock, Object... args) {
         this(new VerySimpleSelectorCreator(), actor, lock, args);
     }
 
@@ -280,27 +270,23 @@ public class ZStar implements ZAgent
      * @param motdelafin the final word used to mark the end of the star. Null to disable this mechanism.
      * @param args       the optional arguments that will be passed to the distant star
      */
-    public ZStar(SelectorCreator selector, Fortune fortune, String motdelafin, Object... args)
-    {
+    public ZStar(SelectorCreator selector, Fortune fortune, String motdelafin, Object... args) {
         this(null, selector, fortune, motdelafin, args);
     }
 
     /**
      * Creates a new ZStar.
      *
-     * @param context
-     *            the main context used. If null, a new context will be created
-     *            and closed at the stop of the operation.
-     * <b>If not null, it is the responsibility of the caller to close it.</b>
-     *
+     * @param context    the main context used. If null, a new context will be created
+     *                   and closed at the stop of the operation.
+     *                   <b>If not null, it is the responsibility of the caller to close it.</b>
      * @param selector   the creator of the selector used on the Plateau.
      * @param fortune    the creator of stars on the Plateau
      * @param motdelafin the final word used to mark the end of the star. Null to disable this mechanism.
      * @param bags       the optional arguments that will be passed to the distant star
      */
     public ZStar(final ZContext context, final SelectorCreator selector, final Fortune fortune, String motdelafin,
-            final Object... bags)
-    {
+            final Object... bags) {
         super();
         assert (fortune != null);
         // entering platform to load trucks
@@ -367,32 +353,29 @@ public class ZStar implements ZAgent
 
     /**
      * Creates a new agent for the star.
-     *
+     * <p>
      * This method is called in the constructor so don't rely on private members to do the job.
      * Apart from that, it is the last call so can be safely overridden from the ZStar point-of-view
      * BUT if you don't make it final, one of your subclass could make you misery...
      *
-     * @param phone   the socket used to communicate with the star
-     * @param secret  the specific keyword indicating the death of the star and locking the agent. Null to override the lock mechanism.
+     * @param phone  the socket used to communicate with the star
+     * @param secret the specific keyword indicating the death of the star and locking the agent. Null to override the lock mechanism.
      * @return the newly created agent for the star.
      */
-    protected ZAgent agent(Socket phone, String secret)
-    {
+    protected ZAgent agent(Socket phone, String secret) {
         return ZAgent.Creator.create(phone, secret);
     }
 
     /**
      * @return the context. Never null. If provided context in constructor was null, returns the auto-generated context for that star.
      */
-    private ZContext context()
-    {
+    private ZContext context() {
         return context;
     }
 
     // the plateau where the acting will take place (stage and backstage), or
     // the forked runnable containing the loop processing all messages in the background
-    private static final class Plateau implements IAttachedRunnable, Exit
-    {
+    private static final class Plateau implements IAttachedRunnable, Exit {
         private static final AtomicInteger shows = new AtomicInteger();
         // id if unnamed
         private final int number = shows.incrementAndGet();
@@ -401,8 +384,7 @@ public class ZStar implements ZAgent
         private final CountDownLatch exit = new CountDownLatch(1);
 
         @Override
-        public void run(final Object[] train, final ZContext chef, final Socket mic)
-        {
+        public void run(final Object[] train, final ZContext chef, final Socket mic) {
             final int mandat = 6;
 
             // end of a trip can be a bit messy...
@@ -440,13 +422,11 @@ public class ZStar implements ZAgent
                 // star is entering the wings
                 showMustGoOn(chef, set, story, mic, star, bags);
                 // star is leaving the plateau
-            }
-            catch (Throwable e) {
+            } catch (Throwable e) {
                 // Who stole the story? There is no play if there is no story! C'est un scandale!
                 e.printStackTrace();
                 // TODO enhance error
-            }
-            finally {
+            } finally {
                 try {
                     // star is interviewed about this event
                     boolean tell = star.interview(mic);
@@ -455,8 +435,7 @@ public class ZStar implements ZAgent
                         // inform the Corbeille side of the future closing of the plateau and the vanishing of the star
                         try {
                             mic.send(gossip);
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             // really ?
                             e.printStackTrace();
                         }
@@ -477,12 +456,10 @@ public class ZStar implements ZAgent
                         producer.close();
                     }
                     feather.destroy(story);
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                     // TODO enhance error
-                }
-                finally {
+                } finally {
                     exit.countDown();
                 }
             }
@@ -490,12 +467,12 @@ public class ZStar implements ZAgent
 
         /******************************************************************************/
         /* TAP TAP TAP | | TAP | | TAP | | TAP | | | | | | | | | | | | | | | | | | | |*/
+
         /******************************************************************************/
 
         // starts the performance
         private void showMustGoOn(final ZContext chef, final Set set, final Selector story, final Socket phone,
-                                  final Fortune fortune, final Object... bags)
-        {
+                final Fortune fortune, final Object... bags) {
             int shows = 0;
             /** on the spot lights, the star in only an actor **/
             Star actor = null;
@@ -530,134 +507,116 @@ public class ZStar implements ZAgent
 
         /******************************************************************************/
         /* | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |*/
+
         /******************************************************************************/
         // NB: never use green color on the stage floor of a french theater. Or something bad will happen...
-
         @Override
-        public void awaitSilent()
-        {
+        public void awaitSilent() {
             try {
                 exit.await();
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
 
         @Override
-        public void await() throws InterruptedException
-        {
+        public void await() throws InterruptedException {
             exit.await();
         }
 
         @Override
-        public boolean await(long timeout, TimeUnit unit) throws InterruptedException
-        {
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
             return exit.await(timeout, unit);
         }
 
         @Override
-        public boolean isExited()
-        {
+        public boolean isExited() {
             return exit.getCount() == 0;
         }
     }
 
     @Override
-    public ZMsg recv()
-    {
+    public ZMsg recv() {
         return agent.recv();
     }
 
     @Override
-    public ZMsg recv(int timeout)
-    {
+    public ZMsg recv(int timeout) {
         return agent.recv(timeout);
     }
 
     @Override
-    public ZMsg recv(boolean wait)
-    {
+    public ZMsg recv(boolean wait) {
         return agent.recv(wait);
     }
 
     @Override
-    public boolean send(ZMsg message)
-    {
+    public boolean send(ZMsg message) {
         return agent.send(message);
     }
 
     @Override
-    public boolean send(ZMsg msg, boolean destroy)
-    {
+    public boolean send(ZMsg msg, boolean destroy) {
         return agent.send(msg, destroy);
     }
 
     @Override
-    public boolean send(String word)
-    {
+    public boolean send(String word) {
         return agent.send(word);
     }
 
     @Override
-    public boolean send(String word, boolean more)
-    {
+    public boolean send(String word, boolean more) {
         return agent.send(word, more);
     }
 
     @Override
-    public Socket pipe()
-    {
+    public Socket pipe() {
         return agent.pipe();
     }
 
     @Override
-    public boolean sign()
-    {
+    public boolean sign() {
         return agent.sign();
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         agent.close();
     }
 
-    public interface Set
-    {
+    public interface Set {
         /**
          * Puts the performance name on the front door with big lights.
+         *
          * @param name the name of the performance.
-         * @param id the performance number.
+         * @param id   the performance number.
          */
         void lights(String name, int id);
 
         /**
          * Is the set on fire ?
+         *
          * @return true if it is time to leave the place.
          */
         boolean fire();
     }
 
-    public static class SimpleSet implements Set
-    {
+    public static class SimpleSet implements Set {
         @Override
-        public boolean fire()
-        {
+        public boolean fire() {
             return Thread.currentThread().isInterrupted();
         }
 
         @Override
-        public void lights(String name, int id)
-        {
+        public void lights(String name, int id) {
             if (name == null) {
                 name = createDefaultName("Star-%d", id);
             }
             Thread.currentThread().setName(name);
         }
 
-        public static String createDefaultName(final String format, final int id)
-        {
+        public static String createDefaultName(final String format, final int id) {
             return String.format(format, id);
         }
     }
@@ -665,16 +624,15 @@ public class ZStar implements ZAgent
     /**
      * Utility class with calls surrounding the execution of the Star.
      */
-    public interface Entourage extends TimeTaker
-    {
+    public interface Entourage extends TimeTaker {
         /**
          * Called when the show is about to start.
          * Can be a useful point in the whole process from time to time.
          *
-         * @param ctx        the context provided in the creation step
-         * @param fortune    the creator of stars
-         * @param phone      the socket used to communicate with the Agent
-         * @param bags       the optional arguments that were passed at the creation
+         * @param ctx     the context provided in the creation step
+         * @param fortune the creator of stars
+         * @param phone   the socket used to communicate with the Agent
+         * @param bags    the optional arguments that were passed at the creation
          */
         void breakaleg(ZContext ctx, Fortune fortune, Socket phone, Object... bags);
 

@@ -6,10 +6,8 @@ import java.net.SocketAddress;
 import zmq.io.net.ipc.IpcAddress;
 import zmq.io.net.tcp.TcpAddress;
 
-public class Address
-{
-    public interface IZAddress
-    {
+public class Address {
+    public interface IZAddress {
         ProtocolFamily family();
 
         @Override
@@ -23,20 +21,18 @@ public class Address
     }
 
     private final NetProtocol protocol;
-    private final String      address;
+    private final String address;
     //    private final boolean ipv4only;
 
     private IZAddress resolved;
 
-    public Address(final String protocol, final String address)
-    {
+    public Address(final String protocol, final String address) {
         this.protocol = NetProtocol.getProtocol(protocol);
         this.address = address;
         resolved = null;
     }
 
-    public Address(SocketAddress socketAddress)
-    {
+    public Address(SocketAddress socketAddress) {
         InetSocketAddress sockAddr = (InetSocketAddress) socketAddress;
         this.address = sockAddr.getAddress().getHostAddress() + ":" + sockAddr.getPort();
         protocol = NetProtocol.tcp;
@@ -45,34 +41,27 @@ public class Address
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         if (NetProtocol.tcp == protocol && isResolved()) {
             return resolved.toString();
-        }
-        else if (NetProtocol.ipc == protocol && isResolved()) {
+        } else if (NetProtocol.ipc == protocol && isResolved()) {
             return resolved.toString();
-        }
-        else if (protocol != null && !address.isEmpty()) {
+        } else if (protocol != null && !address.isEmpty()) {
             return protocol.name() + "://" + address;
-        }
-        else {
+        } else {
             return "";
         }
     }
 
-    public NetProtocol protocol()
-    {
+    public NetProtocol protocol() {
         return protocol;
     }
 
-    public String address()
-    {
+    public String address() {
         return address;
     }
 
-    public String host()
-    {
+    public String host() {
         final int portDelimiter = address.lastIndexOf(':');
         if (portDelimiter > 0) {
             return address.substring(0, portDelimiter);
@@ -80,27 +69,22 @@ public class Address
         return address;
     }
 
-    public IZAddress resolved()
-    {
+    public IZAddress resolved() {
         return resolved;
     }
 
-    public boolean isResolved()
-    {
+    public boolean isResolved() {
         return resolved != null;
     }
 
-    public IZAddress resolve(boolean ipv6)
-    {
+    public IZAddress resolve(boolean ipv6) {
         if (NetProtocol.tcp.equals(protocol)) {
             resolved = new TcpAddress(address, ipv6);
             return resolved;
-        }
-        else if (NetProtocol.ipc.equals(protocol)) {
+        } else if (NetProtocol.ipc.equals(protocol)) {
             resolved = new IpcAddress(address);
             return resolved;
-        }
-        else {
+        } else {
             return null;
         }
     }

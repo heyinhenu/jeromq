@@ -8,36 +8,34 @@ import org.zeromq.ZMQ;
 import org.zeromq.ZMsg;
 
 /**
-* Majordomo Protocol Client API, Java version Implements the MDP/Worker spec at
-* http://rfc.zeromq.org/spec:7.
-*/
-public class mdwrkapi
-{
+ * Majordomo Protocol Client API, Java version Implements the MDP/Worker spec at
+ * http://rfc.zeromq.org/spec:7.
+ */
+public class mdwrkapi {
 
     private static final int HEARTBEAT_LIVENESS = 3; // 3-5 is reasonable
 
-    private String   broker;
+    private String broker;
     private ZContext ctx;
-    private String   service;
+    private String service;
 
     private ZMQ.Socket worker;           // Socket to broker
-    private long       heartbeatAt;      // When to send HEARTBEAT
-    private int        liveness;         // How many attempts left
-    private int        heartbeat = 2500; // Heartbeat delay, msecs
-    private int        reconnect = 2500; // Reconnect delay, msecs
+    private long heartbeatAt;      // When to send HEARTBEAT
+    private int liveness;         // How many attempts left
+    private int heartbeat = 2500; // Heartbeat delay, msecs
+    private int reconnect = 2500; // Reconnect delay, msecs
 
     // Internal state
     private boolean expectReply = false; // false only at start
 
-    private long      timeout = 2500;
-    private boolean   verbose;                            // Print activity to stdout
-    private Formatter log     = new Formatter(System.out);
+    private long timeout = 2500;
+    private boolean verbose;                            // Print activity to stdout
+    private Formatter log = new Formatter(System.out);
 
     // Return address, if any
     private ZFrame replyTo;
 
-    public mdwrkapi(String broker, String service, boolean verbose)
-    {
+    public mdwrkapi(String broker, String service, boolean verbose) {
         assert (broker != null);
         assert (service != null);
         this.broker = broker;
@@ -54,8 +52,7 @@ public class mdwrkapi
      * @param option
      * @param msg
      */
-    void sendToBroker(MDP command, String option, ZMsg msg)
-    {
+    void sendToBroker(MDP command, String option, ZMsg msg) {
         msg = msg != null ? msg.duplicate() : new ZMsg();
 
         // Stack protocol envelope to start of message
@@ -76,8 +73,7 @@ public class mdwrkapi
     /**
      * Connect or reconnect to broker
      */
-    void reconnectToBroker()
-    {
+    void reconnectToBroker() {
         if (worker != null) {
             ctx.destroySocket(worker);
         }
@@ -98,8 +94,7 @@ public class mdwrkapi
     /**
      * Send reply, if any, to broker and wait for next request.
      */
-    public ZMsg receive(ZMsg reply)
-    {
+    public ZMsg receive(ZMsg reply) {
 
         // Format and send the reply if we were provided one
         assert (reply != null || !expectReply);
@@ -146,29 +141,24 @@ public class mdwrkapi
                     replyTo = msg.unwrap();
                     command.destroy();
                     return msg; // We have a request to process
-                }
-                else if (MDP.W_HEARTBEAT.frameEquals(command)) {
+                } else if (MDP.W_HEARTBEAT.frameEquals(command)) {
                     // Do nothing for heartbeats
-                }
-                else if (MDP.W_DISCONNECT.frameEquals(command)) {
+                } else if (MDP.W_DISCONNECT.frameEquals(command)) {
                     reconnectToBroker();
-                }
-                else {
+                } else {
                     log.format("E: invalid input message: \n");
                     msg.dump(log.out());
                 }
                 command.destroy();
                 msg.destroy();
-            }
-            else if (--liveness == 0) {
+            } else if (--liveness == 0) {
                 if (verbose)
                     log.format("W: disconnected from broker - retrying\n");
                 try {
                     Thread.sleep(reconnect);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     Thread.currentThread().interrupt(); // Restore the
-                                                        // interrupted status
+                    // interrupted status
                     break;
                 }
                 reconnectToBroker();
@@ -186,29 +176,24 @@ public class mdwrkapi
         return null;
     }
 
-    public void destroy()
-    {
+    public void destroy() {
         ctx.destroy();
     }
 
     // ==============   getters and setters =================
-    public int getHeartbeat()
-    {
+    public int getHeartbeat() {
         return heartbeat;
     }
 
-    public void setHeartbeat(int heartbeat)
-    {
+    public void setHeartbeat(int heartbeat) {
         this.heartbeat = heartbeat;
     }
 
-    public int getReconnect()
-    {
+    public int getReconnect() {
         return reconnect;
     }
 
-    public void setReconnect(int reconnect)
-    {
+    public void setReconnect(int reconnect) {
         this.reconnect = reconnect;
     }
 

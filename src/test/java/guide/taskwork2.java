@@ -3,14 +3,12 @@ package guide;
 import org.zeromq.ZMQ;
 
 /**
- *  Task worker - design 2
- *  Adds pub-sub flow to receive and respond to kill signal
+ * Task worker - design 2
+ * Adds pub-sub flow to receive and respond to kill signal
  */
-public class taskwork2
-{
+public class taskwork2 {
 
-    public static void main(String[] args) throws InterruptedException
-    {
+    public static void main(String[] args) throws InterruptedException {
         ZMQ.Context context = ZMQ.context(1);
 
         ZMQ.Socket receiver = context.socket(ZMQ.PULL);

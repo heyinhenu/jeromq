@@ -9,67 +9,54 @@ import zmq.ZError;
 import zmq.ZMQ;
 import zmq.io.mechanism.Mechanism;
 
-public class PlainClientMechanism extends Mechanism
-{
-    private enum State
-    {
-        SENDING_HELLO,
-        WAITING_FOR_WELCOME,
-        SENDING_INITIATE,
-        WAITING_FOR_READY,
-        ERROR_COMMAND_RECEIVED,
-        READY
+public class PlainClientMechanism extends Mechanism {
+    private enum State {
+        SENDING_HELLO, WAITING_FOR_WELCOME, SENDING_INITIATE, WAITING_FOR_READY, ERROR_COMMAND_RECEIVED, READY
     }
 
     private State state;
 
-    public PlainClientMechanism(Options options)
-    {
+    public PlainClientMechanism(Options options) {
         super(null, null, options);
         this.state = State.SENDING_HELLO;
     }
 
     @Override
-    public int nextHandshakeCommand(Msg msg)
-    {
+    public int nextHandshakeCommand(Msg msg) {
         int rc;
         switch (state) {
-        case SENDING_HELLO:
-            rc = produceHello(msg);
-            if (rc == 0) {
-                state = State.WAITING_FOR_WELCOME;
-            }
-            break;
-        case SENDING_INITIATE:
-            rc = produceInitiate(msg);
-            if (rc == 0) {
-                state = State.WAITING_FOR_READY;
-            }
-            break;
-        default:
-            rc = ZError.EAGAIN;
-            break;
+            case SENDING_HELLO:
+                rc = produceHello(msg);
+                if (rc == 0) {
+                    state = State.WAITING_FOR_WELCOME;
+                }
+                break;
+            case SENDING_INITIATE:
+                rc = produceInitiate(msg);
+                if (rc == 0) {
+                    state = State.WAITING_FOR_READY;
+                }
+                break;
+            default:
+                rc = ZError.EAGAIN;
+                break;
 
         }
         return rc;
     }
 
     @Override
-    public int processHandshakeCommand(Msg msg)
-    {
+    public int processHandshakeCommand(Msg msg) {
         int rc;
 
         int dataSize = msg.size();
         if (dataSize >= 8 && compare(msg, "WELCOME", true)) {
             rc = processWelcome(msg);
-        }
-        else if (dataSize >= 6 && compare(msg, "READY", true)) {
+        } else if (dataSize >= 6 && compare(msg, "READY", true)) {
             rc = processReady(msg);
-        }
-        else if (dataSize >= 6 && compare(msg, "ERROR", true)) {
+        } else if (dataSize >= 6 && compare(msg, "ERROR", true)) {
             rc = processError(msg);
-        }
-        else {
+        } else {
             //  Temporary support for security debugging
             System.out.println("PLAIN Client I: invalid handshake command");
             rc = ZError.EPROTO;
@@ -78,27 +65,22 @@ public class PlainClientMechanism extends Mechanism
     }
 
     @Override
-    public Status status()
-    {
+    public Status status() {
         if (state == State.READY) {
             return Status.READY;
-        }
-        else if (state == State.ERROR_COMMAND_RECEIVED) {
+        } else if (state == State.ERROR_COMMAND_RECEIVED) {
             return Status.ERROR;
-        }
-        else {
+        } else {
             return Status.HANDSHAKING;
         }
     }
 
     @Override
-    public int zapMsgAvailable()
-    {
+    public int zapMsgAvailable() {
         return 0;
     }
 
-    private int produceHello(Msg msg)
-    {
+    private int produceHello(Msg msg) {
         String plainUsername = options.plainUsername;
         assert (plainUsername.length() < 256);
 
@@ -112,8 +94,7 @@ public class PlainClientMechanism extends Mechanism
         return 0;
     }
 
-    private int processWelcome(Msg msg)
-    {
+    private int processWelcome(Msg msg) {
         if (state != State.WAITING_FOR_WELCOME) {
             return ZError.EPROTO;
         }
@@ -124,8 +105,7 @@ public class PlainClientMechanism extends Mechanism
         return 0;
     }
 
-    private int produceInitiate(Msg msg)
-    {
+    private int produceInitiate(Msg msg) {
         //  Add mechanism string
         appendData(msg, "INITIATE");
 
@@ -141,8 +121,7 @@ public class PlainClientMechanism extends Mechanism
         return 0;
     }
 
-    private int processReady(Msg msg)
-    {
+    private int processReady(Msg msg) {
         if (state != State.WAITING_FOR_READY) {
             return ZError.EPROTO;
         }
@@ -154,8 +133,7 @@ public class PlainClientMechanism extends Mechanism
         return rc;
     }
 
-    private int processError(Msg msg)
-    {
+    private int processError(Msg msg) {
         if (state != State.WAITING_FOR_WELCOME && state != State.WAITING_FOR_READY) {
             return ZError.EPROTO;
         }

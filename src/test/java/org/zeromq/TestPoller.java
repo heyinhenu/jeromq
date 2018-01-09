@@ -11,21 +11,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.zeromq.ZMQ.Socket;
 
-public class TestPoller
-{
-    static class Client implements Runnable
-    {
+public class TestPoller {
+    static class Client implements Runnable {
         private final AtomicBoolean received = new AtomicBoolean();
-        private final String        address;
+        private final String address;
 
-        public Client(String addr)
-        {
+        public Client(String addr) {
             this.address = addr;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZMQ.Context context = ZMQ.context(1);
             Socket pullConnect = context.socket(ZMQ.PULL);
 
@@ -42,8 +38,7 @@ public class TestPoller
     }
 
     @Test
-    public void testPollerPollout() throws Exception
-    {
+    public void testPollerPollout() throws Exception {
         int port = Utils.findOpenPort();
         String addr = "tcp://127.0.0.1:" + port;
 
@@ -67,8 +62,7 @@ public class TestPoller
                 assertThat(rc, is(true));
                 System.out.println("Sender: wrote message");
                 break;
-            }
-            else {
+            } else {
                 System.out.println("Sender: not writable");
                 executor.submit(client);
             }

@@ -19,17 +19,12 @@ import org.zeromq.ZProxy.Plug;
 
 import zmq.util.Utils;
 
-public class XpubXsubZTest
-{
+public class XpubXsubZTest {
     private AtomicReference<Throwable> testIssue476(final int front, final int back, final int max,
-                                                    ExecutorService service, final ZContext ctx)
-            throws InterruptedException, ExecutionException
-    {
-        Future<?> subscriber = service.submit(new Runnable()
-        {
+            ExecutorService service, final ZContext ctx) throws InterruptedException, ExecutionException {
+        Future<?> subscriber = service.submit(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 Thread.currentThread().setName("Subscriber");
                 final ZContext ctx = new ZContext();
                 try {
@@ -41,19 +36,16 @@ public class XpubXsubZTest
                         ZMsg.recvMsg(requester);
                         count++;
                     }
-                }
-                finally {
+                } finally {
                     ctx.close();
                 }
             }
         });
 
         final AtomicReference<Throwable> error = new AtomicReference<>();
-        service.submit(new Runnable()
-        {
+        service.submit(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 Thread.currentThread().setName("Publisher");
                 try {
                     ZMQ.Socket pub = ctx.createSocket(ZMQ.PUB);
@@ -65,8 +57,7 @@ public class XpubXsubZTest
                         assertThat(rc, is(true));
                         ZMQ.msleep(10);
                     }
-                }
-                catch (Throwable ex) {
+                } catch (Throwable ex) {
                     error.set(ex);
                     ex.printStackTrace();
                 }
@@ -79,8 +70,7 @@ public class XpubXsubZTest
     }
 
     @Test
-    public void testIssue476() throws InterruptedException, IOException, ExecutionException
-    {
+    public void testIssue476() throws InterruptedException, IOException, ExecutionException {
         final int front = Utils.findOpenPort();
         final int back = Utils.findOpenPort();
 
@@ -88,11 +78,9 @@ public class XpubXsubZTest
 
         ExecutorService service = Executors.newFixedThreadPool(3);
         final ZContext ctx = new ZContext();
-        service.submit(new Runnable()
-        {
+        service.submit(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 Thread.currentThread().setName("Proxy");
                 ZMQ.Socket xpub = ctx.createSocket(ZMQ.XPUB);
                 xpub.bind("tcp://*:" + back);
@@ -119,8 +107,7 @@ public class XpubXsubZTest
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testIssue476WithZProxy() throws InterruptedException, IOException, ExecutionException
-    {
+    public void testIssue476WithZProxy() throws InterruptedException, IOException, ExecutionException {
         final int front = Utils.findOpenPort();
         final int back = Utils.findOpenPort();
 
@@ -129,11 +116,9 @@ public class XpubXsubZTest
         ExecutorService service = Executors.newFixedThreadPool(3);
         final ZContext ctx = new ZContext();
 
-        ZProxy.Proxy actor = new ZProxy.Proxy.SimpleProxy()
-        {
+        ZProxy.Proxy actor = new ZProxy.Proxy.SimpleProxy() {
             @Override
-            public Socket create(ZContext ctx, Plug place, Object... args)
-            {
+            public Socket create(ZContext ctx, Plug place, Object... args) {
                 if (place == Plug.FRONT) {
                     return ctx.createSocket(ZMQ.XSUB);
                 }
@@ -147,8 +132,7 @@ public class XpubXsubZTest
             }
 
             @Override
-            public boolean configure(Socket socket, Plug place, Object... args) throws IOException
-            {
+            public boolean configure(Socket socket, Plug place, Object... args) throws IOException {
                 if (place == Plug.FRONT) {
                     return socket.bind("tcp://*:" + front);
                 }
@@ -174,8 +158,7 @@ public class XpubXsubZTest
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testIssue476WithZProxyZmqPump() throws InterruptedException, IOException, ExecutionException
-    {
+    public void testIssue476WithZProxyZmqPump() throws InterruptedException, IOException, ExecutionException {
         final int front = Utils.findOpenPort();
         final int back = Utils.findOpenPort();
 
@@ -184,11 +167,9 @@ public class XpubXsubZTest
         ExecutorService service = Executors.newFixedThreadPool(3);
         final ZContext ctx = new ZContext();
 
-        ZProxy.Proxy actor = new ZProxy.Proxy.SimpleProxy()
-        {
+        ZProxy.Proxy actor = new ZProxy.Proxy.SimpleProxy() {
             @Override
-            public Socket create(ZContext ctx, Plug place, Object... args)
-            {
+            public Socket create(ZContext ctx, Plug place, Object... args) {
                 if (place == Plug.FRONT) {
                     return ctx.createSocket(ZMQ.XSUB);
                 }
@@ -202,8 +183,7 @@ public class XpubXsubZTest
             }
 
             @Override
-            public boolean configure(Socket socket, Plug place, Object... args) throws IOException
-            {
+            public boolean configure(Socket socket, Plug place, Object... args) throws IOException {
                 if (place == Plug.FRONT) {
                     return socket.bind("tcp://*:" + front);
                 }

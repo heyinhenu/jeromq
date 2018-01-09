@@ -15,11 +15,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class StreamTest
-{
+public class StreamTest {
     @Test
-    public void testStream2dealer() throws IOException, InterruptedException
-    {
+    public void testStream2dealer() throws IOException, InterruptedException {
         final byte[] standardGreeting = new byte[64];
         standardGreeting[0] = (byte) 0xff;
         standardGreeting[8] = 1;
@@ -86,7 +84,7 @@ public class StreamTest
         Msg greeting = ZMQ.recv(stream, 0);
         assertThat(greeting, notNullValue());
         assertThat(greeting.size(), is(10));
-        assertThat(greeting.data(), is(new byte[] { (byte) 0xff, 0, 0, 0, 0, 0, 0, 0, 1, 0x7f }));
+        assertThat(greeting.data(), is(new byte[]{(byte) 0xff, 0, 0, 0, 0, 0, 0, 0, 1, 0x7f}));
 
         //  Send our own protocol greeting
         ret = ZMQ.send(stream, id, ZMQ.ZMQ_SNDMORE);
@@ -166,12 +164,9 @@ public class StreamTest
 
         //  Send Ready command
         ZMQ.send(stream, id, ZMQ.ZMQ_SNDMORE);
-        ZMQ.send(
-                 stream,
-                 new byte[] { 4, 41, 5, 'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e', 't', '-', 'T', 'y', 'p',
-                         'e', 0, 0, 0, 6, 'R', 'O', 'U', 'T', 'E', 'R', 8, 'I', 'd', 'e', 'n', 't', 'i', 't', 'y', 0, 0,
-                         0, 0 },
-                 0);
+        ZMQ.send(stream,
+                new byte[]{4, 41, 5, 'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e', 't', '-', 'T', 'y', 'p', 'e', 0, 0, 0, 6, 'R', 'O', 'U', 'T', 'E', 'R', 8, 'I', 'd', 'e', 'n', 't', 'i', 't', 'y', 0, 0, 0, 0},
+                0);
 
         //  Now we expect the data from the DEALER socket
         //  First frame is, again, the identity of the connection
@@ -195,7 +190,7 @@ public class StreamTest
 
         //  Send "World" back to DEALER
         ZMQ.send(stream, id, ZMQ.ZMQ_SNDMORE);
-        ret = ZMQ.send(stream, new byte[] { 0, 5, 'W', 'o', 'r', 'l', 'd' }, 0);
+        ret = ZMQ.send(stream, new byte[]{0, 5, 'W', 'o', 'r', 'l', 'd'}, 0);
         assertThat(ret, is(7));
 
         //  Expect response on DEALER socket
@@ -210,8 +205,7 @@ public class StreamTest
     }
 
     @Test
-    public void testStream2stream() throws IOException, InterruptedException
-    {
+    public void testStream2stream() throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://localhost:" + port;
 

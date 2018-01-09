@@ -5,15 +5,13 @@ import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
 /**
-* Hello World client
-* Connects REQ socket to tcp://localhost:5559
-* Sends "Hello" to server, expects "World" back
-*/
-public class rrclient
-{
+ * Hello World client
+ * Connects REQ socket to tcp://localhost:5559
+ * Sends "Hello" to server, expects "World" back
+ */
+public class rrclient {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         Context context = ZMQ.context(1);
 
         //  Socket to talk to server

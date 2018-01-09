@@ -12,15 +12,13 @@ import org.zeromq.ZMQ.Socket;
 
 /**
  * Clone server Model Three
- * @author Danish Shrestha <dshrestha06@gmail.com>
  *
+ * @author Danish Shrestha <dshrestha06@gmail.com>
  */
-public class clonesrv3
-{
+public class clonesrv3 {
     private static Map<String, kvsimple> kvMap = new LinkedHashMap<String, kvsimple>();
 
-    public void run()
-    {
+    public void run() {
 
         ZContext ctx = new ZContext();
 
@@ -84,14 +82,12 @@ public class clonesrv3
         ctx.close();
     }
 
-    private void sendMessage(kvsimple msg, byte[] identity, Socket snapshot)
-    {
+    private void sendMessage(kvsimple msg, byte[] identity, Socket snapshot) {
         snapshot.send(identity, ZMQ.SNDMORE);
         msg.send(snapshot);
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonesrv3().run();
     }
 }

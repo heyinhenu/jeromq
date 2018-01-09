@@ -16,11 +16,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class TestPairTcp
-{
+public class TestPairTcp {
     @Test
-    public void testPairTcp() throws IOException
-    {
+    public void testPairTcp() throws IOException {
         int port = Utils.findOpenPort();
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
@@ -43,8 +41,7 @@ public class TestPairTcp
     }
 
     @Test
-    public void testPairConnectSecondClientIssue285() throws IOException
-    {
+    public void testPairConnectSecondClientIssue285() throws IOException {
         int port = Utils.findOpenPort();
         String host = "tcp://127.0.0.1:" + port;
 
@@ -99,8 +96,7 @@ public class TestPairTcp
     }
 
     @Test
-    public void testPairMonitorBindConnect() throws InterruptedException, IOException
-    {
+    public void testPairMonitorBindConnect() throws InterruptedException, IOException {
         int port = Utils.findOpenPort();
         String host = "tcp://127.0.0.1:" + port;
 
@@ -140,8 +136,7 @@ public class TestPairTcp
     }
 
     @Test
-    public void testPairMonitorIssue291() throws InterruptedException, IOException
-    {
+    public void testPairMonitorIssue291() throws InterruptedException, IOException {
         int port = Utils.findOpenPort();
         String host = "tcp://127.0.0.1:" + port;
 

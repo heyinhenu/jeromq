@@ -8,8 +8,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * The ZDigest class generates a hash from chunks of data. The current algorithm is SHA-1, chosen for speed.
  */
-public class ZDigest
-{
+public class ZDigest {
     private final byte[] buffer;
 
     private final MessageDigest sha1;
@@ -17,28 +16,25 @@ public class ZDigest
     /**
      * Creates a new digester.
      */
-    public ZDigest()
-    {
+    public ZDigest() {
         this(new byte[8192]);
     }
 
     /**
      * Creates a new digester.
+     *
      * @param buffer the temp buffer used for computation of streams.
      */
-    public ZDigest(byte[] buffer)
-    {
+    public ZDigest(byte[] buffer) {
         this.buffer = buffer;
         try {
             sha1 = MessageDigest.getInstance("SHA-1");
-        }
-        catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public ZDigest update(InputStream input) throws IOException
-    {
+    public ZDigest update(InputStream input) throws IOException {
         int read = input.read(buffer);
 
         while (read != -1) {
@@ -48,29 +44,24 @@ public class ZDigest
         return this;
     }
 
-    public ZDigest update(byte[] input)
-    {
+    public ZDigest update(byte[] input) {
         return update(input, 0, input.length);
     }
 
-    public ZDigest update(byte[] input, int offset, int length)
-    {
+    public ZDigest update(byte[] input, int offset, int length) {
         sha1.update(input, offset, length);
         return this;
     }
 
-    public byte[] data()
-    {
+    public byte[] data() {
         return sha1.digest();
     }
 
-    public int size()
-    {
+    public int size() {
         return sha1.digest().length;
     }
 
-    public String string()
-    {
+    public String string() {
         return ZData.toString(data());
     }
 }

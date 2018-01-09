@@ -10,16 +10,14 @@ import org.zeromq.ZMQ.Socket;
 
 /**
  * Clone client model 1
- * @author Danish Shrestha <dshrestha06@gmail.com>
  *
+ * @author Danish Shrestha <dshrestha06@gmail.com>
  */
-public class clonecli1
-{
-    private static Map<String, kvsimple> kvMap    = new HashMap<String, kvsimple>();
-    private static AtomicLong            sequence = new AtomicLong();
+public class clonecli1 {
+    private static Map<String, kvsimple> kvMap = new HashMap<String, kvsimple>();
+    private static AtomicLong sequence = new AtomicLong();
 
-    public void run()
-    {
+    public void run() {
         ZContext ctx = new ZContext();
         Socket subscriber = ctx.createSocket(ZMQ.SUB);
         subscriber.connect("tcp://localhost:5556");
@@ -37,8 +35,7 @@ public class clonecli1
         ctx.close();
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonecli1().run();
     }
 }

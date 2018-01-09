@@ -10,9 +10,8 @@ import zmq.ZMQ;
 import zmq.io.SessionBase;
 import zmq.io.net.Address;
 
-class NullMechanism extends Mechanism
-{
-    private static final String OK    = "200";
+class NullMechanism extends Mechanism {
+    private static final String OK = "200";
     private static final String READY = "READY";
     private static final String ERROR = "ERROR";
 
@@ -26,8 +25,7 @@ class NullMechanism extends Mechanism
     private boolean zapRequestSent;
     private boolean zapReplyReceived;
 
-    NullMechanism(SessionBase session, Address peerAddress, Options options)
-    {
+    NullMechanism(SessionBase session, Address peerAddress, Options options) {
         super(session, peerAddress, options);
 
         //  NULL mechanism only uses ZAP if there's a domain defined
@@ -38,8 +36,7 @@ class NullMechanism extends Mechanism
     }
 
     @Override
-    public int nextHandshakeCommand(Msg msg)
-    {
+    public int nextHandshakeCommand(Msg msg) {
         if (readyCommandSent || errorCommandSent) {
             return ZError.EAGAIN;
         }
@@ -84,8 +81,7 @@ class NullMechanism extends Mechanism
     }
 
     @Override
-    public int processHandshakeCommand(Msg msg)
-    {
+    public int processHandshakeCommand(Msg msg) {
         if (readyCommandReceived || errorCommandReceived) {
             puts("NULL I: client sent invalid NULL handshake (duplicate READY)");
             return ZError.EPROTO;
@@ -95,25 +91,21 @@ class NullMechanism extends Mechanism
         int rc;
         if (dataSize >= 6 && compare(msg, READY, true)) {
             rc = processReadyCommand(msg);
-        }
-        else if (dataSize >= 6 && compare(msg, ERROR, true)) {
+        } else if (dataSize >= 6 && compare(msg, ERROR, true)) {
             rc = processErrorCommand(msg);
-        }
-        else {
+        } else {
             puts("NULL I: client sent invalid NULL handshake (not READY) ");
             return ZError.EPROTO;
         }
         return rc;
     }
 
-    private int processReadyCommand(Msg msg)
-    {
+    private int processReadyCommand(Msg msg) {
         readyCommandReceived = true;
         return parseMetadata(msg, 6, false);
     }
 
-    private int processErrorCommand(Msg msg)
-    {
+    private int processErrorCommand(Msg msg) {
         if (msg.size() < 7) {
             return ZError.EPROTO;
         }
@@ -126,8 +118,7 @@ class NullMechanism extends Mechanism
     }
 
     @Override
-    public int zapMsgAvailable()
-    {
+    public int zapMsgAvailable() {
         if (zapReplyReceived) {
             return ZError.EFSM;
         }
@@ -140,8 +131,7 @@ class NullMechanism extends Mechanism
     }
 
     @Override
-    public Status status()
-    {
+    public Status status() {
         boolean commandSent = readyCommandSent || errorCommandSent;
         boolean commandReceived = readyCommandReceived || errorCommandReceived;
 

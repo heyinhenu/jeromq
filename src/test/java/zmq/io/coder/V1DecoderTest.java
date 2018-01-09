@@ -10,18 +10,15 @@ import zmq.msg.MsgAllocatorThreshold;
 import zmq.util.Errno;
 import zmq.util.Wire;
 
-public class V1DecoderTest extends AbstractDecoderTest
-{
+public class V1DecoderTest extends AbstractDecoderTest {
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         decoder = new V1Decoder(new Errno(), 64, 512, new MsgAllocatorThreshold());
     }
 
     // as if it read data from socket
     @Override
-    int readShortMessage(ByteBuffer buf)
-    {
+    int readShortMessage(ByteBuffer buf) {
         buf.put((byte) 6);
         buf.put((byte) 1); // flag
         buf.put("hello".getBytes(ZMQ.CHARSET));
@@ -31,8 +28,7 @@ public class V1DecoderTest extends AbstractDecoderTest
 
     // as if it read data from socket
     @Override
-    int readLongMessage1(ByteBuffer buf)
-    {
+    int readLongMessage1(ByteBuffer buf) {
         buf.put((byte) 201);
         buf.put((byte) 3); // flag
         for (int i = 0; i < 6; i++) {
@@ -43,8 +39,7 @@ public class V1DecoderTest extends AbstractDecoderTest
     }
 
     @Override
-    int readLongMessage2(ByteBuffer buf)
-    {
+    int readLongMessage2(ByteBuffer buf) {
         for (int i = 0; i < 13; i++) {
             buf.put("0123456789".getBytes(ZMQ.CHARSET));
         }
@@ -53,8 +48,7 @@ public class V1DecoderTest extends AbstractDecoderTest
     }
 
     @Override
-    int readExtraLongMessage(ByteBuffer buf)
-    {
+    int readExtraLongMessage(ByteBuffer buf) {
         buf.put((byte) 0xff);
         Wire.putUInt64(buf, 331);
         buf.put((byte) 0); // flag

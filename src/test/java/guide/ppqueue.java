@@ -14,35 +14,31 @@ import org.zeromq.ZMsg;
 // Paranoid Pirate queue
 //
 
-public class ppqueue
-{
+public class ppqueue {
 
     private final static int HEARTBEAT_LIVENESS = 3;    //  3-5 is reasonable
     private final static int HEARTBEAT_INTERVAL = 1000; //  msecs
 
     //  Paranoid Pirate Protocol constants
-    private final static String PPP_READY     = "\001"; //  Signals worker is ready
+    private final static String PPP_READY = "\001"; //  Signals worker is ready
     private final static String PPP_HEARTBEAT = "\002"; //  Signals worker heartbeat
 
     //  Here we define the worker class; a structure and a set of functions that
     //  as constructor, destructor, and methods on worker objects:
 
-    private static class Worker
-    {
+    private static class Worker {
         ZFrame address;  //  Address of worker
         String identity; //  Printable identity
-        long   expiry;   //  Expires at this time
+        long expiry;   //  Expires at this time
 
-        protected Worker(ZFrame address)
-        {
+        protected Worker(ZFrame address) {
             this.address = address;
             identity = new String(address.getData(), ZMQ.CHARSET);
             expiry = System.currentTimeMillis() + HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS;
         }
 
         //  The ready method puts a worker to the end of the ready list:
-        protected void ready(ArrayList<Worker> workers)
-        {
+        protected void ready(ArrayList<Worker> workers) {
             Iterator<Worker> it = workers.iterator();
             while (it.hasNext()) {
                 Worker worker = it.next();
@@ -55,8 +51,7 @@ public class ppqueue
         }
 
         //  The next method returns the next available worker address:
-        protected static ZFrame next(ArrayList<Worker> workers)
-        {
+        protected static ZFrame next(ArrayList<Worker> workers) {
             Worker worker = workers.remove(0);
             assert (worker != null);
             ZFrame frame = worker.address;
@@ -65,8 +60,7 @@ public class ppqueue
 
         //  The purge method looks for and kills expired workers. We hold workers
         //  from oldest to most recent, so we stop at the first alive worker:
-        protected static void purge(ArrayList<Worker> workers)
-        {
+        protected static void purge(ArrayList<Worker> workers) {
             Iterator<Worker> it = workers.iterator();
             while (it.hasNext()) {
                 Worker worker = it.next();
@@ -76,12 +70,13 @@ public class ppqueue
                 it.remove();
             }
         }
-    };
+    }
+
+    ;
 
     //  The main task is an LRU queue with heartbeating on workers so we can
     //  detect crashed or blocked worker tasks:
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZContext ctx = new ZContext();
         Socket frontend = ctx.createSocket(ZMQ.ROUTER);
         Socket backend = ctx.createSocket(ZMQ.ROUTER);
@@ -125,8 +120,8 @@ public class ppqueue
                         msg.dump(System.out);
                     }
                     msg.destroy();
-                }
-                else msg.send(frontend);
+                } else
+                    msg.send(frontend);
             }
             if (workersAvailable && poller.pollin(1)) {
                 //  Now get next client request, route to next worker

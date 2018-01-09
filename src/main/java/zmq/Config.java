@@ -1,7 +1,6 @@
 package zmq;
 
-public enum Config
-{
+public enum Config {
     //  Number of new messages in message pipe needed to trigger new memory
     //  allocation. Setting this parameter to 256 decreases the impact of
     //  memory allocation by approximately 99.6%
@@ -67,13 +66,11 @@ public enum Config
 
     private final int value;
 
-    Config(int value)
-    {
+    Config(int value) {
         this.value = value;
     }
 
-    public int getValue()
-    {
+    public int getValue() {
         return value;
     }
 }

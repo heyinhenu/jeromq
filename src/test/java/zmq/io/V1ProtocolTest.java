@@ -8,11 +8,9 @@ import org.junit.Test;
 
 import zmq.ZMQ;
 
-public class V1ProtocolTest extends AbstractProtocolVersion
-{
+public class V1ProtocolTest extends AbstractProtocolVersion {
     @Test(timeout = 2000)
-    public void testProtocolVersion1short() throws IOException, InterruptedException
-    {
+    public void testProtocolVersion1short() throws IOException, InterruptedException {
         List<ByteBuffer> raws = raws(0);
 
         raws.add(identity());
@@ -26,8 +24,7 @@ public class V1ProtocolTest extends AbstractProtocolVersion
     }
 
     @Test(timeout = 2000)
-    public void testProtocolVersion1long() throws IOException, InterruptedException
-    {
+    public void testProtocolVersion1long() throws IOException, InterruptedException {
         List<ByteBuffer> raws = raws(0);
 
         raws.add(identity());

@@ -9,12 +9,10 @@ import zmq.msg.MsgAllocator;
 import zmq.util.Errno;
 import zmq.util.Wire;
 
-public class V1Decoder extends Decoder
-{
+public class V1Decoder extends Decoder {
     private final ByteBuffer tmpbuf;
 
-    public V1Decoder(Errno errno, int bufsize, long maxmsgsize, MsgAllocator allocator)
-    {
+    public V1Decoder(Errno errno, int bufsize, long maxmsgsize, MsgAllocator allocator) {
         super(errno, bufsize, maxmsgsize, allocator);
 
         tmpbuf = ByteBuffer.allocate(8);
@@ -25,8 +23,7 @@ public class V1Decoder extends Decoder
     }
 
     @Override
-    protected Step.Result oneByteSizeReady()
-    {
+    protected Step.Result oneByteSizeReady() {
         //  First byte of size is read. If it is 0xff read 8-byte size.
         //  Otherwise allocate the buffer for message data and read the
         //  message data into it.
@@ -35,8 +32,7 @@ public class V1Decoder extends Decoder
             tmpbuf.position(0);
             tmpbuf.limit(8);
             nextStep(tmpbuf, eightByteSizeReady);
-        }
-        else {
+        } else {
             //  There has to be at least one byte (the flags) in the message).
             if (size <= 0) {
                 errno(ZError.EPROTO);
@@ -55,8 +51,7 @@ public class V1Decoder extends Decoder
     }
 
     @Override
-    protected Step.Result eightByteSizeReady()
-    {
+    protected Step.Result eightByteSizeReady() {
         //  8-byte payload length is read. Allocate the buffer
         //  for message body and read the message data into it.
         tmpbuf.position(0);
@@ -76,8 +71,7 @@ public class V1Decoder extends Decoder
     }
 
     @Override
-    protected Step.Result flagsReady()
-    {
+    protected Step.Result flagsReady() {
         //  Store the flags from the wire into the message structure.
         int first = tmpbuf.get(0) & 0xff;
         if ((first & V1Protocol.MORE_FLAG) > 0) {
@@ -90,8 +84,7 @@ public class V1Decoder extends Decoder
     }
 
     @Override
-    protected Step.Result messageReady()
-    {
+    protected Step.Result messageReady() {
         //  Message is completely read. Push it further and start reading
         //  new message. (inProgress is a 0-byte message after this point.)
 

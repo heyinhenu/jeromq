@@ -8,34 +8,28 @@ import java.nio.channels.SocketChannel;
 import zmq.io.Metadata;
 import zmq.util.Wire;
 
-public class Msg
-{
+public class Msg {
     // dynamic message building used when the size is not known in advance
-    public static final class Builder extends Msg
-    {
+    public static final class Builder extends Msg {
         private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        public Builder()
-        {
+        public Builder() {
             super();
         }
 
         @Override
-        public int size()
-        {
+        public int size() {
             return out.size();
         }
 
         @Override
-        protected Msg put(int index, byte b)
-        {
+        protected Msg put(int index, byte b) {
             out.write(b);
             return this;
         }
 
         @Override
-        public Msg put(byte[] src, int off, int len)
-        {
+        public Msg put(byte[] src, int off, int len) {
             if (src == null) {
                 return this;
             }
@@ -45,8 +39,7 @@ public class Msg
         }
 
         @Override
-        public Msg put(ByteBuffer src, int off, int len)
-        {
+        public Msg put(ByteBuffer src, int off, int len) {
             if (src == null) {
                 return this;
             }
@@ -58,51 +51,45 @@ public class Msg
         }
 
         @Override
-        public void setFlags(int flags)
-        {
+        public void setFlags(int flags) {
             super.setFlags(flags);
         }
 
-        public Msg build()
-        {
+        public Msg build() {
             return new Msg(this, out);
         }
     }
 
-    enum Type
-    {
-        DATA,
-        DELIMITER
+    enum Type {
+        DATA, DELIMITER
     }
 
-    public static final int MORE       = 1;  //  Followed by more parts
-    public static final int COMMAND    = 2;  //  Command frame (see ZMTP spec)
+    public static final int MORE = 1;  //  Followed by more parts
+    public static final int COMMAND = 2;  //  Command frame (see ZMTP spec)
     public static final int CREDENTIAL = 32;
-    public static final int IDENTITY   = 64;
-    public static final int SHARED     = 128;
+    public static final int IDENTITY = 64;
+    public static final int SHARED = 128;
 
     private Metadata metadata;
-    private int      flags;
-    private Type     type;
+    private int flags;
+    private Type type;
 
     // the file descriptor where this message originated, needs to be 64bit due to alignment
     private SocketChannel fileDesc;
 
-    private int              size;
-    private byte[]           data;
+    private int size;
+    private byte[] data;
     private final ByteBuffer buf;
     // keep track of relative write position
     private int writeIndex = 0;
     // keep track of relative read position
     private int readIndex = 0;
 
-    public Msg()
-    {
+    public Msg() {
         this(0);
     }
 
-    public Msg(int capacity)
-    {
+    public Msg(int capacity) {
         this.type = Type.DATA;
         this.flags = 0;
         this.size = capacity;
@@ -110,8 +97,7 @@ public class Msg
         this.data = buf.array();
     }
 
-    public Msg(byte[] src)
-    {
+    public Msg(byte[] src) {
         if (src == null) {
             src = new byte[0];
         }
@@ -122,8 +108,7 @@ public class Msg
         this.buf = ByteBuffer.wrap(src).order(ByteOrder.BIG_ENDIAN);
     }
 
-    public Msg(final ByteBuffer src)
-    {
+    public Msg(final ByteBuffer src) {
         if (src == null) {
             throw new IllegalArgumentException("ByteBuffer cannot be null");
         }
@@ -132,15 +117,13 @@ public class Msg
         this.buf = src.duplicate();
         if (buf.hasArray() && buf.position() == 0 && buf.limit() == buf.capacity()) {
             this.data = buf.array();
-        }
-        else {
+        } else {
             this.data = null;
         }
         this.size = buf.remaining();
     }
 
-    public Msg(final Msg m)
-    {
+    public Msg(final Msg m) {
         if (m == null) {
             throw new IllegalArgumentException("Msg cannot be null");
         }
@@ -154,62 +137,51 @@ public class Msg
         }
     }
 
-    private Msg(Msg src, ByteArrayOutputStream out)
-    {
+    private Msg(Msg src, ByteArrayOutputStream out) {
         this(ByteBuffer.wrap(out.toByteArray()));
         this.type = src.type;
         this.flags = src.flags;
     }
 
-    public boolean isIdentity()
-    {
+    public boolean isIdentity() {
         return (flags & IDENTITY) == IDENTITY;
     }
 
-    public boolean isDelimiter()
-    {
+    public boolean isDelimiter() {
         return type == Type.DELIMITER;
     }
 
-    public boolean check()
-    {
+    public boolean check() {
         return true; // type >= TYPE_MIN && type <= TYPE_MAX;
     }
 
-    public int flags()
-    {
+    public int flags() {
         return flags;
     }
 
-    public boolean hasMore()
-    {
+    public boolean hasMore() {
         return (flags & MORE) > 0;
     }
 
-    public boolean isCommand()
-    {
+    public boolean isCommand() {
         return (flags & COMMAND) == COMMAND;
     }
 
-    public boolean isCredential()
-    {
+    public boolean isCredential() {
         return (flags & CREDENTIAL) == CREDENTIAL;
     }
 
-    public void setFlags(int flags)
-    {
+    public void setFlags(int flags) {
         this.flags |= flags;
     }
 
-    public void initDelimiter()
-    {
+    public void initDelimiter() {
         type = Type.DELIMITER;
         metadata = null;
         flags = 0;
     }
 
-    public byte[] data()
-    {
+    public byte[] data() {
         if (data == null) {
             data = new byte[buf.remaining()];
             buf.duplicate().get(data);
@@ -217,81 +189,66 @@ public class Msg
         return data;
     }
 
-    public ByteBuffer buf()
-    {
+    public ByteBuffer buf() {
         return buf.duplicate();
     }
 
-    public int size()
-    {
+    public int size() {
         return size;
     }
 
-    public void resetFlags(int f)
-    {
+    public void resetFlags(int f) {
         flags = flags & ~f;
     }
 
-    public void setFd(SocketChannel fileDesc)
-    {
+    public void setFd(SocketChannel fileDesc) {
         this.fileDesc = fileDesc;
     }
 
     // TODO V4 use the source channel
-    public SocketChannel fd()
-    {
+    public SocketChannel fd() {
         return fileDesc;
     }
 
-    public Metadata getMetadata()
-    {
+    public Metadata getMetadata() {
         return metadata;
     }
 
-    public Msg setMetadata(Metadata metadata)
-    {
+    public Msg setMetadata(Metadata metadata) {
         this.metadata = metadata;
         return this;
     }
 
-    public void resetMetadata()
-    {
+    public void resetMetadata() {
         setMetadata(null);
     }
 
-    public byte get()
-    {
+    public byte get() {
         return get(readIndex++);
     }
 
-    public byte get(int index)
-    {
+    public byte get(int index) {
         return buf.get(index);
     }
 
-    public Msg put(byte b)
-    {
+    public Msg put(byte b) {
         return put(writeIndex++, b);
     }
 
-    public Msg put(int b)
-    {
+    public Msg put(int b) {
         return put(writeIndex++, (byte) b);
     }
 
-    protected Msg put(int index, byte b)
-    {
+    protected Msg put(int index, byte b) {
         buf.put(index, b);
         return this;
     }
 
-    public Msg put(byte[] src)
-    {
+    public Msg put(byte[] src) {
         return put(src, 0, src.length);
     }
 
-    public Msg put(byte[] src, int off, int len)
-    {
+    public Msg put(byte[] src, int off, int len) {
         if (src == null) {
             return this;
         }
@@ -302,8 +259,7 @@ public class Msg
         return this;
     }
 
-    public Msg put(ByteBuffer src, int off, int len)
-    {
+    public Msg put(ByteBuffer src, int off, int len) {
         if (src == null) {
             return this;
         }
@@ -315,8 +271,7 @@ public class Msg
         return this;
     }
 
-    public Msg put(ByteBuffer src)
-    {
+    public Msg put(ByteBuffer src) {
         ByteBuffer dup = buf.duplicate();
         dup.position(writeIndex);
         writeIndex += Math.min(dup.remaining(), src.remaining());
@@ -324,23 +279,20 @@ public class Msg
         return this;
     }
 
-    public int getBytes(int index, byte[] dst, int off, int len)
-    {
+    public int getBytes(int index, byte[] dst, int off, int len) {
         int count = Math.min(len, size - index);
         if (data == null) {
             ByteBuffer dup = buf.duplicate();
             dup.position(index);
             dup.put(dst, off, count);
-        }
-        else {
+        } else {
             System.arraycopy(data, index, dst, off, count);
         }
 
         return count;
     }
 
-    public int getBytes(int index, ByteBuffer bb, int len)
-    {
+    public int getBytes(int index, ByteBuffer bb, int len) {
         ByteBuffer dup = buf.duplicate();
         dup.position(index);
         int count = Math.min(bb.remaining(), dup.remaining());
@@ -350,33 +302,27 @@ public class Msg
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return String.format("#zmq.Msg{type=%s, size=%s, flags=%s}", type, size, flags);
     }
 
-    protected final int getWriteIndex()
-    {
+    protected final int getWriteIndex() {
         return writeIndex;
     }
 
-    protected final void setWriteIndex(int writeIndex)
-    {
+    protected final void setWriteIndex(int writeIndex) {
         this.writeIndex = writeIndex;
     }
 
-    public long getLong(int offset)
-    {
+    public long getLong(int offset) {
         return Wire.getUInt64(buf, offset);
     }
 
-    public int getInt(int offset)
-    {
+    public int getInt(int offset) {
         return Wire.getUInt32(buf, offset);
     }
 
-    public void transfer(ByteBuffer destination, int srcOffset, int srcLength)
-    {
+    public void transfer(ByteBuffer destination, int srcOffset, int srcLength) {
         int position = buf.position();
         int limit = buf.limit();
 

@@ -8,11 +8,9 @@ import org.junit.Test;
 import zmq.Msg;
 import zmq.ZMQ;
 
-public class YQueueTest
-{
+public class YQueueTest {
     @Test
-    public void testReuse()
-    {
+    public void testReuse() {
         // yqueue has a first empty entry
         YQueue<Msg> p = new YQueue<Msg>(3);
 

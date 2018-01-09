@@ -11,11 +11,9 @@ import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZMonitor.Event;
 import org.zeromq.ZMonitor.ZEvent;
 
-public class ZMonitorTest
-{
+public class ZMonitorTest {
     @Test
-    public void testZMonitorImpossibleWorkflows() throws IOException
-    {
+    public void testZMonitorImpossibleWorkflows() throws IOException {
         final ZContext ctx = new ZContext();
         final Socket socket = ctx.createSocket(ZMQ.DEALER);
 
@@ -38,8 +36,7 @@ public class ZMonitorTest
     }
 
     @Test
-    public void testZMonitor() throws IOException
-    {
+    public void testZMonitor() throws IOException {
         final ZContext ctx = new ZContext();
         final Socket client = ctx.createSocket(ZMQ.DEALER);
         final Socket server = ctx.createSocket(ZMQ.DEALER);
@@ -93,8 +90,7 @@ public class ZMonitorTest
     }
 
     //    @Test
-    public void testRepeated() throws IOException
-    {
+    public void testRepeated() throws IOException {
         for (int idx = 0; idx < 10000; ++idx) {
             System.out.println("+++++ " + idx);
             testZMonitor();

@@ -17,24 +17,20 @@ import org.zeromq.ZMQ.Socket;
  * Tests a PUSH-PULL dialog with several methods, each component being on a
  * separate thread.
  */
-public class TestPushPullThreadedTcp
-{
-    private class Worker implements Runnable
-    {
-        private final int    count;
-        private final AtomicBoolean  finished = new AtomicBoolean();
-        private int          idx;
+public class TestPushPullThreadedTcp {
+    private class Worker implements Runnable {
+        private final int count;
+        private final AtomicBoolean finished = new AtomicBoolean();
+        private int idx;
         private final Socket receiver;
 
-        public Worker(Socket receiver, int count)
-        {
+        public Worker(Socket receiver, int count) {
             this.receiver = receiver;
             this.count = count;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             idx = 0;
             while (idx < count) {
                 if (idx % 5000 == 10) {
@@ -48,23 +44,20 @@ public class TestPushPullThreadedTcp
         }
     }
 
-    private class Client implements Runnable
-    {
+    private class Client implements Runnable {
         private final Socket sender;
 
         private final AtomicBoolean finished = new AtomicBoolean();
 
         private final int count;
 
-        public Client(Socket sender, int count)
-        {
+        public Client(Socket sender, int count) {
             this.sender = sender;
             this.count = count;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             int idx = 0;
             while (idx++ < count) {
                 ZMsg msg = new ZMsg();
@@ -76,9 +69,8 @@ public class TestPushPullThreadedTcp
         }
     }
 
-//    @Test
-    public void testRepeated() throws Exception
-    {
+    //    @Test
+    public void testRepeated() throws Exception {
         for (int idx = 0; idx < 2000; ++idx) {
             System.out.println("+++++++++++ " + idx);
             testPushPull1();
@@ -88,27 +80,23 @@ public class TestPushPullThreadedTcp
     }
 
     @Test
-    public void testPushPull1() throws Exception
-    {
+    public void testPushPull1() throws Exception {
         test(1);
     }
 
     @Test
-    public void testPushPull500() throws Exception
-    {
+    public void testPushPull500() throws Exception {
         System.out.println("Sending 500 messages");
         test(500);
     }
 
     @Test
-    public void testPushPullWithWatermark() throws Exception
-    {
+    public void testPushPullWithWatermark() throws Exception {
         System.out.println("Sending 20000 messages to trigger watermark limit");
         test(20000);
     }
 
-    private void test(int count) throws IOException, InterruptedException
-    {
+    private void test(int count) throws IOException, InterruptedException {
         long start = System.currentTimeMillis();
 
         ExecutorService threadPool = Executors.newFixedThreadPool(2);
@@ -146,22 +134,17 @@ public class TestPushPullThreadedTcp
     }
 
     @Test
-    public void testIssue338() throws InterruptedException, IOException
-    {
-        try (
-             final ZSocket pull = new ZSocket(ZMQ.PULL);
-             final ZSocket push = new ZSocket(ZMQ.PUSH)) {
+    public void testIssue338() throws InterruptedException, IOException {
+        try (final ZSocket pull = new ZSocket(ZMQ.PULL); final ZSocket push = new ZSocket(ZMQ.PUSH)) {
             final String host = "tcp://localhost:" + Utils.findOpenPort();
             pull.bind(host);
             push.connect(host);
 
             final ExecutorService executor = Executors.newFixedThreadPool(1);
             final int messagesNumber = 300000;
-            Runnable receiver = new Runnable()
-            {
+            Runnable receiver = new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     String actual = null;
                     int count = messagesNumber;
                     while (count-- > 0) {

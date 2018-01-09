@@ -18,22 +18,18 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class MetadataTest
-{
-    private static class ZapHandler implements Runnable
-    {
+public class MetadataTest {
+    private static class ZapHandler implements Runnable {
         private final SocketBase handler;
 
-        public ZapHandler(SocketBase handler)
-        {
+        public ZapHandler(SocketBase handler) {
             this.handler = handler;
         }
 
         @SuppressWarnings("unused")
         @Override
-        public void run()
-        {
-            byte[] metadata = { 5, 'H', 'e', 'l', 'l', 'o', 0, 0, 0, 5, 'W', 'o', 'r', 'l', 'd' };
+        public void run() {
+            byte[] metadata = {5, 'H', 'e', 'l', 'l', 'o', 0, 0, 0, 5, 'W', 'o', 'r', 'l', 'd'};
 
             //  Process ZAP requests forever
             while (true) {
@@ -65,8 +61,7 @@ public class MetadataTest
                     assertThat(ret, is(9));
                     ret = ZMQ.send(handler, metadata, metadata.length, 0);
                     assertThat(ret, is(metadata.length));
-                }
-                else {
+                } else {
                     ret = ZMQ.send(handler, "400", ZMQ.ZMQ_SNDMORE);
                     assertThat(ret, is(3));
                     ret = ZMQ.send(handler, "BAD DOMAIN", ZMQ.ZMQ_SNDMORE);
@@ -82,8 +77,7 @@ public class MetadataTest
     }
 
     @Test
-    public void testMetadata() throws IOException, InterruptedException
-    {
+    public void testMetadata() throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://127.0.0.1:" + port;
 
@@ -145,8 +139,7 @@ public class MetadataTest
     }
 
     @Test
-    public void testWriteRead() throws IOException
-    {
+    public void testWriteRead() throws IOException {
         Metadata src = new Metadata();
         src.set("key", "value");
         src.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());

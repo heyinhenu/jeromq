@@ -21,11 +21,9 @@ import zmq.ZMQ;
 import zmq.socket.AbstractSpecTest;
 import zmq.util.Utils;
 
-public class RouterSpecTest extends AbstractSpecTest
-{
+public class RouterSpecTest extends AbstractSpecTest {
     @Test
-    public void testFairQueueIn() throws IOException, InterruptedException
-    {
+    public void testFairQueueIn() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -41,8 +39,7 @@ public class RouterSpecTest extends AbstractSpecTest
 
     @Test
     @Ignore
-    public void testDestroyQueueOnDisconnect() throws IOException, InterruptedException
-    {
+    public void testDestroyQueueOnDisconnect() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.createContext();
         int port = Utils.findOpenPort();
         List<String> binds = Arrays.asList("inproc://a", "tcp://127.0.0.1:" + port);
@@ -58,9 +55,8 @@ public class RouterSpecTest extends AbstractSpecTest
         ZMQ.term(ctx);
     }
 
-    private void fairQueueIn(Ctx ctx, String address, int bindType, int connectType)
-            throws IOException, InterruptedException
-    {
+    private void fairQueueIn(Ctx ctx, String address, int bindType,
+            int connectType) throws IOException, InterruptedException {
         //  Server socket will accept connections
         SocketBase receiver = ZMQ.socket(ctx, bindType);
         assertThat(receiver, notNullValue());

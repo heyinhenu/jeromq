@@ -18,10 +18,9 @@ import zmq.ZMQ;
  * itself. Further, messages may be queued in the event that a peer is unavailable to receive them.
  * </p>
  */
-public class ZSocket implements AutoCloseable
-{
+public class ZSocket implements AutoCloseable {
     public static final Charset UTF8 = Charset.forName("UTF-8");
-    private final SocketBase    socketBase;
+    private final SocketBase socketBase;
 
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
@@ -30,8 +29,7 @@ public class ZSocket implements AutoCloseable
      *
      * @param socketType ZeroMQ socket type
      */
-    public ZSocket(final int socketType)
-    {
+    public ZSocket(final int socketType) {
         socketBase = ManagedContext.getInstance().createSocket(socketType);
     }
 
@@ -41,8 +39,7 @@ public class ZSocket implements AutoCloseable
      *
      * @return the socket's type.
      */
-    public int getType()
-    {
+    public int getType() {
         return (int) getOption(ZMQ.ZMQ_TYPE);
     }
 
@@ -57,8 +54,7 @@ public class ZSocket implements AutoCloseable
      * @param endpoint the endpoint to bind to
      * @return returns true if bind to the endpoint was successful
      */
-    public boolean bind(final String endpoint)
-    {
+    public boolean bind(final String endpoint) {
         final boolean result = socketBase.bind(endpoint);
         mayRaise();
         return result;
@@ -73,8 +69,7 @@ public class ZSocket implements AutoCloseable
      * @param endpoint the endpoint to unbind from
      * @return returns true if unbind to the endpoint was successful
      */
-    public boolean unbind(final String endpoint)
-    {
+    public boolean unbind(final String endpoint) {
         final boolean result = socketBase.bind(endpoint);
         mayRaise();
         return result;
@@ -91,8 +86,7 @@ public class ZSocket implements AutoCloseable
      * @param endpoint the endpoint to connect to
      * @return returns true if connecting to the endpoint was successful
      */
-    public boolean connect(final String endpoint)
-    {
+    public boolean connect(final String endpoint) {
         final boolean result = socketBase.connect(endpoint);
         mayRaise();
         return result;
@@ -104,8 +98,7 @@ public class ZSocket implements AutoCloseable
      * @param endpoint the endpoint to disconnect from
      * @return returns true if disconnecting to endpoint was successful
      */
-    public boolean disconnect(final String endpoint)
-    {
+    public boolean disconnect(final String endpoint) {
         final boolean result = socketBase.termEndpoint(endpoint);
         mayRaise();
         return result;
@@ -119,38 +112,31 @@ public class ZSocket implements AutoCloseable
      *
      * @return true if there are more messages to receive.
      */
-    public final boolean hasReceiveMore()
-    {
+    public final boolean hasReceiveMore() {
         return (int) getOption(ZMQ.ZMQ_RCVMORE) == 1;
     }
 
-    public void subscribe(byte[] topic)
-    {
+    public void subscribe(byte[] topic) {
         setOption(ZMQ.ZMQ_SUBSCRIBE, topic);
     }
 
-    public void subscribe(String topic)
-    {
+    public void subscribe(String topic) {
         setOption(ZMQ.ZMQ_SUBSCRIBE, topic.getBytes(UTF8));
     }
 
-    public void unsubscribe(byte[] topic)
-    {
+    public void unsubscribe(byte[] topic) {
         setOption(ZMQ.ZMQ_UNSUBSCRIBE, topic);
     }
 
-    public void unsubscribe(String topic)
-    {
+    public void unsubscribe(String topic) {
         setOption(ZMQ.ZMQ_UNSUBSCRIBE, topic.getBytes(UTF8));
     }
 
-    public int send(byte[] b)
-    {
+    public int send(byte[] b) {
         return send(b, 0);
     }
 
-    public int send(byte[] b, int flags)
-    {
+    public int send(byte[] b, int flags) {
         final Msg msg = new Msg(b);
         if (socketBase.send(msg, flags)) {
             return msg.size();
@@ -166,8 +152,7 @@ public class ZSocket implements AutoCloseable
      * @param flags
      * @return return true if successful
      */
-    public boolean sendFrame(ZFrame frame, int flags)
-    {
+    public boolean sendFrame(ZFrame frame, int flags) {
         final byte[] data = frame.getData();
         final Msg msg = new Msg(data);
         if (socketBase.send(msg, flags)) {
@@ -177,8 +162,7 @@ public class ZSocket implements AutoCloseable
         return false;
     }
 
-    public boolean sendMessage(ZMsg message)
-    {
+    public boolean sendMessage(ZMsg message) {
         ZFrame frame = message.pop();
         boolean rc = false;
         while (frame != null) {
@@ -191,24 +175,20 @@ public class ZSocket implements AutoCloseable
         return rc;
     }
 
-    public int sendStringUtf8(String str)
-    {
+    public int sendStringUtf8(String str) {
         return sendStringUtf8(str, 0);
     }
 
-    public int sendStringUtf8(String str, int flags)
-    {
+    public int sendStringUtf8(String str, int flags) {
         final byte[] b = str.getBytes(UTF8);
         return send(b, flags);
     }
 
-    public byte[] receive()
-    {
+    public byte[] receive() {
         return receive(0);
     }
 
-    public byte[] receive(int flags)
-    {
+    public byte[] receive(int flags) {
         final Msg msg = socketBase.recv(flags);
         if (msg == null) {
             return null;
@@ -216,36 +196,30 @@ public class ZSocket implements AutoCloseable
         return msg.data();
     }
 
-    public String receiveStringUtf8()
-    {
+    public String receiveStringUtf8() {
         return receiveStringUtf8(0);
     }
 
-    public String receiveStringUtf8(int flags)
-    {
+    public String receiveStringUtf8(int flags) {
         final byte[] b = receive(flags);
         return new String(b, UTF8);
     }
 
-    private void mayRaise()
-    {
+    private void mayRaise() {
         final int errno = socketBase.errno();
         if (errno != 0 && errno != ZError.EAGAIN) {
             throw new ZMQException(errno);
         }
     }
 
-    private void setOption(int option, Object value)
-    {
+    private void setOption(int option, Object value) {
         try {
             socketBase.setSocketOpt(option, value);
-        }
-        catch (ZMQException e) {
+        } catch (ZMQException e) {
         }
     }
 
-    private Object getOption(int option)
-    {
+    private Object getOption(int option) {
         return socketBase.getSocketOptx(option);
     }
 
@@ -253,8 +227,7 @@ public class ZSocket implements AutoCloseable
      * {@inheritDoc}
      */
     @Override
-    public void close()
-    {
+    public void close() {
         if (isClosed.compareAndSet(false, true)) {
             ManagedContext.getInstance().destroy(socketBase);
         }

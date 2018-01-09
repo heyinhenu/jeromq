@@ -6,23 +6,20 @@ import zmq.Msg;
 import zmq.pipe.Pipe;
 import zmq.util.Utils;
 
-class Trie
-{
-    public interface ITrieHandler
-    {
+class Trie {
+    public interface ITrieHandler {
         void added(byte[] data, int size, Pipe arg);
     }
 
     private int refcnt;
 
     private byte min;
-    private int  count;
-    private int  liveNodes;
+    private int count;
+    private int liveNodes;
 
     Trie[] next;
 
-    public Trie()
-    {
+    public Trie() {
         min = 0;
         count = 0;
         liveNodes = 0;
@@ -33,8 +30,7 @@ class Trie
 
     //  Add key to the trie. Returns true if this is a new item in the trie
     //  rather than a duplicate.
-    public boolean add(Msg msg, int start, int size)
-    {
+    public boolean add(Msg msg, int start, int size) {
         //  We are at the node corresponding to the prefix. We are done.
         if (size == 0) {
             ++refcnt;
@@ -49,21 +45,18 @@ class Trie
                 min = c;
                 count = 1;
                 next = null;
-            }
-            else if (count == 1) {
+            } else if (count == 1) {
                 byte oldc = min;
                 Trie oldp = next[0];
                 count = (min < c ? c - min : min - c) + 1;
                 next = new Trie[count];
                 min = (byte) Math.min(min, c);
                 next[oldc - min] = oldp;
-            }
-            else if (min < c) {
+            } else if (min < c) {
                 //  The new character is above the current character range.
                 count = c - min + 1;
                 next = realloc(next, count, true);
-            }
-            else {
+            } else {
                 //  The new character is below the current character range.
                 count = (min + count) - c;
                 next = realloc(next, count, false);
@@ -81,8 +74,7 @@ class Trie
                 assert (liveNodes == 1);
             }
             return next[0].add(msg, start + 1, size - 1);
-        }
-        else {
+        } else {
             if (next[c - min] == null) {
                 next[c - min] = new Trie();
 
@@ -93,15 +85,13 @@ class Trie
         }
     }
 
-    private Trie[] realloc(Trie[] table, int size, boolean ended)
-    {
+    private Trie[] realloc(Trie[] table, int size, boolean ended) {
         return Utils.realloc(Trie.class, table, size, ended);
     }
 
     //  Remove key from the trie. Returns true if the item is actually
     //  removed from the trie.
-    public boolean rm(Msg msg, int start, int size)
-    {
+    public boolean rm(Msg msg, int start, int size) {
         //  TODO: Shouldn't an error be reported if the key does not exist?
 
         if (size == 0) {
@@ -136,8 +126,7 @@ class Trie
                 count = 0;
                 --liveNodes;
                 assert (liveNodes == 0);
-            }
-            else {
+            } else {
                 next[c - min] = null;
                 assert (liveNodes > 1);
                 --liveNodes;
@@ -156,8 +145,7 @@ class Trie
                         //  node table => keep the right-most node
                         node = next[count - 1];
                         min += count - 1;
-                    }
-                    else if (c == min + count - 1) {
+                    } else if (c == min + count - 1) {
                         //  The pruned node is the right-most node ptr in the
                         //  node table => keep the left-most node
                         node = next[0];
@@ -165,10 +153,9 @@ class Trie
                     assert (node != null);
 
                     //free (next.table);
-                    next = new Trie[] { node };
+                    next = new Trie[]{node};
                     count = 1;
-                }
-                else if (c == min) {
+                } else if (c == min) {
                     //  We can compact the table "from the left".
                     //  Find the left-most non-null node ptr, which we'll use as
                     //  our new min
@@ -188,8 +175,7 @@ class Trie
                     next = realloc(next, count, true);
 
                     min = newMin;
-                }
-                else if (c == min + count - 1) {
+                } else if (c == min + count - 1) {
                     //  We can compact the table "from the right".
                     //  Find the right-most non-null node ptr, which we'll use to
                     //  determine the new table size
@@ -212,8 +198,7 @@ class Trie
     }
 
     //  Check whether particular key is in the trie.
-    public boolean check(ByteBuffer data)
-    {
+    public boolean check(ByteBuffer data) {
         int size = data.limit();
         //  This function is on critical path. It deliberately doesn't use
         //  recursion to get a bit better performance.
@@ -240,8 +225,7 @@ class Trie
             //  Move to the next character.
             if (current.count == 1) {
                 current = current.next[0];
-            }
-            else {
+            } else {
                 current = current.next[c - current.min];
                 if (current == null) {
                     return false;
@@ -253,13 +237,11 @@ class Trie
     }
 
     //  Apply the function supplied to each subscription in the trie.
-    public void apply(ITrieHandler func, Pipe arg)
-    {
+    public void apply(ITrieHandler func, Pipe arg) {
         applyHelper(null, 0, 0, func, arg);
     }
 
-    private void applyHelper(byte[] buff, int buffsize, int maxBuffsize, ITrieHandler func, Pipe pipe)
-    {
+    private void applyHelper(byte[] buff, int buffsize, int maxBuffsize, ITrieHandler func, Pipe pipe) {
         //  If this node is a subscription, apply the function.
         if (refcnt > 0) {
             func.added(buff, buffsize, pipe);
@@ -294,8 +276,7 @@ class Trie
         }
     }
 
-    private boolean isRedundant()
-    {
+    private boolean isRedundant() {
         return refcnt == 0 && liveNodes == 0;
     }
 }

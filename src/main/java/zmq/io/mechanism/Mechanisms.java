@@ -14,47 +14,36 @@ import zmq.io.mechanism.plain.PlainClientMechanism;
 import zmq.io.mechanism.plain.PlainServerMechanism;
 import zmq.io.net.Address;
 
-public enum Mechanisms
-{
+public enum Mechanisms {
     NULL {
         @Override
-        public Mechanism create(SessionBase session, Address peerAddress, Options options)
-        {
+        public Mechanism create(SessionBase session, Address peerAddress, Options options) {
             return new NullMechanism(session, peerAddress, options);
         }
-    },
-    PLAIN {
+    }, PLAIN {
         @Override
-        public Mechanism create(SessionBase session, Address peerAddress, Options options)
-        {
+        public Mechanism create(SessionBase session, Address peerAddress, Options options) {
             if (options.asServer) {
                 return new PlainServerMechanism(session, peerAddress, options);
-            }
-            else {
+            } else {
                 return new PlainClientMechanism(options);
             }
         }
-    },
-    CURVE {
+    }, CURVE {
         @Override
-        public Mechanism create(SessionBase session, Address peerAddress, Options options)
-        {
+        public Mechanism create(SessionBase session, Address peerAddress, Options options) {
             if (options.asServer) {
                 return new CurveServerMechanism(session, peerAddress, options);
-            }
-            else {
+            } else {
                 return new CurveClientMechanism(options);
             }
         }
-    },
-    GSSAPI {
+    }, GSSAPI {
         @Override
-        public Mechanism create(SessionBase session, Address peerAddress, Options options)
-        {
+        public Mechanism create(SessionBase session, Address peerAddress, Options options) {
             if (options.asServer) {
                 return new GssapiServerMechanism(session, peerAddress, options);
-            }
-            else {
+            } else {
                 return new GssapiClientMechanism(options);
             }
         }
@@ -62,8 +51,7 @@ public enum Mechanisms
 
     public abstract Mechanism create(SessionBase session, Address peerAddress, Options options);
 
-    public boolean isMechanism(ByteBuffer greetingRecv)
-    {
+    public boolean isMechanism(ByteBuffer greetingRecv) {
         byte[] dst = new byte[20];
         greetingRecv.get(dst, 0, dst.length);
 

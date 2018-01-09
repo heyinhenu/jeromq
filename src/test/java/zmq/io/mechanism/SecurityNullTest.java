@@ -18,21 +18,17 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class SecurityNullTest
-{
-    private static class ZapHandler implements Runnable
-    {
+public class SecurityNullTest {
+    private static class ZapHandler implements Runnable {
         private final SocketBase handler;
 
-        public ZapHandler(SocketBase handler)
-        {
+        public ZapHandler(SocketBase handler) {
             this.handler = handler;
         }
 
         @Override
         @SuppressWarnings("unused")
-        public void run()
-        {
+        public void run() {
             //  Process ZAP requests forever
             while (true) {
                 Msg version = ZMQ.recv(handler, 0);
@@ -63,8 +59,7 @@ public class SecurityNullTest
                     assertThat(ret, is(9));
                     ret = ZMQ.send(handler, "", 0);
                     assertThat(ret, is(0));
-                }
-                else {
+                } else {
                     ret = ZMQ.send(handler, "400", ZMQ.ZMQ_SNDMORE);
                     assertThat(ret, is(3));
                     ret = ZMQ.send(handler, "BAD DOMAIN", ZMQ.ZMQ_SNDMORE);
@@ -81,8 +76,7 @@ public class SecurityNullTest
     }
 
     @Test
-    public void testNullMechanismSecurity() throws IOException, InterruptedException
-    {
+    public void testNullMechanismSecurity() throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://127.0.0.1:" + port;
 
@@ -172,9 +166,8 @@ public class SecurityNullTest
         OutputStream out = sock.getOutputStream();
         out.write(new StringBuilder().append(0x01).append(0x00).toString().getBytes(ZMQ.CHARSET));
         // send sneaky message that shouldn't be received
-        out.write(
-                  new StringBuilder().append(0x08).append(0x00).append("sneaky").append(0x00).toString()
-                          .getBytes(ZMQ.CHARSET));
+        out.write(new StringBuilder().append(0x08).append(0x00).append("sneaky").append(0x00).toString().getBytes(
+                ZMQ.CHARSET));
         int timeout = 250;
         ZMQ.setSocketOption(server, ZMQ.ZMQ_RCVTIMEO, timeout);
 

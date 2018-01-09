@@ -5,14 +5,11 @@ import zmq.Msg;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class LocalThr
-{
-    private LocalThr()
-    {
+public class LocalThr {
+    private LocalThr() {
     }
 
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         String bindTo;
         long messageCount;
         int messageSize;
@@ -93,24 +90,20 @@ public class LocalThr
         ZMQ.term(ctx);
     }
 
-    private static void printf(String str, Object... args)
-    {
+    private static void printf(String str, Object... args) {
         // TODO Auto-generated method stub
         System.out.println(String.format(str, args));
     }
 
-    private static int atoi(String string)
-    {
+    private static int atoi(String string) {
         return Integer.valueOf(string);
     }
 
-    private static long atol(String string)
-    {
+    private static long atol(String string) {
         return Long.valueOf(string);
     }
 
-    private static void printf(String string)
-    {
+    private static void printf(String string) {
         System.out.println(string);
     }
 }

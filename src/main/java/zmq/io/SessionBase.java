@@ -25,8 +25,7 @@ import zmq.io.net.tipc.TipcConnecter;
 import zmq.pipe.Pipe;
 import zmq.poll.IPollEvents;
 
-public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
-{
+public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents {
     //  If true, this session (re)connects to the peer. Otherwise, it's
     //  a transient session created by the listener.
     private final boolean active;
@@ -69,8 +68,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
 
     private final IOObject ioObject;
 
-    public SessionBase(IOThread ioThread, boolean connect, SocketBase socket, Options options, Address addr)
-    {
+    public SessionBase(IOThread ioThread, boolean connect, SocketBase socket, Options options, Address addr) {
         super(ioThread, options);
         ioObject = new IOObject(ioThread, this);
 
@@ -89,8 +87,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
     }
 
     @Override
-    public void destroy()
-    {
+    public void destroy() {
         assert (pipe == null);
         assert (zapPipe == null);
 
@@ -108,8 +105,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
     }
 
     //  To be used once only, when creating the session.
-    public void attachPipe(Pipe pipe)
-    {
+    public void attachPipe(Pipe pipe) {
         assert (!isTerminating());
         assert (this.pipe == null);
         assert (pipe != null);
@@ -117,8 +113,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         this.pipe.setEventSink(this);
     }
 
-    protected Msg pullMsg()
-    {
+    protected Msg pullMsg() {
         if (pipe == null) {
             return null;
         }
@@ -133,8 +128,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
 
     }
 
-    protected boolean pushMsg(Msg msg)
-    {
+    protected boolean pushMsg(Msg msg) {
         if (pipe != null && pipe.write(msg)) {
             return true;
         }
@@ -142,8 +136,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         return false;
     }
 
-    public Msg readZapMsg()
-    {
+    public Msg readZapMsg() {
         if (zapPipe == null) {
             errno.set(ZError.ENOTCONN);
             return null;
@@ -155,8 +148,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         return msg;
     }
 
-    public boolean writeZapMsg(Msg msg)
-    {
+    public boolean writeZapMsg(Msg msg) {
         if (zapPipe == null) {
             errno.set(ZError.ENOTCONN);
             return false;
@@ -169,12 +161,10 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         return true;
     }
 
-    protected void reset()
-    {
+    protected void reset() {
     }
 
-    public void flush()
-    {
+    public void flush() {
         if (pipe != null) {
             pipe.flush();
         }
@@ -182,8 +172,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
 
     //  Remove any half processed messages. Flush unflushed messages.
     //  Call this function when engine disconnect to get rid of leftovers.
-    private void cleanPipes()
-    {
+    private void cleanPipes() {
         assert (pipe != null);
 
         //  Get rid of half-processed messages in the out pipe. Flush any
@@ -202,8 +191,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
     }
 
     @Override
-    public void pipeTerminated(Pipe pipe)
-    {
+    public void pipeTerminated(Pipe pipe) {
         //  Drop the reference to the deallocated pipe.
         assert (this.pipe == pipe || this.zapPipe == pipe || terminatingPipes.contains(pipe));
 
@@ -214,11 +202,9 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
                 ioObject.cancelTimer(LINGER_TIMER_ID);
                 hasLingerTimer = false;
             }
-        }
-        else if (zapPipe == pipe) {
+        } else if (zapPipe == pipe) {
             zapPipe = null;
-        }
-        else {
+        } else {
             // Remove the pipe from the detached pipes set
             terminatingPipes.remove(pipe);
         }
@@ -240,8 +226,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
     }
 
     @Override
-    public void readActivated(Pipe pipe)
-    {
+    public void readActivated(Pipe pipe) {
         // Skip activating if we're detaching this pipe
         if (this.pipe != pipe && this.zapPipe != pipe) {
             assert (terminatingPipes.contains(pipe));
@@ -254,15 +239,13 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         }
         if (this.pipe == pipe) {
             engine.restartOutput();
-        }
-        else {
+        } else {
             engine.zapMsgAvailable();
         }
     }
 
     @Override
-    public void writeActivated(Pipe pipe)
-    {
+    public void writeActivated(Pipe pipe) {
         // Skip activating if we're detaching this pipe
         if (this.pipe != pipe) {
             assert (terminatingPipes.contains(pipe));
@@ -275,30 +258,26 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
     }
 
     @Override
-    public void hiccuped(Pipe pipe)
-    {
+    public void hiccuped(Pipe pipe) {
         //  Hiccups are always sent from session to socket, not the other
         //  way round.
         throw new UnsupportedOperationException("Must Override");
 
     }
 
-    public SocketBase getSocket()
-    {
+    public SocketBase getSocket() {
         return socket;
     }
 
     @Override
-    protected void processPlug()
-    {
+    protected void processPlug() {
         ioObject.plug();
         if (active) {
             startConnecting(false);
         }
     }
 
-    public int zapConnect()
-    {
+    public int zapConnect() {
         assert (zapPipe == null);
 
         Ctx.Endpoint peer = findEndpoint("inproc://zeromq.zap.01");
@@ -313,9 +292,9 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
 
         //  Create a bi-directional pipe that will connect
         //  session with zap socket.
-        ZObject[] parents = { this, peer.socket };
-        int[] hwms = { 0, 0 };
-        boolean[] conflates = { false, false };
+        ZObject[] parents = {this, peer.socket};
+        int[] hwms = {0, 0};
+        boolean[] conflates = {false, false};
         Pipe[] pipes = Pipe.pair(parents, hwms, conflates);
 
         //  Attach local end of the pipe to this socket object.
@@ -335,25 +314,21 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         return 0;
     }
 
-    protected boolean zapEnabled()
-    {
-        return options.mechanism != Mechanisms.NULL
-                || (options.zapDomain != null && !options.zapDomain.isEmpty());
+    protected boolean zapEnabled() {
+        return options.mechanism != Mechanisms.NULL || (options.zapDomain != null && !options.zapDomain.isEmpty());
     }
 
     @Override
-    protected void processAttach(IEngine engine)
-    {
+    protected void processAttach(IEngine engine) {
         assert (engine != null);
 
         //  Create the pipe if it does not exist yet.
         if (pipe == null && !isTerminating()) {
-            ZObject[] parents = { this, socket };
-            boolean conflate = options.conflate && (options.type == ZMQ.ZMQ_DEALER || options.type == ZMQ.ZMQ_PULL
-                    || options.type == ZMQ.ZMQ_PUSH || options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_SUB);
+            ZObject[] parents = {this, socket};
+            boolean conflate = options.conflate && (options.type == ZMQ.ZMQ_DEALER || options.type == ZMQ.ZMQ_PULL || options.type == ZMQ.ZMQ_PUSH || options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_SUB);
 
-            int[] hwms = { conflate ? -1 : options.recvHwm, conflate ? -1 : options.sendHwm };
-            boolean[] conflates = { conflate, conflate };
+            int[] hwms = {conflate ? -1 : options.recvHwm, conflate ? -1 : options.sendHwm};
+            boolean[] conflates = {conflate, conflate};
             Pipe[] pipes = Pipe.pair(parents, hwms, conflates);
 
             //  Plug the local end of the pipe.
@@ -373,8 +348,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         this.engine.plug(ioThread, this);
     }
 
-    public void engineError(ErrorReason reason)
-    {
+    public void engineError(ErrorReason reason) {
         //  Engine is dead. Let's forget about it.
         engine = null;
 
@@ -386,20 +360,19 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         assert (reason == ErrorReason.CONNECTION || reason == ErrorReason.TIMEOUT || reason == ErrorReason.PROTOCOL);
 
         switch (reason) {
-        case TIMEOUT:
-        case CONNECTION:
-            if (active) {
-                reconnect();
-            }
-            else {
+            case TIMEOUT:
+            case CONNECTION:
+                if (active) {
+                    reconnect();
+                } else {
+                    terminate();
+                }
+                break;
+            case PROTOCOL:
                 terminate();
-            }
-            break;
-        case PROTOCOL:
-            terminate();
-            break;
-        default:
-            break;
+                break;
+            default:
+                break;
         }
 
         //  Just in case there's only a delimiter in the pipe.
@@ -412,8 +385,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
     }
 
     @Override
-    protected void processTerm(int linger)
-    {
+    protected void processTerm(int linger) {
         assert (!pending);
 
         //  If the termination of the pipe happens before the term command is
@@ -454,8 +426,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
     }
 
     @Override
-    public void timerEvent(int id)
-    {
+    public void timerEvent(int id) {
         //  Linger period expired. We can proceed with termination even though
         //  there are still pending messages to be sent.
         assert (id == LINGER_TIMER_ID);
@@ -466,14 +437,13 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         pipe.terminate(false);
     }
 
-    private void reconnect()
-    {
+    private void reconnect() {
         // TODO V4 -        //  Transient session self-destructs after peer disconnects. ?
 
         //  For delayed connect situations, terminate the pipe
         //  and reestablish later on
-        if (pipe != null && !options.immediate && !NetProtocol.pgm.equals(addr.protocol())
-                && !NetProtocol.epgm.equals(addr.protocol()) && !NetProtocol.norm.equals(addr.protocol())) {
+        if (pipe != null && !options.immediate && !NetProtocol.pgm.equals(addr.protocol()) && !NetProtocol.epgm.equals(
+                addr.protocol()) && !NetProtocol.norm.equals(addr.protocol())) {
             pipe.hiccup();
             pipe.terminate(false);
             terminatingPipes.add(pipe);
@@ -494,8 +464,7 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
         }
     }
 
-    private void startConnecting(boolean wait)
-    {
+    private void startConnecting(boolean wait) {
         assert (active);
 
         //  Choose I/O thread to run connecter in. Given that we are already
@@ -511,119 +480,109 @@ public class SessionBase extends Own implements Pipe.IPipeEvents, IPollEvents
             return;
         }
         switch (protocol) {
-        case tcp:
-            if (options.socksProxyAddress != null) {
-                Address proxyAddress = new Address(NetProtocol.tcp.name(), options.socksProxyAddress);
-                SocksConnecter connecter = new SocksConnecter(ioThread, this, options, addr, proxyAddress, wait);
+            case tcp:
+                if (options.socksProxyAddress != null) {
+                    Address proxyAddress = new Address(NetProtocol.tcp.name(), options.socksProxyAddress);
+                    SocksConnecter connecter = new SocksConnecter(ioThread, this, options, addr, proxyAddress, wait);
+                    launchChild(connecter);
+                } else {
+                    TcpConnecter connecter = new TcpConnecter(ioThread, this, options, addr, wait);
+                    launchChild(connecter);
+                }
+                break;
+            case ipc: {
+                IpcConnecter connecter = new IpcConnecter(ioThread, this, options, addr, wait);
                 launchChild(connecter);
             }
-            else {
-                TcpConnecter connecter = new TcpConnecter(ioThread, this, options, addr, wait);
+            break;
+
+            case tipc: {
+                TipcConnecter connecter = new TipcConnecter(ioThread, this, options, addr, wait);
                 launchChild(connecter);
             }
             break;
-        case ipc: {
-            IpcConnecter connecter = new IpcConnecter(ioThread, this, options, addr, wait);
-            launchChild(connecter);
-        }
-            break;
 
-        case tipc: {
-            TipcConnecter connecter = new TipcConnecter(ioThread, this, options, addr, wait);
-            launchChild(connecter);
-        }
-            break;
+            case pgm:
+            case epgm: {
+                assert (options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_XPUB || options.type == ZMQ.ZMQ_SUB || options.type == ZMQ.ZMQ_XSUB);
 
-        case pgm:
-        case epgm: {
-            assert (options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_XPUB || options.type == ZMQ.ZMQ_SUB
-                    || options.type == ZMQ.ZMQ_XSUB);
+                //  For EPGM transport with UDP encapsulation of PGM is used.
+                boolean udpEncapsulation = protocol == NetProtocol.epgm;
 
-            //  For EPGM transport with UDP encapsulation of PGM is used.
-            boolean udpEncapsulation = protocol == NetProtocol.epgm;
+                //  At this point we'll create message pipes to the session straight
+                //  away. There's no point in delaying it as no concept of 'connect'
+                //  exists with PGM anyway.
+                if (options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_XPUB) {
+                    //  PGM sender.
+                    PgmSender pgmSender = new PgmSender(ioThread, options);
+                    boolean rc = pgmSender.init(udpEncapsulation, addr);
+                    assert (rc);
+                    sendAttach(this, pgmSender);
+                } else {
+                    //  PGM receiver.
+                    PgmReceiver pgmReceiver = new PgmReceiver(ioThread, options);
+                    boolean rc = pgmReceiver.init(udpEncapsulation, addr);
+                    assert (rc);
+                    sendAttach(this, pgmReceiver);
 
-            //  At this point we'll create message pipes to the session straight
-            //  away. There's no point in delaying it as no concept of 'connect'
-            //  exists with PGM anyway.
-            if (options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_XPUB) {
-                //  PGM sender.
-                PgmSender pgmSender = new PgmSender(ioThread, options);
-                boolean rc = pgmSender.init(udpEncapsulation, addr);
-                assert (rc);
-                sendAttach(this, pgmSender);
+                }
             }
-            else {
-                //  PGM receiver.
-                PgmReceiver pgmReceiver = new PgmReceiver(ioThread, options);
-                boolean rc = pgmReceiver.init(udpEncapsulation, addr);
-                assert (rc);
-                sendAttach(this, pgmReceiver);
-
-            }
-        }
             break;
 
-        case norm: {
-            //  At this point we'll create message pipes to the session straight
-            //  away. There's no point in delaying it as no concept of 'connect'
-            //  exists with NORM anyway.
-            if (options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_XPUB) {
-                //  NORM sender.
-                NormEngine normSender = new NormEngine(ioThread, options);
-                boolean rc = normSender.init(addr, true, false);
-                assert (rc);
-                sendAttach(this, normSender);
-            }
-            else {
-                //  NORM receiver.
-                NormEngine normReceiver = new NormEngine(ioThread, options);
-                boolean rc = normReceiver.init(addr, false, true);
-                assert (rc);
-                sendAttach(this, normReceiver);
+            case norm: {
+                //  At this point we'll create message pipes to the session straight
+                //  away. There's no point in delaying it as no concept of 'connect'
+                //  exists with NORM anyway.
+                if (options.type == ZMQ.ZMQ_PUB || options.type == ZMQ.ZMQ_XPUB) {
+                    //  NORM sender.
+                    NormEngine normSender = new NormEngine(ioThread, options);
+                    boolean rc = normSender.init(addr, true, false);
+                    assert (rc);
+                    sendAttach(this, normSender);
+                } else {
+                    //  NORM receiver.
+                    NormEngine normReceiver = new NormEngine(ioThread, options);
+                    boolean rc = normReceiver.init(addr, false, true);
+                    assert (rc);
+                    sendAttach(this, normReceiver);
 
+                }
             }
-        }
             break;
 
-        default:
-            assert (false);
-            break;
+            default:
+                assert (false);
+                break;
         }
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getClass().getSimpleName() + "-" + socket;
     }
 
     @Override
-    public void inEvent()
-    {
+    public void inEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void outEvent()
-    {
+    public void outEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void connectEvent()
-    {
+    public void connectEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void acceptEvent()
-    {
+    public void acceptEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public final void incSeqnum()
-    {
+    public final void incSeqnum() {
         super.incSeqnum();
     }
 }

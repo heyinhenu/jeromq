@@ -13,8 +13,7 @@ import zmq.ZMQ;
 import zmq.io.coder.IDecoder.Step;
 import zmq.util.ValueReference;
 
-public abstract class AbstractDecoderTest
-{
+public abstract class AbstractDecoderTest {
     DecoderBase decoder;
 
     // as if it read data from socket
@@ -28,8 +27,7 @@ public abstract class AbstractDecoderTest
     abstract int readExtraLongMessage(ByteBuffer buf);
 
     @Test
-    public void testReader()
-    {
+    public void testReader() {
         ByteBuffer in = decoder.getBuffer();
         int insize = readShortMessage(in);
 
@@ -45,8 +43,7 @@ public abstract class AbstractDecoderTest
     }
 
     @Test
-    public void testReaderLong()
-    {
+    public void testReaderLong() {
         ByteBuffer in = decoder.getBuffer();
         int insize = readLongMessage1(in);
 
@@ -77,8 +74,7 @@ public abstract class AbstractDecoderTest
     }
 
     @Test
-    public void testReaderExtraLong()
-    {
+    public void testReaderExtraLong() {
         ByteBuffer in = decoder.getBuffer();
         int insize = readExtraLongMessage(in);
 
@@ -113,8 +109,7 @@ public abstract class AbstractDecoderTest
     }
 
     @Test
-    public void testReaderMultipleMsg()
-    {
+    public void testReaderMultipleMsg() {
         ByteBuffer in = decoder.getBuffer();
         int insize = readShortMessage(in);
         assertThat(insize, is(7));

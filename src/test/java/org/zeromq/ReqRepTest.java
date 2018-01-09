@@ -12,17 +12,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-public class ReqRepTest
-{
-    private final class Server303 implements Runnable
-    {
-        private final String  address;
-        private final int     threadCount;
+public class ReqRepTest {
+    private final class Server303 implements Runnable {
+        private final String address;
+        private final int threadCount;
         private final boolean verbose;
-        private final int     loopCount;
+        private final int loopCount;
 
-        private Server303(String address, int loopCount, int threadCount, boolean verbose)
-        {
+        private Server303(String address, int loopCount, int threadCount, boolean verbose) {
             this.address = address;
             this.threadCount = threadCount;
             this.verbose = verbose;
@@ -30,29 +27,22 @@ public class ReqRepTest
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             int currentServCount = 0;
-            try (
-                 ZMQ.Context context = ZMQ.context(1);
-                 ZMQ.Socket responder = context.socket(ZMQ.REP);) {
+            try (ZMQ.Context context = ZMQ.context(1); ZMQ.Socket responder = context.socket(ZMQ.REP);) {
                 responder.bind(address);
                 int count = loopCount * threadCount;
                 while (count-- > 0) {
                     try {
                         String incomingMessage = responder.recvStr();
-                        responder.send(String.format(
-                                                     "Server Replied [%1$s/%2$s] of %3$s",
-                                                     currentServCount,
-                                                     Thread.currentThread().getId(),
-                                                     incomingMessage));
+                        responder.send(String.format("Server Replied [%1$s/%2$s] of %3$s", currentServCount,
+                                Thread.currentThread().getId(), incomingMessage));
                         currentServCount++;
 
                         if (currentServCount % 1000 == 0 && verbose) {
                             System.out.println("Served " + currentServCount);
                         }
-                    }
-                    catch (Exception e2) {
+                    } catch (Exception e2) {
                         System.out.println(">>>>>>>>>>got exception " + e2.getMessage());
                     }
 
@@ -61,25 +51,20 @@ public class ReqRepTest
         }
     }
 
-    private final class Client303 implements Runnable
-    {
-        private final int     loopCount;
-        private final String  address;
+    private final class Client303 implements Runnable {
+        private final int loopCount;
+        private final String address;
         private final boolean verbose;
 
-        private Client303(String address, int loopCount, boolean verbose)
-        {
+        private Client303(String address, int loopCount, boolean verbose) {
             this.loopCount = loopCount;
             this.address = address;
             this.verbose = verbose;
         }
 
         @Override
-        public void run()
-        {
-            try (
-                 ZMQ.Context context = ZMQ.context(10);
-                 ZMQ.Socket socket = context.socket(ZMQ.REQ);) {
+        public void run() {
+            try (ZMQ.Context context = ZMQ.context(10); ZMQ.Socket socket = context.socket(ZMQ.REQ);) {
                 socket.connect(address);
                 for (int idx = 0; idx < loopCount; idx++) {
                     long tid = Thread.currentThread().getId();
@@ -101,8 +86,7 @@ public class ReqRepTest
     }
 
     @Test
-    public void testWaitForeverOnSignalerIssue303() throws IOException, InterruptedException
-    {
+    public void testWaitForeverOnSignalerIssue303() throws IOException, InterruptedException {
         final int port = Utils.findOpenPort();
         final String address = "tcp://localhost:" + port;
 
@@ -120,16 +104,13 @@ public class ReqRepTest
         executor.shutdown();
         executor.awaitTermination(60, TimeUnit.SECONDS);
         long end = System.currentTimeMillis();
-        System.out.println(String.format(
-                                         "Req/Rep with %1$s threads for %2$s messages in %3$s millis.",
-                                         threads,
-                                         messages,
-                                         (end - start)));
+        System.out.println(
+                String.format("Req/Rep with %1$s threads for %2$s messages in %3$s millis.", threads, messages,
+                        (end - start)));
     }
 
     @Test
-    public void testDisconnectOnLargeMessageIssue334() throws Exception
-    {
+    public void testDisconnectOnLargeMessageIssue334() throws Exception {
         final int msgSizeMB = 100;
         final ZMQ.Context context = ZMQ.context(1);
 
@@ -148,12 +129,10 @@ public class ReqRepTest
 
         final CountDownLatch latch = new CountDownLatch(1);
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(new Runnable()
-        {
+        executorService.submit(new Runnable() {
             @Override
             // simulates a server reply
-            public void run()
-            {
+            public void run() {
                 final ZMQ.Socket rep = context.socket(ZMQ.REP);
                 rep.bind(addr);
                 latch.countDown();
@@ -173,15 +152,13 @@ public class ReqRepTest
         // wait till server socket is bound
         latch.await(1, TimeUnit.SECONDS);
         final long start = System.currentTimeMillis();
-        try (
-             final ZMQ.Socket req = context.socket(ZMQ.REQ);) {
+        try (final ZMQ.Socket req = context.socket(ZMQ.REQ);) {
             req.connect(addr);
             request.send(req);
             final ZMsg response = ZMsg.recvMsg(req);
             // the messages should be equal
             assertThat(Arrays.equals(response.getLast().getData(), payloadBytes), is(true));
-        }
-        finally {
+        } finally {
             long end = System.currentTimeMillis();
             System.out.println("Large Message received in  " + (end - start) + " millis.");
             context.close();

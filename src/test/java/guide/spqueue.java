@@ -14,13 +14,11 @@ import org.zeromq.ZMsg;
 // This is identical to load-balancing  pattern, with no reliability mechanisms
 // at all. It depends on the client for recovery. Runs forever.
 //
-public class spqueue
-{
+public class spqueue {
 
     private final static String WORKER_READY = "\001"; //  Signals worker is ready
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZContext ctx = new ZContext();
         Socket frontend = ctx.createSocket(ZMQ.ROUTER);
         Socket backend = ctx.createSocket(ZMQ.ROUTER);
@@ -56,7 +54,8 @@ public class spqueue
                 ZFrame frame = msg.getFirst();
                 if (new String(frame.getData(), ZMQ.CHARSET).equals(WORKER_READY))
                     msg.destroy();
-                else msg.send(frontend);
+                else
+                    msg.send(frontend);
             }
             if (workersAvailable && poller.pollin(1)) {
                 //  Get client request, route to first available worker

@@ -5,12 +5,10 @@ import java.util.Random;
 /**
  * Clone client model 6
  */
-public class clonecli6
-{
+public class clonecli6 {
     private final static String SUBTREE = "/client/";
 
-    public void run()
-    {
+    public void run() {
 
         //  Create distributed hash instance
         clone clone = new clone();
@@ -29,15 +27,13 @@ public class clonecli6
             clone.set(key, value, rand.nextInt(30));
             try {
                 Thread.sleep(1000);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
             }
         }
         clone.destroy();
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonecli6().run();
     }
 }

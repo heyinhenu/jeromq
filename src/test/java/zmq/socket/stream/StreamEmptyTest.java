@@ -14,11 +14,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class StreamEmptyTest
-{
+public class StreamEmptyTest {
     @Test
-    public void testStreamEmpty() throws IOException, InterruptedException
-    {
+    public void testStreamEmpty() throws IOException, InterruptedException {
         int port = Utils.findOpenPort();
         String host = "tcp://localhost:" + port;
 

@@ -16,20 +16,17 @@ import org.zeromq.ZThread;
  * Load-balancing broker
  * Demonstrates use of the high level API
  */
-public class lbbroker2
-{
-    private static final int NBR_CLIENTS  = 10;
-    private static final int NBR_WORKERS  = 3;
-    private static byte[]    WORKER_READY = { '\001' }; //  Signals worker is ready
+public class lbbroker2 {
+    private static final int NBR_CLIENTS = 10;
+    private static final int NBR_WORKERS = 3;
+    private static byte[] WORKER_READY = {'\001'}; //  Signals worker is ready
 
     /**
      * Basic request-reply client using REQ socket
      */
-    private static class ClientTask implements ZThread.IDetachedRunnable
-    {
+    private static class ClientTask implements ZThread.IDetachedRunnable {
         @Override
-        public void run(Object[] args)
-        {
+        public void run(Object[] args) {
             ZContext context = new ZContext();
 
             //  Prepare our context and sockets
@@ -50,11 +47,9 @@ public class lbbroker2
     /**
      * Worker using REQ socket to do load-balancing
      */
-    private static class WorkerTask implements ZThread.IDetachedRunnable
-    {
+    private static class WorkerTask implements ZThread.IDetachedRunnable {
         @Override
-        public void run(Object[] args)
-        {
+        public void run(Object[] args) {
             ZContext context = new ZContext();
 
             //  Prepare our context and sockets
@@ -84,8 +79,7 @@ public class lbbroker2
      * the previous lbbroker example but uses higher level classes to start child threads
      * to hold the list of workers, and to read and send messages:
      */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZContext context = new ZContext();
         //  Prepare our context and sockets
         Socket frontend = context.createSocket(ZMQ.ROUTER);
@@ -137,7 +131,8 @@ public class lbbroker2
                 ZFrame frame = msg.getFirst();
                 if (Arrays.equals(frame.getData(), WORKER_READY))
                     msg.destroy();
-                else msg.send(frontend);
+                else
+                    msg.send(frontend);
             }
 
             if (items.pollin(1)) {

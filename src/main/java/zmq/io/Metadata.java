@@ -13,17 +13,16 @@ import zmq.ZError;
 import zmq.ZMQ;
 import zmq.util.Wire;
 
-public class Metadata
-{
+public class Metadata {
     /**
      * Call backs during parsing process
      */
-    public interface ParseListener
-    {
+    public interface ParseListener {
         /**
          * Called when a property has been parsed.
-         * @param name the name of the property.
-         * @param value the value of the property.
+         *
+         * @param name          the name of the property.
+         * @param value         the value of the property.
          * @param valueAsString the value in a string representation.
          * @return 0 to continue the parsing process, any other value to interrupt it.
          */
@@ -41,47 +40,39 @@ public class Metadata
     //  Dictionary holding metadata.
     private final Properties dictionary = new Properties();
 
-    public Metadata()
-    {
+    public Metadata() {
         super();
     }
 
-    public Metadata(Properties dictionary)
-    {
+    public Metadata(Properties dictionary) {
         this.dictionary.putAll(dictionary);
     }
 
-    public final Set<String> keySet()
-    {
+    public final Set<String> keySet() {
         return dictionary.stringPropertyNames();
     }
 
-    public final void remove(String key)
-    {
+    public final void remove(String key) {
         dictionary.remove(key);
     }
 
     //  Returns property value or NULL if
     //  property is not found.
-    public final String get(String key)
-    {
+    public final String get(String key) {
         return dictionary.getProperty(key);
     }
 
-    public final void set(String key, String value)
-    {
+    public final void set(String key, String value) {
         dictionary.setProperty(key, value);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return dictionary.hashCode();
     }
 
     @Override
-    public boolean equals(Object other)
-    {
+    public boolean equals(Object other) {
         if (this == other) {
             return true;
         }
@@ -95,43 +86,35 @@ public class Metadata
         return this.dictionary.equals(that.dictionary);
     }
 
-    public final void set(Metadata zapProperties)
-    {
+    public final void set(Metadata zapProperties) {
         dictionary.putAll(zapProperties.dictionary);
     }
 
-    public final boolean isEmpty()
-    {
+    public final boolean isEmpty() {
         return dictionary.isEmpty();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Metadata=" + dictionary;
     }
 
-    public final byte[] bytes()
-    {
+    public final byte[] bytes() {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(size());
         try {
             write(stream);
             return stream.toByteArray();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             return new byte[0];
-        }
-        finally {
+        } finally {
             try {
                 stream.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
             }
         }
     }
 
-    private int size()
-    {
+    private int size() {
         int size = 0;
         for (Entry<Object, Object> entry : dictionary.entrySet()) {
             String key = entry.getKey().toString();
@@ -145,8 +128,7 @@ public class Metadata
         return size;
     }
 
-    public final void write(OutputStream stream) throws IOException
-    {
+    public final void write(OutputStream stream) throws IOException {
         for (Entry<?, ?> entry : dictionary.entrySet()) {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();
@@ -159,13 +141,11 @@ public class Metadata
         }
     }
 
-    public final int read(Msg msg, int offset, ParseListener listener)
-    {
+    public final int read(Msg msg, int offset, ParseListener listener) {
         return read(msg.buf(), offset, listener);
     }
 
-    public final int read(ByteBuffer msg, int offset, ParseListener listener)
-    {
+    public final int read(ByteBuffer msg, int offset, ParseListener listener) {
         ByteBuffer data = msg.duplicate();
 
         data.position(offset);
@@ -214,8 +194,7 @@ public class Metadata
         return 0;
     }
 
-    private byte[] bytes(final ByteBuffer buf, final int position, final int length)
-    {
+    private byte[] bytes(final ByteBuffer buf, final int position, final int length) {
         final byte[] bytes = new byte[length];
         final int current = buf.position();
         buf.position(position);

@@ -10,11 +10,9 @@ import org.junit.Test;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
-public class TestEvents
-{
+public class TestEvents {
     @Test
-    public void testEventConnected()
-    {
+    public void testEventConnected() {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 
@@ -40,8 +38,7 @@ public class TestEvents
     }
 
     @Test
-    public void testEventConnectDelayed() throws IOException
-    {
+    public void testEventConnectDelayed() throws IOException {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 
@@ -65,8 +62,7 @@ public class TestEvents
     }
 
     @Test
-    public void testEventConnectRetried() throws InterruptedException, IOException
-    {
+    public void testEventConnectRetried() throws InterruptedException, IOException {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 
@@ -91,8 +87,7 @@ public class TestEvents
     }
 
     @Test
-    public void testEventListening()
-    {
+    public void testEventListening() {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 
@@ -114,8 +109,7 @@ public class TestEvents
     }
 
     @Test
-    public void testEventBindFailed()
-    {
+    public void testEventBindFailed() {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 
@@ -131,8 +125,7 @@ public class TestEvents
 
         try {
             socket.bind("tcp://127.0.0.1:" + port);
-        }
-        catch (ZMQException ex) {
+        } catch (ZMQException ex) {
         }
         event = ZMQ.Event.recv(monitor);
         assertNotNull("No event was received", event);
@@ -145,8 +138,7 @@ public class TestEvents
     }
 
     @Test
-    public void testEventAccepted()
-    {
+    public void testEventAccepted() {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 
@@ -172,8 +164,7 @@ public class TestEvents
     }
 
     @Test
-    public void testEventClosed()
-    {
+    public void testEventClosed() {
         Context context = ZMQ.context(1);
         Socket monitor = context.socket(ZMQ.PAIR);
         try {
@@ -192,16 +183,14 @@ public class TestEvents
             assertNotNull("No event was received", event);
             assertEquals(ZMQ.EVENT_CLOSED, event.getEvent());
 
-        }
-        finally {
+        } finally {
             monitor.close();
             context.term();
         }
     }
 
     @Test
-    public void testEventDisconnected()
-    {
+    public void testEventDisconnected() {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 
@@ -229,8 +218,7 @@ public class TestEvents
     }
 
     @Test
-    public void testEventMonitorStopped()
-    {
+    public void testEventMonitorStopped() {
         Context context = ZMQ.context(1);
         ZMQ.Event event;
 

@@ -6,13 +6,11 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public class TestMsgFlags
-{
+public class TestMsgFlags {
     //  Create REQ/ROUTER wiring.
 
     @Test
-    public void testMsgFlags()
-    {
+    public void testMsgFlags() {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
         SocketBase sb = ZMQ.socket(ctx, ZMQ.ZMQ_ROUTER);

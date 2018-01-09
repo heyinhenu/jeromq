@@ -8,11 +8,9 @@ import org.junit.Test;
 
 import zmq.util.Utils;
 
-public class ImmediateTest
-{
+public class ImmediateTest {
     @Test
-    public void testImmediateTrue() throws Exception
-    {
+    public void testImmediateTrue() throws Exception {
         System.out.println("Immediate = true");
         // TEST 1.
         // First we're going to attempt to send messages to two
@@ -84,8 +82,7 @@ public class ImmediateTest
     }
 
     @Test
-    public void testImmediateFalse() throws Exception
-    {
+    public void testImmediateFalse() throws Exception {
         System.out.println("Immediate = false");
         // TEST 2
         // This time we will do the same thing, connect two pipes,
@@ -152,8 +149,7 @@ public class ImmediateTest
     }
 
     @Test
-    public void testImmediateFalseWithBrokenConnection() throws Exception
-    {
+    public void testImmediateFalseWithBrokenConnection() throws Exception {
         System.out.print("Immediate = false with broken connection");
         // TEST 3
         // This time we want to validate that the same blocking behaviour

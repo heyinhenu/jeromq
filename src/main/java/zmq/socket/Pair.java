@@ -8,44 +8,38 @@ import zmq.ZMQ;
 import zmq.pipe.Pipe;
 import zmq.util.Blob;
 
-public class Pair extends SocketBase
-{
+public class Pair extends SocketBase {
     private Pipe pipe;
     private Pipe lastIn;
 
     private Blob savedCredential;
 
-    public Pair(Ctx parent, int tid, int sid)
-    {
+    public Pair(Ctx parent, int tid, int sid) {
         super(parent, tid, sid);
         options.type = ZMQ.ZMQ_PAIR;
     }
 
     @Override
-    protected void destroy()
-    {
+    protected void destroy() {
         super.destroy();
         assert (pipe == null);
     }
 
     @Override
-    protected void xattachPipe(Pipe pipe, boolean subscribe2all)
-    {
+    protected void xattachPipe(Pipe pipe, boolean subscribe2all) {
         assert (pipe != null);
 
         //  ZMQ_PAIR socket can only be connected to a single peer.
         //  The socket rejects any further connection requests.
         if (this.pipe == null) {
             this.pipe = pipe;
-        }
-        else {
+        } else {
             pipe.terminate(false);
         }
     }
 
     @Override
-    protected void xpipeTerminated(Pipe pipe)
-    {
+    protected void xpipeTerminated(Pipe pipe) {
         if (this.pipe == pipe) {
             if (lastIn == pipe) {
                 savedCredential = lastIn.getCredential();
@@ -56,22 +50,19 @@ public class Pair extends SocketBase
     }
 
     @Override
-    protected void xreadActivated(Pipe pipe)
-    {
+    protected void xreadActivated(Pipe pipe) {
         //  There's just one pipe. No lists of active and inactive pipes.
         //  There's nothing to do here.
     }
 
     @Override
-    protected void xwriteActivated(Pipe pipe)
-    {
+    protected void xwriteActivated(Pipe pipe) {
         //  There's just one pipe. No lists of active and inactive pipes.
         //  There's nothing to do here.
     }
 
     @Override
-    protected boolean xsend(Msg msg)
-    {
+    protected boolean xsend(Msg msg) {
         if (pipe == null || !pipe.write(msg)) {
             errno.set(ZError.EAGAIN);
             return false;
@@ -85,16 +76,14 @@ public class Pair extends SocketBase
     }
 
     @Override
-    protected Msg xrecv()
-    {
+    protected Msg xrecv() {
         //  Deallocate old content of the message.
         Msg msg;
         if (pipe == null) {
             //  Initialize the output parameter to be a 0-byte message.
             errno.set(ZError.EAGAIN);
             return null;
-        }
-        else {
+        } else {
             msg = pipe.read();
             if (msg == null) {
                 //  Initialize the output parameter to be a 0-byte message.
@@ -107,20 +96,17 @@ public class Pair extends SocketBase
     }
 
     @Override
-    protected boolean xhasIn()
-    {
+    protected boolean xhasIn() {
         return pipe != null && pipe.checkRead();
     }
 
     @Override
-    protected boolean xhasOut()
-    {
+    protected boolean xhasOut() {
         return pipe != null && pipe.checkWrite();
     }
 
     @Override
-    protected Blob getCredential()
-    {
+    protected Blob getCredential() {
         return lastIn != null ? lastIn.getCredential() : savedCredential;
     }
 }

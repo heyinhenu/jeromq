@@ -8,8 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import zmq.poll.IPollEvents;
 import zmq.poll.Poller;
 
-final class Reaper extends ZObject implements IPollEvents, Closeable
-{
+final class Reaper extends ZObject implements IPollEvents, Closeable {
     //  Reaper thread accesses incoming commands via this mailbox.
     private final Mailbox mailbox;
 
@@ -27,8 +26,7 @@ final class Reaper extends ZObject implements IPollEvents, Closeable
 
     private final String name;
 
-    Reaper(Ctx ctx, int tid)
-    {
+    Reaper(Ctx ctx, int tid) {
         super(ctx, tid);
         socketsReaping = 0;
         name = "reaper-" + tid;
@@ -42,32 +40,27 @@ final class Reaper extends ZObject implements IPollEvents, Closeable
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         poller.destroy();
         mailbox.close();
     }
 
-    Mailbox getMailbox()
-    {
+    Mailbox getMailbox() {
         return mailbox;
     }
 
-    void start()
-    {
+    void start() {
         poller.start();
     }
 
-    void stop()
-    {
+    void stop() {
         if (!terminating.get()) {
             sendStop();
         }
     }
 
     @Override
-    public void inEvent()
-    {
+    public void inEvent() {
         while (true) {
             //  Get the next command. If there is none, exit.
             Command cmd = mailbox.recv(0);
@@ -81,32 +74,27 @@ final class Reaper extends ZObject implements IPollEvents, Closeable
     }
 
     @Override
-    public void outEvent()
-    {
+    public void outEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void connectEvent()
-    {
+    public void connectEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void acceptEvent()
-    {
+    public void acceptEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void timerEvent(int id)
-    {
+    public void timerEvent(int id) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected void processStop()
-    {
+    protected void processStop() {
         terminating.set(true);
 
         //  If there are no sockets being reaped finish immediately.
@@ -116,8 +104,7 @@ final class Reaper extends ZObject implements IPollEvents, Closeable
     }
 
     @Override
-    protected void processReap(SocketBase socket)
-    {
+    protected void processReap(SocketBase socket) {
         ++socketsReaping;
 
         //  Add the socket to the poller.
@@ -125,8 +112,7 @@ final class Reaper extends ZObject implements IPollEvents, Closeable
     }
 
     @Override
-    protected void processReaped()
-    {
+    protected void processReaped() {
         --socketsReaping;
 
         //  If reaped was already asked to terminate and there are no more sockets,
@@ -136,8 +122,7 @@ final class Reaper extends ZObject implements IPollEvents, Closeable
         }
     }
 
-    private void finishTerminating()
-    {
+    private void finishTerminating() {
         sendDone();
         poller.removeHandle(mailboxHandle);
         poller.stop();

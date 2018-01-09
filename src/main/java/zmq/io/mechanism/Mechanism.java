@@ -21,13 +21,9 @@ import zmq.util.Wire;
 
 // Abstract class representing security mechanism.
 // Different mechanism extends this class.
-public abstract class Mechanism
-{
-    public static enum Status
-    {
-        HANDSHAKING,
-        READY,
-        ERROR
+public abstract class Mechanism {
+    public static enum Status {
+        HANDSHAKING, READY, ERROR
     }
 
     protected final Options options;
@@ -42,12 +38,11 @@ public abstract class Mechanism
     public final Metadata zmtpProperties = new Metadata();
 
     protected final SessionBase session;
-    private final Address       peerAddress;
+    private final Address peerAddress;
 
     protected String statusCode;
 
-    protected Mechanism(SessionBase session, Address peerAddress, Options options)
-    {
+    protected Mechanism(SessionBase session, Address peerAddress, Options options) {
         this.session = session;
         this.options = options;
         this.peerAddress = peerAddress;
@@ -55,13 +50,11 @@ public abstract class Mechanism
 
     public abstract Status status();
 
-    private void setPeerIdentity(byte[] data)
-    {
+    private void setPeerIdentity(byte[] data) {
         identity = Blob.createBlob(data);
     }
 
-    public final Msg peerIdentity()
-    {
+    public final Msg peerIdentity() {
         Msg msg = new Msg(identity == null ? 0 : identity.size());
         msg.put(identity.data(), 0, identity.size());
         msg.setFlags(Msg.IDENTITY);
@@ -69,29 +62,24 @@ public abstract class Mechanism
         return msg;
     }
 
-    private void setUserId(byte[] data)
-    {
+    private void setUserId(byte[] data) {
         userId = Blob.createBlob(data);
         zapProperties.set(Metadata.USER_ID, new String(data, ZMQ.CHARSET));
     }
 
-    public final Blob getUserId()
-    {
+    public final Blob getUserId() {
         return userId;
     }
 
-    protected final void addProperty(ByteBuffer buf, String name, String value)
-    {
+    protected final void addProperty(ByteBuffer buf, String name, String value) {
         addProperty(buf, name, value.getBytes(ZMQ.CHARSET));
     }
 
-    protected final void addProperty(Msg msg, String name, String value)
-    {
+    protected final void addProperty(Msg msg, String name, String value) {
         addProperty(msg, name, value.getBytes(ZMQ.CHARSET));
     }
 
-    protected final void addProperty(ByteBuffer buf, String name, byte[] value)
-    {
+    protected final void addProperty(ByteBuffer buf, String name, byte[] value) {
         byte[] nameB = name.getBytes(ZMQ.CHARSET);
         int nameLength = nameB.length;
         assert (nameLength <= 255);
@@ -107,8 +95,7 @@ public abstract class Mechanism
         }
     }
 
-    protected final void addProperty(Msg msg, String name, byte[] value)
-    {
+    protected final void addProperty(Msg msg, String name, byte[] value) {
         byte[] nameB = name.getBytes(ZMQ.CHARSET);
         int nameLength = nameB.length;
         assert (nameLength <= 255);
@@ -124,28 +111,22 @@ public abstract class Mechanism
         }
     }
 
-    protected final int parseMetadata(Msg msg, int offset, boolean zapFlag)
-    {
+    protected final int parseMetadata(Msg msg, int offset, boolean zapFlag) {
         return parseMetadata(msg.buf(), offset, zapFlag);
     }
 
-    protected final int parseMetadata(ByteBuffer msg, int offset, boolean zapFlag)
-    {
+    protected final int parseMetadata(ByteBuffer msg, int offset, boolean zapFlag) {
         Metadata meta = zapFlag ? zapProperties : zmtpProperties;
-        return meta.read(msg, offset, new ParseListener()
-        {
+        return meta.read(msg, offset, new ParseListener() {
             @Override
-            public int parsed(String name, byte[] value, String valueAsString)
-            {
+            public int parsed(String name, byte[] value, String valueAsString) {
                 if (IDENTITY.equals(name) && options.recvIdentity) {
                     setPeerIdentity(value);
-                }
-                else if (SOCKET_TYPE.equals(name)) {
+                } else if (SOCKET_TYPE.equals(name)) {
                     if (!Sockets.compatible(options.type, valueAsString)) {
                         return ZError.EINVAL;
                     }
-                }
-                else {
+                } else {
                     int rc = property(name, value);
                     if (rc == -1) {
                         return -1;
@@ -157,20 +138,17 @@ public abstract class Mechanism
         });
     }
 
-    protected int property(String name, byte[] value)
-    {
+    protected int property(String name, byte[] value) {
         //  Default implementation does not check
         //  property values and returns 0 to signal success.
         return 0;
     }
 
-    protected final String socketType(int socketType)
-    {
+    protected final String socketType(int socketType) {
         return Sockets.name(options.type);
     }
 
-    protected boolean compare(Msg msg, String data, boolean includeLength)
-    {
+    protected boolean compare(Msg msg, String data, boolean includeLength) {
         int start = includeLength ? 1 : 0;
         if (msg.size() < data.length() + start) {
             return false;
@@ -187,8 +165,7 @@ public abstract class Mechanism
         return comparison;
     }
 
-    protected boolean compare(ByteBuffer a1, byte[] b, int offset, int length)
-    {
+    protected boolean compare(ByteBuffer a1, byte[] b, int offset, int length) {
         if (length > b.length) {
             return false;
         }
@@ -202,13 +179,11 @@ public abstract class Mechanism
         return comparison;
     }
 
-    public Msg decode(Msg msg)
-    {
+    public Msg decode(Msg msg) {
         return msg;
     }
 
-    public Msg encode(Msg msg)
-    {
+    public Msg encode(Msg msg) {
         return msg;
     }
 
@@ -218,8 +193,7 @@ public abstract class Mechanism
 
     public abstract int nextHandshakeCommand(Msg msg);
 
-    protected final void sendZapRequest(Mechanisms mechanism, boolean more)
-    {
+    protected final void sendZapRequest(Mechanisms mechanism, boolean more) {
         assert (session != null);
         assert (peerAddress != null);
         assert (mechanism != null);
@@ -277,8 +251,7 @@ public abstract class Mechanism
         assert (rc);
     }
 
-    protected final int receiveAndProcessZapReply()
-    {
+    protected final int receiveAndProcessZapReply() {
         assert (session != null);
 
         List<Msg> msgs = new ArrayList<>(7); //  ZAP reply consists of 7 frames
@@ -336,19 +309,16 @@ public abstract class Mechanism
         return parseMetadata(msgs.get(6), 0, true);
     }
 
-    protected final void puts(String msg)
-    {
+    protected final void puts(String msg) {
         //  Temporary support for security debugging
         System.out.println(session + " " + msg);
     }
 
-    protected final void appendData(Msg msg, String data)
-    {
+    protected final void appendData(Msg msg, String data) {
         msg.put((byte) data.length());
         msg.put(data.getBytes(ZMQ.CHARSET));
     }
 
-    public void destroy()
-    {
+    public void destroy() {
     }
 }

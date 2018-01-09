@@ -10,62 +10,52 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 
 // This is to avoid people trying to initialize a Context
-class ManagedContext
-{
+class ManagedContext {
     static {
         // Release ManagedSocket resources when catching SIGINT
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
-            public void run()
-            {
+            public void run() {
                 getInstance().close();
             }
         });
     }
 
-    private final Lock            lock;
-    private final Ctx             ctx;
+    private final Lock lock;
+    private final Ctx ctx;
     private final Set<SocketBase> sockets;
 
-    private ManagedContext()
-    {
+    private ManagedContext() {
         this.ctx = ZMQ.init(ZMQ.ZMQ_IO_THREADS_DFLT);
         this.lock = new ReentrantLock();
         this.sockets = new HashSet<>();
     }
 
-    static ManagedContext getInstance()
-    {
+    static ManagedContext getInstance() {
         return ContextHolder.INSTANCE;
     }
 
-    SocketBase createSocket(int type)
-    {
+    SocketBase createSocket(int type) {
         final SocketBase base = ctx.createSocket(type);
         lock.lock();
         try {
             sockets.add(base);
-        }
-        finally {
+        } finally {
             lock.unlock();
         }
         return base;
     }
 
-    void destroy(SocketBase socketBase)
-    {
+    void destroy(SocketBase socketBase) {
         try {
             socketBase.setSocketOpt(ZMQ.ZMQ_LINGER, 0);
             socketBase.close();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
         }
         lock.lock();
         try {
             sockets.remove(socketBase);
-        }
-        finally {
+        } finally {
             lock.unlock();
         }
     }
@@ -73,28 +63,24 @@ class ManagedContext
     /*
      * This should only be called when SIGINT is received
      */
-    private void close()
-    {
+    private void close() {
         lock.lock();
         try {
             for (SocketBase s : sockets) {
                 try {
                     s.setSocketOpt(ZMQ.ZMQ_LINGER, 0);
                     s.close();
-                }
-                catch (Exception ignore) {
+                } catch (Exception ignore) {
                 }
             }
             sockets.clear();
-        }
-        finally {
+        } finally {
             lock.unlock();
         }
     }
 
     // Lazy singleton pattern to avoid double lock checking
-    private static class ContextHolder
-    {
+    private static class ContextHolder {
         private static final ManagedContext INSTANCE = new ManagedContext();
     }
 }

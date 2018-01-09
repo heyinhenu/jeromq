@@ -9,8 +9,7 @@ import zmq.Msg;
 //  reader_awake flag is needed here to mimic ypipe delicate behaviour
 //  around the reader being asleep (see 'c' pointer being NULL in ypipe.hpp)
 
-public class YPipeConflate<T extends Msg> implements YPipeBase<T>
-{
+public class YPipeConflate<T extends Msg> implements YPipeBase<T> {
     private boolean readerAwake;
 
     private final DBuffer<T> dbuffer = new DBuffer<>();
@@ -19,15 +18,13 @@ public class YPipeConflate<T extends Msg> implements YPipeBase<T>
     //  when used with zmq_msg. Initialising the VSM body for
     //  non-VSM messages won't be good for performance.
     @Override
-    public void write(final T value, boolean incomplete)
-    {
+    public void write(final T value, boolean incomplete) {
         dbuffer.write(value);
     }
 
     // There are no incomplete items for conflate ypipe
     @Override
-    public T unwrite()
-    {
+    public T unwrite() {
         return null;
     }
 
@@ -36,15 +33,13 @@ public class YPipeConflate<T extends Msg> implements YPipeBase<T>
     //  Returns false if the reader thread is sleeping. In that case,
     //  caller is obliged to wake the reader up before using the pipe again.
     @Override
-    public boolean flush()
-    {
+    public boolean flush() {
         return readerAwake;
     }
 
     //  Check whether item is available for reading.
     @Override
-    public boolean checkRead()
-    {
+    public boolean checkRead() {
         boolean rc = dbuffer.checkRead();
         if (!rc) {
             readerAwake = false;
@@ -55,8 +50,7 @@ public class YPipeConflate<T extends Msg> implements YPipeBase<T>
     //  Reads an item from the pipe. Returns false if there is no value.
     //  available.
     @Override
-    public T read()
-    {
+    public T read() {
         //  Try to prefetch a value.
         if (!checkRead()) {
             return null;
@@ -72,8 +66,7 @@ public class YPipeConflate<T extends Msg> implements YPipeBase<T>
     //  and returns the value returned by the fn.
     //  The pipe mustn't be empty or the function crashes.
     @Override
-    public T probe()
-    {
+    public T probe() {
         return dbuffer.probe();
     }
 }

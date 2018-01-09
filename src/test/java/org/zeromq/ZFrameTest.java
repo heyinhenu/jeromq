@@ -9,11 +9,9 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.zeromq.ZMQ.Socket;
 
-public class ZFrameTest
-{
+public class ZFrameTest {
     @Test
-    public void testZFrameCreation()
-    {
+    public void testZFrameCreation() {
         ZFrame f = new ZFrame("Hello".getBytes());
         assertThat(f, notNullValue());
         assertThat(f.hasData(), is(true));
@@ -25,16 +23,14 @@ public class ZFrameTest
     }
 
     @Test
-    public void testZFrameEquals()
-    {
+    public void testZFrameEquals() {
         ZFrame f = new ZFrame("Hello".getBytes());
         ZFrame clone = f.duplicate();
         assertThat(clone, is(f));
     }
 
     @Test
-    public void testSending()
-    {
+    public void testSending() {
         ZContext ctx = new ZContext();
         Socket output = ctx.createSocket(ZMQ.PAIR);
         output.bind("inproc://zframe.test");
@@ -58,8 +54,7 @@ public class ZFrameTest
     }
 
     @Test
-    public void testCopyingAndDuplicating()
-    {
+    public void testCopyingAndDuplicating() {
         ZFrame f = new ZFrame("Hello");
         ZFrame copy = f.duplicate();
         assertThat(copy, is(f));
@@ -69,8 +64,7 @@ public class ZFrameTest
     }
 
     @Test
-    public void testReceiving()
-    {
+    public void testReceiving() {
         ZContext ctx = new ZContext();
         Socket output = ctx.createSocket(ZMQ.PAIR);
         output.bind("inproc://zframe.test");
@@ -107,8 +101,7 @@ public class ZFrameTest
     }
 
     @Test
-    public void testStringFrames()
-    {
+    public void testStringFrames() {
         ZContext ctx = new ZContext();
         Socket output = ctx.createSocket(ZMQ.PAIR);
         output.bind("inproc://zframe.test");

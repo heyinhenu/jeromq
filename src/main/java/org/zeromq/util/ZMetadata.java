@@ -11,42 +11,34 @@ import org.zeromq.ZMQ;
 
 import zmq.io.Metadata;
 
-public class ZMetadata
-{
+public class ZMetadata {
     private final Metadata metadata;
 
-    public ZMetadata()
-    {
+    public ZMetadata() {
         this(new Metadata());
     }
 
-    public ZMetadata(Metadata metadata)
-    {
+    public ZMetadata(Metadata metadata) {
         this.metadata = metadata;
     }
 
-    public final Set<String> keySet()
-    {
+    public final Set<String> keySet() {
         return metadata.keySet();
     }
 
-    public final String get(String key)
-    {
+    public final String get(String key) {
         return metadata.get(key);
     }
 
-    public final void set(String key, String value)
-    {
+    public final void set(String key, String value) {
         metadata.set(key, value);
     }
 
-    public final byte[] bytes()
-    {
+    public final byte[] bytes() {
         return metadata.bytes();
     }
 
-    public static ZMetadata read(String meta)
-    {
+    public static ZMetadata read(String meta) {
         if (meta == null || meta.length() == 0) {
             return null;
         }
@@ -55,15 +47,13 @@ public class ZMetadata
             Metadata data = new Metadata();
             data.read(buffer, 0, null);
             return new ZMetadata(data);
-        }
-        catch (CharacterCodingException e) {
+        } catch (CharacterCodingException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static ZMetadata read(ZConfig conf)
-    {
+    public static ZMetadata read(ZConfig conf) {
         ZConfig meta = conf.getChild("metadata");
         if (meta == null) {
             return null;
@@ -75,18 +65,15 @@ public class ZMetadata
         return metadata;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return metadata.toString();
     }
 
-    public int hashCode()
-    {
+    public int hashCode() {
         return metadata.hashCode();
     }
 
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         return metadata.equals(obj);
     }
 }

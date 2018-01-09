@@ -6,11 +6,9 @@ import org.zeromq.ZMQ;
  * Task sink - design 2
  * Adds pub-sub flow to send kill signal to workers
  */
-public class tasksink2
-{
+public class tasksink2 {
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
 
         //  Prepare our context and socket
         ZMQ.Context context = ZMQ.context(1);
@@ -33,8 +31,7 @@ public class tasksink2
             receiver.recv(0);
             if ((task_nbr / 10) * 10 == task_nbr) {
                 System.out.print(":");
-            }
-            else {
+            } else {
                 System.out.print(".");
             }
             System.out.flush();

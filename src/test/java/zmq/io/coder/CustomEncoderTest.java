@@ -16,56 +16,45 @@ import zmq.ZMQ;
 import zmq.util.Errno;
 import zmq.util.ValueReference;
 
-public class CustomEncoderTest
-{
+public class CustomEncoderTest {
     private Helper.DummySocketChannel sock = new Helper.DummySocketChannel();
 
-    private int write(ByteBuffer out)
-    {
+    private int write(ByteBuffer out) {
         try {
             return sock.write(out);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return -1;
         }
     }
 
-    static class CustomEncoder extends EncoderBase
-    {
+    static class CustomEncoder extends EncoderBase {
         public static final boolean RAW_ENCODER = true;
-        private final Runnable      readHeader  = new Runnable()
-                                                {
-                                                    @Override
-                                                    public void run()
-                                                    {
-                                                        readHeader();
-                                                    }
-                                                };
-        private final Runnable      readBody    = new Runnable()
-                                                {
-                                                    @Override
-                                                    public void run()
-                                                    {
-                                                        readBody();
-                                                    }
-                                                };
+        private final Runnable readHeader = new Runnable() {
+            @Override
+            public void run() {
+                readHeader();
+            }
+        };
+        private final Runnable readBody = new Runnable() {
+            @Override
+            public void run() {
+                readBody();
+            }
+        };
 
         ByteBuffer header = ByteBuffer.allocate(10);
 
-        public CustomEncoder(int bufsize, long maxmsgsize)
-        {
+        public CustomEncoder(int bufsize, long maxmsgsize) {
             super(new Errno(), bufsize);
             initStep(readBody, true);
         }
 
-        private void readHeader()
-        {
+        private void readHeader() {
             nextStep(inProgress, readBody, !inProgress.hasMore());
         }
 
-        private void readBody()
-        {
+        private void readBody() {
             if (inProgress == null) {
                 return;
             }
@@ -79,8 +68,7 @@ public class CustomEncoderTest
     }
 
     @Test
-    public void testCustomEncoder()
-    {
+    public void testCustomEncoder() {
         CustomEncoder cencoder = new CustomEncoder(32, Integer.MAX_VALUE / 2);
 
         Msg msg = new Msg("12345678901234567890".getBytes(ZMQ.CHARSET));
@@ -100,8 +88,7 @@ public class CustomEncoderTest
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testAssignCustomEncoder()
-    {
+    public void testAssignCustomEncoder() {
         Ctx ctx = ZMQ.createContext();
 
         SocketBase socket = ctx.createSocket(ZMQ.ZMQ_PAIR);
@@ -113,18 +100,15 @@ public class CustomEncoderTest
         ZMQ.term(ctx);
     }
 
-    private static class WrongEncoder extends CustomEncoder
-    {
-        public WrongEncoder(int bufsize)
-        {
+    private static class WrongEncoder extends CustomEncoder {
+        public WrongEncoder(int bufsize) {
             super(bufsize, 0);
         }
     }
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testAssignWrongCustomEncoder()
-    {
+    public void testAssignWrongCustomEncoder() {
         Ctx ctx = ZMQ.createContext();
 
         SocketBase socket = ctx.createSocket(ZMQ.ZMQ_PAIR);

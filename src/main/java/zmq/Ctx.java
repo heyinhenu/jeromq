@@ -23,35 +23,30 @@ import zmq.util.Errno;
 //Context object encapsulates all the global state associated with
 //  the library.
 
-public class Ctx
-{
+public class Ctx {
     private static final int WAIT_FOREVER = -1;
 
     //  Information associated with inproc endpoint. Note that endpoint options
     //  are registered as well so that the peer can access them without a need
     //  for synchronization, handshaking or similar.
 
-    public static class Endpoint
-    {
+    public static class Endpoint {
         public final SocketBase socket;
-        public final Options    options;
+        public final Options options;
 
-        public Endpoint(SocketBase socket, Options options)
-        {
+        public Endpoint(SocketBase socket, Options options) {
             this.socket = socket;
             this.options = options;
         }
 
     }
 
-    private static class PendingConnection
-    {
+    private static class PendingConnection {
         private final Endpoint endpoint;
-        private final Pipe     connectPipe;
-        private final Pipe     bindPipe;
+        private final Pipe connectPipe;
+        private final Pipe bindPipe;
 
-        public PendingConnection(Endpoint endpoint, Pipe connectPipe, Pipe bindPipe)
-        {
+        public PendingConnection(Endpoint endpoint, Pipe connectPipe, Pipe bindPipe) {
             super();
             this.endpoint = endpoint;
             this.connectPipe = connectPipe;
@@ -59,10 +54,8 @@ public class Ctx
         }
     }
 
-    private enum Side
-    {
-        CONNECT,
-        BIND
+    private enum Side {
+        CONNECT, BIND
     }
 
     //  Used to check whether the object is a context.
@@ -101,7 +94,7 @@ public class Ctx
     private final List<IOThread> ioThreads;
 
     //  Array of pointers to mailboxes for both application and I/O threads.
-    private int       slotCount;
+    private int slotCount;
     private Mailbox[] slots;
 
     //  Mailbox for zmq_term thread.
@@ -131,7 +124,7 @@ public class Ctx
     //  Synchronization of access to selectors.
     private final Lock selectorSync = new ReentrantLock();
 
-    static final int         TERM_TID   = 0;
+    static final int TERM_TID = 0;
     private static final int REAPER_TID = 1;
 
     private final Map<String, PendingConnection> pendingConnections = new HashMap<>();
@@ -140,8 +133,7 @@ public class Ctx
 
     private final Errno errno = new Errno();
 
-    public Ctx()
-    {
+    public Ctx() {
         tag = 0xabadcafe;
         terminating = false;
         reaper = null;
@@ -164,8 +156,7 @@ public class Ctx
         endpoints = new HashMap<>();
     }
 
-    private void destroy() throws IOException
-    {
+    private void destroy() throws IOException {
         assert (sockets.isEmpty());
 
         for (IOThread it : ioThreads) {
@@ -184,8 +175,7 @@ public class Ctx
                 }
             }
             selectors.clear();
-        }
-        finally {
+        } finally {
             selectorSync.unlock();
         }
 
@@ -204,8 +194,7 @@ public class Ctx
     //  Returns false if object is not a context.
     //
     //  This will also return false if terminate() has been called.
-    public boolean checkTag()
-    {
+    public boolean checkTag() {
         return tag == 0xabadcafe;
     }
 
@@ -214,8 +203,7 @@ public class Ctx
     //  down. If there are open sockets still, the deallocation happens
     //  after the last one is closed.
 
-    public void terminate()
-    {
+    public void terminate() {
         // Connect up any pending inproc connections, otherwise we will hang
         for (Entry<String, PendingConnection> pending : pendingConnections.entrySet()) {
             SocketBase s = createSocket(ZMQ.ZMQ_PAIR);
@@ -254,22 +242,19 @@ public class Ctx
                 slotSync.lock();
                 assert (sockets.isEmpty());
             }
-        }
-        finally {
+        } finally {
             slotSync.unlock();
         }
 
         //  Deallocate the resources.
         try {
             destroy();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    final void shutdown()
-    {
+    final void shutdown() {
         slotSync.lock();
         try {
             if (!starting.get() && !terminating) {
@@ -285,79 +270,63 @@ public class Ctx
                 }
 
             }
-        }
-        finally {
+        } finally {
             slotSync.unlock();
         }
     }
 
-    public boolean set(int option, int optval)
-    {
+    public boolean set(int option, int optval) {
         if (option == ZMQ.ZMQ_MAX_SOCKETS && optval >= 1) {
             optSync.lock();
             try {
                 maxSockets = optval;
-            }
-            finally {
+            } finally {
                 optSync.unlock();
             }
-        }
-        else if (option == ZMQ.ZMQ_IO_THREADS && optval >= 0) {
+        } else if (option == ZMQ.ZMQ_IO_THREADS && optval >= 0) {
             optSync.lock();
             try {
                 ioThreadCount = optval;
-            }
-            finally {
+            } finally {
                 optSync.unlock();
             }
-        }
-        else if (option == ZMQ.ZMQ_BLOCKY && optval >= 0) {
+        } else if (option == ZMQ.ZMQ_BLOCKY && optval >= 0) {
             optSync.lock();
             try {
                 blocky = (optval != 0);
-            }
-            finally {
+            } finally {
                 optSync.unlock();
             }
-        }
-        else if (option == ZMQ.ZMQ_IPV6 && optval >= 0) {
+        } else if (option == ZMQ.ZMQ_IPV6 && optval >= 0) {
             optSync.lock();
             try {
                 ipv6 = (optval != 0);
-            }
-            finally {
+            } finally {
                 optSync.unlock();
             }
-        }
-        else {
+        } else {
             return false;
         }
         return true;
     }
 
-    public int get(int option)
-    {
+    public int get(int option) {
         int rc;
         if (option == ZMQ.ZMQ_MAX_SOCKETS) {
             rc = maxSockets;
-        }
-        else if (option == ZMQ.ZMQ_IO_THREADS) {
+        } else if (option == ZMQ.ZMQ_IO_THREADS) {
             rc = ioThreadCount;
-        }
-        else if (option == ZMQ.ZMQ_BLOCKY) {
+        } else if (option == ZMQ.ZMQ_BLOCKY) {
             rc = blocky ? 1 : 0;
-        }
-        else if (option == ZMQ.ZMQ_IPV6) {
+        } else if (option == ZMQ.ZMQ_IPV6) {
             rc = ipv6 ? 1 : 0;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("option = " + option);
         }
         return rc;
     }
 
-    public SocketBase createSocket(int type)
-    {
+    public SocketBase createSocket(int type) {
         SocketBase s = null;
         slotSync.lock();
         try {
@@ -389,16 +358,14 @@ public class Ctx
             }
             sockets.add(s);
             slots[slot] = s.getMailbox();
-        }
-        finally {
+        } finally {
             slotSync.unlock();
         }
 
         return s;
     }
 
-    private void initSlots()
-    {
+    private void initSlots() {
         slotSync.lock();
         try {
             //  Initialize the array of mailboxes. Additional two slots are for
@@ -408,8 +375,7 @@ public class Ctx
             try {
                 ios = ioThreadCount;
                 slotCount = maxSockets + ioThreadCount + 2;
-            }
-            finally {
+            } finally {
                 optSync.unlock();
             }
             slots = new Mailbox[slotCount];
@@ -436,14 +402,12 @@ public class Ctx
                 emptySlots.add(i);
                 slots[i] = null;
             }
-        }
-        finally {
+        } finally {
             slotSync.unlock();
         }
     }
 
-    void destroySocket(SocketBase socket)
-    {
+    void destroySocket(SocketBase socket) {
         slotSync.lock();
 
         //  Free the associated thread slot.
@@ -460,59 +424,50 @@ public class Ctx
             if (terminating && sockets.isEmpty()) {
                 reaper.stop();
             }
-        }
-        finally {
+        } finally {
             slotSync.unlock();
         }
     }
 
     // Creates a Selector that will be closed when the context is destroyed.
-    public Selector createSelector()
-    {
+    public Selector createSelector() {
         selectorSync.lock();
         try {
             Selector selector = Selector.open();
             assert (selector != null);
             selectors.add(selector);
             return selector;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new ZError.IOException(e);
-        }
-        finally {
+        } finally {
             selectorSync.unlock();
         }
     }
 
-    public boolean closeSelector(Selector selector)
-    {
+    public boolean closeSelector(Selector selector) {
         selectorSync.lock();
         try {
             boolean rc = selectors.remove(selector);
             if (rc) {
                 try {
                     selector.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     throw new ZError.IOException(e);
                 }
             }
             return rc;
-        }
-        finally {
+        } finally {
             selectorSync.unlock();
         }
     }
 
     //  Returns reaper thread object.
-    ZObject getReaper()
-    {
+    ZObject getReaper() {
         return reaper;
     }
 
     //  Send command to the destination thread.
-    void sendCommand(int tid, final Command command)
-    {
+    void sendCommand(int tid, final Command command) {
         //        System.out.println(Thread.currentThread().getName() + ": Sending command " + command);
         slots[tid].send(command);
     }
@@ -520,8 +475,7 @@ public class Ctx
     //  Returns the I/O thread that is the least busy at the moment.
     //  Affinity specifies which I/O threads are eligible (0 = all).
     //  Returns NULL if no I/O thread is available.
-    IOThread chooseIoThread(long affinity)
-    {
+    IOThread chooseIoThread(long affinity) {
         if (ioThreads.isEmpty()) {
             return null;
         }
@@ -543,15 +497,13 @@ public class Ctx
     }
 
     //  Management of inproc endpoints.
-    boolean registerEndpoint(String addr, Endpoint endpoint)
-    {
+    boolean registerEndpoint(String addr, Endpoint endpoint) {
         endpointsSync.lock();
 
         Endpoint inserted = null;
         try {
             inserted = endpoints.put(addr, endpoint);
-        }
-        finally {
+        } finally {
             endpointsSync.unlock();
         }
         if (inserted != null) {
@@ -560,8 +512,7 @@ public class Ctx
         return true;
     }
 
-    boolean unregisterEndpoint(String addr, SocketBase socket)
-    {
+    boolean unregisterEndpoint(String addr, SocketBase socket) {
         endpointsSync.lock();
 
         try {
@@ -570,15 +521,13 @@ public class Ctx
                 endpoints.remove(addr);
                 return true;
             }
-        }
-        finally {
+        } finally {
             endpointsSync.unlock();
         }
         return false;
     }
 
-    void unregisterEndpoints(SocketBase socket)
-    {
+    void unregisterEndpoints(SocketBase socket) {
         endpointsSync.lock();
 
         try {
@@ -589,14 +538,12 @@ public class Ctx
                     it.remove();
                 }
             }
-        }
-        finally {
+        } finally {
             endpointsSync.unlock();
         }
     }
 
-    Endpoint findEndpoint(String addr)
-    {
+    Endpoint findEndpoint(String addr) {
         Endpoint endpoint = null;
         endpointsSync.lock();
 
@@ -611,15 +558,13 @@ public class Ctx
             //  The subsequent 'bind' has to be called with inc_seqnum parameter
             //  set to false, so that the seqnum isn't incremented twice.
             endpoint.socket.incSeqnum();
-        }
-        finally {
+        } finally {
             endpointsSync.unlock();
         }
         return endpoint;
     }
 
-    void pendConnection(String addr, Endpoint endpoint, Pipe[] pipes)
-    {
+    void pendConnection(String addr, Endpoint endpoint, Pipe[] pipes) {
         PendingConnection pendingConnection = new PendingConnection(endpoint, pipes[0], pipes[1]);
         endpointsSync.lock();
         try {
@@ -628,34 +573,29 @@ public class Ctx
                 // Still no bind.
                 endpoint.socket.incSeqnum();
                 pendingConnections.put(addr, pendingConnection);
-            }
-            else {
+            } else {
                 // Bind has happened in the mean time, connect directly
                 connectInprocSockets(existing.socket, existing.options, pendingConnection, Side.CONNECT);
             }
-        }
-        finally {
+        } finally {
             endpointsSync.unlock();
         }
     }
 
-    void connectPending(String addr, SocketBase bindSocket)
-    {
+    void connectPending(String addr, SocketBase bindSocket) {
         endpointsSync.lock();
         try {
             PendingConnection pending = pendingConnections.remove(addr);
             if (pending != null) {
                 connectInprocSockets(bindSocket, endpoints.get(addr).options, pending, Side.BIND);
             }
-        }
-        finally {
+        } finally {
             endpointsSync.unlock();
         }
     }
 
     private void connectInprocSockets(SocketBase bindSocket, Options bindOptions, PendingConnection pendingConnection,
-                                      Side side)
-    {
+            Side side) {
         bindSocket.incSeqnum();
 
         pendingConnection.bindPipe.setTid(bindSocket.getTid());
@@ -672,13 +612,8 @@ public class Ctx
         if (pendingConnection.endpoint.options.recvHwm != 0 && bindOptions.sendHwm != 0) {
             rcvhwm = pendingConnection.endpoint.options.recvHwm + bindOptions.sendHwm;
         }
-        boolean conflate = pendingConnection.endpoint.options.conflate
-                && (pendingConnection.endpoint.options.type == ZMQ.ZMQ_DEALER
-                        || pendingConnection.endpoint.options.type == ZMQ.ZMQ_PULL
-                        || pendingConnection.endpoint.options.type == ZMQ.ZMQ_PUSH
-                        || pendingConnection.endpoint.options.type == ZMQ.ZMQ_PUB
-                        || pendingConnection.endpoint.options.type == ZMQ.ZMQ_SUB);
-        int[] hwms = { conflate ? -1 : sndhwm, conflate ? -1 : rcvhwm };
+        boolean conflate = pendingConnection.endpoint.options.conflate && (pendingConnection.endpoint.options.type == ZMQ.ZMQ_DEALER || pendingConnection.endpoint.options.type == ZMQ.ZMQ_PULL || pendingConnection.endpoint.options.type == ZMQ.ZMQ_PUSH || pendingConnection.endpoint.options.type == ZMQ.ZMQ_PUB || pendingConnection.endpoint.options.type == ZMQ.ZMQ_SUB);
+        int[] hwms = {conflate ? -1 : sndhwm, conflate ? -1 : rcvhwm};
         pendingConnection.connectPipe.setHwms(hwms[1], hwms[0]);
         pendingConnection.bindPipe.setHwms(hwms[0], hwms[1]);
 
@@ -686,8 +621,7 @@ public class Ctx
             Command cmd = new Command(null, Command.Type.BIND, pendingConnection.bindPipe);
             bindSocket.processCommand(cmd);
             bindSocket.sendInprocConnected(pendingConnection.endpoint.socket);
-        }
-        else {
+        } else {
             pendingConnection.connectPipe.sendBind(bindSocket, pendingConnection.bindPipe, false);
         }
 
@@ -706,8 +640,7 @@ public class Ctx
         }
     }
 
-    public Errno errno()
-    {
+    public Errno errno() {
         return errno;
     }
 }

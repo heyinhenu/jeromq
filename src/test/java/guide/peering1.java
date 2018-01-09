@@ -10,11 +10,9 @@ import org.zeromq.ZMQ.Socket;
 //  Broker peering simulation (part 1)
 //  Prototypes the state flow
 
-public class peering1
-{
+public class peering1 {
 
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         //  First argument is this broker's name
         //  Other arguments are our peers' names
         //
@@ -58,8 +56,7 @@ public class peering1
                 String peer_name = new String(statefe.recv(0), ZMQ.CHARSET);
                 String available = new String(statefe.recv(0), ZMQ.CHARSET);
                 System.out.printf("%s - %s workers free\n", peer_name, available);
-            }
-            else {
+            } else {
                 //  Send random values for worker availability
                 statebe.send(self, ZMQ.SNDMORE);
                 statebe.send(String.format("%d", rand.nextInt(10)), 0);

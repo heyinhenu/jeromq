@@ -7,8 +7,7 @@ import java.util.List;
 import zmq.Msg;
 import zmq.pipe.Pipe;
 
-class Dist
-{
+class Dist {
     //  List of outbound pipes.
     //typedef array_t <zmq::pipe_t, 2> pipes_t;
     private final List<Pipe> pipes;
@@ -31,8 +30,7 @@ class Dist
     //  True if last we are in the middle of a multipart message.
     private boolean more;
 
-    public Dist()
-    {
+    public Dist() {
         matching = 0;
         active = 0;
         eligible = 0;
@@ -41,8 +39,7 @@ class Dist
     }
 
     //  Adds the pipe to the distributor object.
-    public void attach(Pipe pipe)
-    {
+    public void attach(Pipe pipe) {
         //  If we are in the middle of sending a message, we'll add new pipe
         //  into the list of eligible pipes. Otherwise we add it to the list
         //  of active pipes.
@@ -50,8 +47,7 @@ class Dist
             pipes.add(pipe);
             Collections.swap(pipes, eligible, pipes.size() - 1);
             eligible++;
-        }
-        else {
+        } else {
             pipes.add(pipe);
             Collections.swap(pipes, active, pipes.size() - 1);
             active++;
@@ -61,8 +57,7 @@ class Dist
 
     //  Mark the pipe as matching. Subsequent call to sendToMatching
     //  will send message also to this pipe.
-    public void match(Pipe pipe)
-    {
+    public void match(Pipe pipe) {
         int idx = pipes.indexOf(pipe);
         //  If pipe is already matching do nothing.
         if (idx < matching) {
@@ -80,14 +75,12 @@ class Dist
     }
 
     //  Mark all pipes as non-matching.
-    public void unmatch()
-    {
+    public void unmatch() {
         matching = 0;
     }
 
     //  Removes the pipe from the distributor object.
-    public void terminated(Pipe pipe)
-    {
+    public void terminated(Pipe pipe) {
         //  Remove the pipe from the list; adjust number of matching, active and/or
         //  eligible pipes accordingly.
         if (pipes.indexOf(pipe) < matching) {
@@ -106,8 +99,7 @@ class Dist
     }
 
     //  Activates pipe that have previously reached high watermark.
-    public void activated(Pipe pipe)
-    {
+    public void activated(Pipe pipe) {
         //  Move the pipe from passive to eligible state.
         Collections.swap(pipes, pipes.indexOf(pipe), eligible);
         eligible++;
@@ -121,15 +113,13 @@ class Dist
     }
 
     //  Send the message to all the outbound pipes.
-    public boolean sendToAll(Msg msg)
-    {
+    public boolean sendToAll(Msg msg) {
         matching = active;
         return sendToMatching(msg);
     }
 
     //  Send the message to the matching outbound pipes.
-    public boolean sendToMatching(Msg msg)
-    {
+    public boolean sendToMatching(Msg msg) {
         //  Is this end of a multipart message?
         boolean msgMore = msg.hasMore();
 
@@ -147,8 +137,7 @@ class Dist
     }
 
     //  Put the message to all active pipes.
-    private void distribute(Msg msg)
-    {
+    private void distribute(Msg msg) {
         //  If there are no matching pipes available, simply drop the message.
         if (matching == 0) {
             return;
@@ -164,15 +153,13 @@ class Dist
         }
     }
 
-    public boolean hasOut()
-    {
+    public boolean hasOut() {
         return true;
     }
 
     //  Write the message to the pipe. Make the pipe inactive if writing
     //  fails. In such a case false is returned.
-    private boolean write(Pipe pipe, Msg msg)
-    {
+    private boolean write(Pipe pipe, Msg msg) {
         if (!pipe.write(msg)) {
             Collections.swap(pipes, pipes.indexOf(pipe), matching - 1);
             matching--;
@@ -188,8 +175,7 @@ class Dist
         return true;
     }
 
-    public boolean checkHwm()
-    {
+    public boolean checkHwm() {
         for (int idx = 0; idx < matching; ++idx) {
             if (!pipes.get(idx).checkHwm()) {
                 return false;

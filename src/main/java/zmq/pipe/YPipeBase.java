@@ -1,7 +1,6 @@
 package zmq.pipe;
 
-public interface YPipeBase<T>
-{
+public interface YPipeBase<T> {
     //  Write an item to the pipe.  Don't flush it yet. If incomplete is
     //  set to true the item is assumed to be continued by items
     //  subsequently written to the pipe. Incomplete items are never

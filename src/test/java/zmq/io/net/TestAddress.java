@@ -6,19 +6,16 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class TestAddress
-{
+public class TestAddress {
     @Test
-    public void testToNotResolvedToString()
-    {
+    public void testToNotResolvedToString() {
         Address addr = new Address("tcp", "google.com:90");
         String saddr = addr.toString();
         assertThat(saddr, is("tcp://google.com:90"));
     }
 
     @Test
-    public void testResolvedToString()
-    {
+    public void testResolvedToString() {
         Address addr = new Address("tcp", "google.com:90");
         addr.resolve(false);
         String resolved = addr.toString();
@@ -26,8 +23,7 @@ public class TestAddress
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testInvaid()
-    {
+    public void testInvaid() {
         new Address("tcp", "ggglocalhostxxx:90").resolve(false);
     }
 }

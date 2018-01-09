@@ -28,11 +28,9 @@ import zmq.ZError;
 /**
  * Created by hartmann on 3/21/14.
  */
-public class ZMsgTest
-{
+public class ZMsgTest {
     @Test
-    public void testRecvFrame() throws Exception
-    {
+    public void testRecvFrame() throws Exception {
         ZMQ.Context ctx = ZMQ.context(0);
         ZMQ.Socket socket = ctx.socket(ZMQ.PULL);
 
@@ -44,8 +42,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testRecvMsg() throws Exception
-    {
+    public void testRecvMsg() throws Exception {
         ZMQ.Context ctx = ZMQ.context(0);
         ZMQ.Socket socket = ctx.socket(ZMQ.PULL);
 
@@ -57,8 +54,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testRecvNullByteMsg() throws Exception
-    {
+    public void testRecvNullByteMsg() throws Exception {
         ZMQ.Context ctx = ZMQ.context(0);
         ZMQ.Socket sender = ctx.socket(ZMQ.PUSH);
         ZMQ.Socket receiver = ctx.socket(ZMQ.PULL);
@@ -76,8 +72,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testContentSize()
-    {
+    public void testContentSize() {
         ZMsg msg = new ZMsg();
 
         msg.add(new byte[0]);
@@ -88,8 +83,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testEquals()
-    {
+    public void testEquals() {
         ZMsg msg = new ZMsg();
         msg.addString("123");
         ZMsg other = new ZMsg();
@@ -112,8 +106,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testHashcode()
-    {
+    public void testHashcode() {
         ZMsg msg = new ZMsg();
         assertThat(msg.hashCode(), is(0));
 
@@ -130,12 +123,11 @@ public class ZMsgTest
     }
 
     @Test
-    public void testDump()
-    {
+    public void testDump() {
         ZMsg msg = new ZMsg();
 
         msg.add(new byte[0]);
-        msg.add(new byte[] { (byte) 0xAA });
+        msg.add(new byte[]{(byte) 0xAA});
         msg.dump();
 
         StringBuilder out = new StringBuilder();
@@ -147,8 +139,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testWrapUnwrap()
-    {
+    public void testWrapUnwrap() {
         ZMsg msg = new ZMsg();
 
         msg.wrap(new ZFrame("456"));
@@ -159,8 +150,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testSaveLoad()
-    {
+    public void testSaveLoad() {
         ZMsg msg = new ZMsg();
         msg.add("123");
 
@@ -177,8 +167,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testAppend()
-    {
+    public void testAppend() {
         ZMsg msg = new ZMsg();
 
         msg.append(null);
@@ -193,15 +182,13 @@ public class ZMsgTest
     }
 
     @Test
-    public void testPop()
-    {
+    public void testPop() {
         ZMsg msg = new ZMsg();
         assertThat(msg.popString(), nullValue());
     }
 
     @Test
-    public void testRemoves()
-    {
+    public void testRemoves() {
         ZMsg msg = ZMsg.newStringMsg("1", "2", "3", "4");
         assertThat(msg.remove(), is(new ZFrame("1")));
         assertThat(msg.removeLast(), is(new ZFrame("4")));
@@ -233,8 +220,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testMessageEquals()
-    {
+    public void testMessageEquals() {
         ZMsg msg = new ZMsg();
         ZFrame hello = new ZFrame("Hello");
         ZFrame world = new ZFrame("World");
@@ -249,8 +235,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testSingleFrameMessage()
-    {
+    public void testSingleFrameMessage() {
         ZContext ctx = new ZContext();
 
         Socket output = ctx.createSocket(ZMQ.PAIR);
@@ -277,8 +262,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testMultiPart()
-    {
+    public void testMultiPart() {
         ZContext ctx = new ZContext();
 
         Socket output = ctx.createSocket(ZMQ.PAIR);
@@ -314,8 +298,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testMessageFrameManipulation()
-    {
+    public void testMessageFrameManipulation() {
         ZMsg msg = new ZMsg();
         for (int i = 0; i < 10; i++) {
             msg.addString("Frame" + i);
@@ -361,8 +344,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testEmptyMessage()
-    {
+    public void testEmptyMessage() {
         ZMsg msg = new ZMsg();
         assertThat(msg.size(), is(0));
         assertThat(msg.getFirst(), nullValue());
@@ -378,8 +360,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testLoadSave()
-    {
+    public void testLoadSave() {
         ZMsg msg = new ZMsg();
         for (int i = 0; i < 10; i++) {
             msg.addString("Frame" + i);
@@ -401,20 +382,17 @@ public class ZMsgTest
             assertThat(msg2.size(), is(10));
             assertThat(msg2.contentSize(), is(60L));
 
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             fail();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             fail();
         }
     }
 
     @Test
-    public void testNewStringMessage()
-    {
+    public void testNewStringMessage() {
         // A single string => frame
         ZMsg msg = ZMsg.newStringMsg("Foo");
         assertThat(msg.size(), is(1));
@@ -432,8 +410,7 @@ public class ZMsgTest
     }
 
     @Test
-    public void testClosedContext()
-    {
+    public void testClosedContext() {
         ZContext ctx = new ZContext();
 
         Socket output = ctx.createSocket(ZMQ.PAIR);
@@ -456,8 +433,7 @@ public class ZMsgTest
         try {
             ZMsg.recvMsg(input);
             fail();
-        }
-        catch (ZMQException e) {
+        } catch (ZMQException e) {
             assertThat(e.getErrorCode(), is(ZError.ETERM));
         }
     }

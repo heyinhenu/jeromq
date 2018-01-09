@@ -8,13 +8,11 @@ import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
-public class rtpapa
-{
+public class rtpapa {
 
     //  We will do this all in one thread to emphasize the getSequence
     //  of events
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         Context context = ZMQ.context(1);
 
         Socket client = context.socket(ZMQ.ROUTER);
@@ -28,8 +26,7 @@ public class rtpapa
         //  with routing envelope, it will actually match the worker
         try {
             Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 

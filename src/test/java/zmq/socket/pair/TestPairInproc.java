@@ -11,13 +11,11 @@ import zmq.Helper;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class TestPairInproc
-{
+public class TestPairInproc {
     //  Create REQ/ROUTER wiring.
 
     @Test
-    public void testPairInproc()
-    {
+    public void testPairInproc() {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
         SocketBase sb = ZMQ.socket(ctx, ZMQ.ZMQ_PAIR);

@@ -5,17 +5,14 @@ import org.zeromq.ZMQ;
 //
 //Custom routing Router to Mama (ROUTER to REQ)
 //
-public class rtmama
-{
+public class rtmama {
 
     private static final int NBR_WORKERS = 10;
 
-    public static class Worker implements Runnable
-    {
+    public static class Worker implements Runnable {
         private final byte[] END = "END".getBytes(ZMQ.CHARSET);
 
-        public void run()
-        {
+        public void run() {
             ZMQ.Context context = ZMQ.context(1);
             ZMQ.Socket worker = context.socket(ZMQ.REQ);
             // worker.setIdentity(); will set a random id automatically
@@ -36,8 +33,7 @@ public class rtmama
         }
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZMQ.Context context = ZMQ.context(1);
         ZMQ.Socket client = context.socket(ZMQ.ROUTER);
         client.bind("ipc://routing.ipc");

@@ -20,8 +20,7 @@ import zmq.util.Utils;
 
 //  If 'delay' is true connecter first waits for a while, then starts
 //  connection process.
-public class TcpConnecter extends Own implements IPollEvents
-{
+public class TcpConnecter extends Own implements IPollEvents {
     //  ID of the timer used to delay the reconnection.
     protected static final int RECONNECT_TIMER_ID = 1;
 
@@ -53,8 +52,7 @@ public class TcpConnecter extends Own implements IPollEvents
     private final SocketBase socket;
 
     public TcpConnecter(IOThread ioThread, SessionBase session, final Options options, final Address addr,
-            boolean delayedStart)
-    {
+            boolean delayedStart) {
         super(ioThread, options);
         ioObject = new IOObject(ioThread, this);
         this.addr = addr;
@@ -72,8 +70,7 @@ public class TcpConnecter extends Own implements IPollEvents
     }
 
     @Override
-    protected void destroy()
-    {
+    protected void destroy() {
         assert (!timerStarted);
         assert (handle == null);
         assert (fd == null);
@@ -81,20 +78,17 @@ public class TcpConnecter extends Own implements IPollEvents
     }
 
     @Override
-    protected void processPlug()
-    {
+    protected void processPlug() {
         ioObject.plug();
         if (delayedStart) {
             addReconnectTimer();
-        }
-        else {
+        } else {
             startConnecting();
         }
     }
 
     @Override
-    protected void processTerm(int linger)
-    {
+    protected void processTerm(int linger) {
         if (timerStarted) {
             ioObject.cancelTimer(RECONNECT_TIMER_ID);
             timerStarted = false;
@@ -113,8 +107,7 @@ public class TcpConnecter extends Own implements IPollEvents
     }
 
     @Override
-    public void connectEvent()
-    {
+    public void connectEvent() {
         ioObject.removeHandle(handle);
         handle = null;
 
@@ -129,14 +122,9 @@ public class TcpConnecter extends Own implements IPollEvents
 
         try {
             TcpUtils.tuneTcpSocket(channel);
-            TcpUtils.tuneTcpKeepalives(
-                                       channel,
-                                       options.tcpKeepAlive,
-                                       options.tcpKeepAliveCnt,
-                                       options.tcpKeepAliveIdle,
-                                       options.tcpKeepAliveIntvl);
-        }
-        catch (IOException e) {
+            TcpUtils.tuneTcpKeepalives(channel, options.tcpKeepAlive, options.tcpKeepAliveCnt, options.tcpKeepAliveIdle,
+                    options.tcpKeepAliveIntvl);
+        } catch (IOException e) {
             throw new ZError.IOException(e);
         }
 
@@ -147,8 +135,7 @@ public class TcpConnecter extends Own implements IPollEvents
         StreamEngine engine;
         try {
             engine = new StreamEngine(channel, options, addr.toString());
-        }
-        catch (ZError.InstantiationException e) {
+        } catch (ZError.InstantiationException e) {
             // TODO V4 socket.eventConnectDelayed(addr.toString(), -1);
             return;
         }
@@ -165,8 +152,7 @@ public class TcpConnecter extends Own implements IPollEvents
     }
 
     @Override
-    public void timerEvent(int id)
-    {
+    public void timerEvent(int id) {
         assert (id == RECONNECT_TIMER_ID);
 
         timerStarted = false;
@@ -174,8 +160,7 @@ public class TcpConnecter extends Own implements IPollEvents
     }
 
     //  Internal function to start the actual connection establishment.
-    private void startConnecting()
-    {
+    private void startConnecting() {
         //  Open the connecting socket.
         try {
             boolean rc = open();
@@ -191,8 +176,7 @@ public class TcpConnecter extends Own implements IPollEvents
                 ioObject.setPollConnect(handle);
                 socket.eventConnectDelayed(addr.toString(), -1);
             }
-        }
-        catch (RuntimeException | IOException e) {
+        } catch (RuntimeException | IOException e) {
             //  Handle any other error condition by eventual reconnect.
             if (fd != null) {
                 close();
@@ -202,8 +186,7 @@ public class TcpConnecter extends Own implements IPollEvents
     }
 
     //  Internal function to add a reconnect timer
-    private void addReconnectTimer()
-    {
+    private void addReconnectTimer() {
         int rcIvl = getNewReconnectIvl();
         ioObject.addTimer(rcIvl, RECONNECT_TIMER_ID);
 
@@ -211,8 +194,7 @@ public class TcpConnecter extends Own implements IPollEvents
         // besides the failing one (e.g. multiple dns entries).
         try {
             addr.resolve(options.ipv6);
-        }
-        catch (Exception ignored) {
+        } catch (Exception ignored) {
             // This will fail if the network goes away and the
             // address cannot be resolved for some reason. Try
             // not to fail as the event loop will quit
@@ -225,8 +207,7 @@ public class TcpConnecter extends Own implements IPollEvents
     //  Internal function to return a reconnect backoff delay.
     //  Will modify the currentReconnectIvl used for next call
     //  Returns the currently used interval
-    private int getNewReconnectIvl()
-    {
+    private int getNewReconnectIvl() {
         //  The new interval is the current interval + random value.
         int interval = currentReconnectIvl + (Utils.randomInt() % options.reconnectIvl);
 
@@ -242,8 +223,7 @@ public class TcpConnecter extends Own implements IPollEvents
     //  Open TCP connecting socket.
     // Returns true if connect was successful immediately.
     // Returns false if async connect was launched.
-    private boolean open() throws IOException
-    {
+    private boolean open() throws IOException {
         assert (fd == null);
 
         //  Resolve the address
@@ -315,14 +295,12 @@ public class TcpConnecter extends Own implements IPollEvents
             rc = fd.connect(sa);
             if (rc) {
                 //  Connect was successful immediately.
-            }
-            else {
+            } else {
                 //  Translate error codes indicating asynchronous connect has been
                 //  launched to a uniform EINPROGRESS.
                 errno.set(ZError.EINPROGRESS);
             }
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // this will happen if sa is bad.  Address validation is not documented but
             // I've found that IAE is thrown in openjdk as well as on android.
             throw new IOException(e.getMessage(), e);
@@ -334,54 +312,46 @@ public class TcpConnecter extends Own implements IPollEvents
 
     //  Get the file descriptor of newly created connection. Returns
     //  null if the connection was unsuccessful.
-    private SocketChannel connect()
-    {
+    private SocketChannel connect() {
         try {
             //  Async connect has finished. Check whether an error occurred
             boolean finished = fd.finishConnect();
             assert (finished);
             return fd;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             return null;
         }
     }
 
     //  Close the connecting socket.
-    protected void close()
-    {
+    protected void close() {
         assert (fd != null);
         try {
             fd.close();
             socket.eventClosed(addr.toString(), fd);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             socket.eventCloseFailed(addr.toString(), ZError.exccode(e));
         }
         fd = null;
     }
 
     @Override
-    public void acceptEvent()
-    {
+    public void acceptEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void inEvent()
-    {
+    public void inEvent() {
         // connected but attaching to stream engine is not completed. do nothing
     }
 
     @Override
-    public void outEvent()
-    {
+    public void outEvent() {
         // connected but attaching to stream engine is not completed. do nothing
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getClass().getSimpleName() + "[" + options.socketId + "]";
     }
 }

@@ -6,11 +6,9 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public class TestHwm
-{
+public class TestHwm {
     @Test
-    public void testHwm()
-    {
+    public void testHwm() {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
 
@@ -39,8 +37,7 @@ public class TestHwm
             rc = ZMQ.send(sc, null, 0, ZMQ.ZMQ_DONTWAIT);
             if (i < 4) {
                 assertThat(rc, is(0));
-            }
-            else {
+            } else {
                 assertThat(rc, is(-1));
             }
         }

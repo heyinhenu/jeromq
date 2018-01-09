@@ -7,21 +7,17 @@ import org.zeromq.ZMQ.Socket;
 /**
  * Multithreaded relay
  */
-public class mtrelay
-{
+public class mtrelay {
 
-    private static class Step1 extends Thread
-    {
+    private static class Step1 extends Thread {
         private Context context;
 
-        private Step1(Context context)
-        {
+        private Step1(Context context) {
             this.context = context;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             //  Signal downstream to step 2
             Socket xmitter = context.socket(ZMQ.PAIR);
             xmitter.connect("inproc://step2");
@@ -32,18 +28,15 @@ public class mtrelay
 
     }
 
-    private static class Step2 extends Thread
-    {
+    private static class Step2 extends Thread {
         private Context context;
 
-        private Step2(Context context)
-        {
+        private Step2(Context context) {
             this.context = context;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             //  Bind to inproc: endpoint, then start upstream thread
             Socket receiver = context.socket(ZMQ.PAIR);
             receiver.bind("inproc://step2");
@@ -64,8 +57,7 @@ public class mtrelay
 
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
 
         Context context = ZMQ.context(1);
 

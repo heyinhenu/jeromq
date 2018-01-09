@@ -10,24 +10,20 @@ import org.junit.Test;
 
 import zmq.poll.PollItem;
 
-public class InprocDisconnectTest
-{
+public class InprocDisconnectTest {
     @Test
-    public void testDisconnectInproc() throws Exception
-    {
+    public void testDisconnectInproc() throws Exception {
         Ctx context = ZMQ.createContext();
         Selector selector = context.createSelector();
         try {
             testDisconnectInproc(context, selector);
-        }
-        finally {
+        } finally {
             context.closeSelector(selector);
         }
         ZMQ.term(context);
     }
 
-    private void testDisconnectInproc(Ctx context, Selector selector) throws Exception
-    {
+    private void testDisconnectInproc(Ctx context, Selector selector) throws Exception {
         int publicationsReceived = 0;
         boolean isSubscribed = false;
 
@@ -41,7 +37,7 @@ public class InprocDisconnectTest
         int iteration = 0;
 
         while (true) {
-            PollItem[] items = { new PollItem(subSocket, ZMQ.ZMQ_POLLIN), // read publications
+            PollItem[] items = {new PollItem(subSocket, ZMQ.ZMQ_POLLIN), // read publications
                     new PollItem(pubSocket, ZMQ.ZMQ_POLLIN) // read subscriptions
             };
             int rc = ZMQ.poll(selector, items, 2, 100L);
@@ -56,8 +52,7 @@ public class InprocDisconnectTest
                         assertTrue(isSubscribed);
                         System.out.printf("unsubscribing from '%s'\n", new String(buffer, 1, msgSize - 1));
                         isSubscribed = false;
-                    }
-                    else {
+                    } else {
                         assert (!isSubscribed);
                         System.out.printf("subscribing on '%s'\n", new String(buffer, 1, msgSize - 1));
                         isSubscribed = true;

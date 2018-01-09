@@ -12,11 +12,9 @@ import zmq.SocketBase;
 import zmq.ZError;
 import zmq.ZMQ;
 
-public class SubTest
-{
+public class SubTest {
     @Test
-    public void testHasOut()
-    {
+    public void testHasOut() {
         Ctx ctx = ZMQ.createContext();
         SocketBase pub = null;
         try {
@@ -24,16 +22,14 @@ public class SubTest
 
             int events = pub.getSocketOpt(ZMQ.ZMQ_EVENTS);
             assertThat(events, is(0));
-        }
-        finally {
+        } finally {
             ZMQ.close(pub);
             ZMQ.term(ctx);
         }
     }
 
     @Test
-    public void testSetNullOption()
-    {
+    public void testSetNullOption() {
         Ctx ctx = ZMQ.createContext();
         SocketBase pub = null;
         try {
@@ -41,19 +37,16 @@ public class SubTest
 
             boolean rc = pub.setSocketOpt(ZMQ.ZMQ_SUBSCRIBE, null);
             assertThat(rc, is(false));
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             assertThat(pub.errno.get(), is(ZError.EINVAL));
-        }
-        finally {
+        } finally {
             ZMQ.close(pub);
             ZMQ.term(ctx);
         }
     }
 
     @Test
-    public void testSend()
-    {
+    public void testSend() {
         Ctx ctx = ZMQ.createContext();
         SocketBase pub = null;
         try {
@@ -61,11 +54,9 @@ public class SubTest
 
             pub.send(new Msg(), ZMQ.ZMQ_DONTWAIT);
             Assert.fail("Sub cannot send message");
-        }
-        catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException e) {
             assertThat(ctx.errno().get(), is(ZError.ENOTSUP));
-        }
-        finally {
+        } finally {
             ZMQ.close(pub);
             ZMQ.term(ctx);
         }

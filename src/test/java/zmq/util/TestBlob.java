@@ -10,11 +10,9 @@ import org.junit.Test;
 
 import zmq.ZMQ;
 
-public class TestBlob
-{
+public class TestBlob {
     @Test
-    public void testBlobMap()
-    {
+    public void testBlobMap() {
         HashMap<Blob, String> map = new HashMap<Blob, String>();
 
         Blob b = Blob.createBlob("a".getBytes(ZMQ.CHARSET));

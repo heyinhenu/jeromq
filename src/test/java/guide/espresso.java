@@ -11,16 +11,13 @@ import org.zeromq.ZThread.IAttachedRunnable;
 
 //  Espresso Pattern
 //  This shows how to capture data using a pub-sub proxy
-public class espresso
-{
+public class espresso {
     //  The subscriber thread requests messages starting with
     //  A and B, then reads and counts incoming messages.
-    private static class Subscriber implements IAttachedRunnable
-    {
+    private static class Subscriber implements IAttachedRunnable {
 
         @Override
-        public void run(Object[] args, ZContext ctx, Socket pipe)
-        {
+        public void run(Object[] args, ZContext ctx, Socket pipe) {
             //  Subscribe to "A" and "B"
             Socket subscriber = ctx.createSocket(ZMQ.SUB);
             subscriber.connect("tcp://localhost:6001");
@@ -40,11 +37,9 @@ public class espresso
 
     //  .split publisher thread
     //  The publisher sends random messages starting with A-J:
-    private static class Publisher implements IAttachedRunnable
-    {
+    private static class Publisher implements IAttachedRunnable {
         @Override
-        public void run(Object[] args, ZContext ctx, Socket pipe)
-        {
+        public void run(Object[] args, ZContext ctx, Socket pipe) {
             Socket publisher = ctx.createSocket(ZMQ.PUB);
             publisher.bind("tcp://*:6000");
             Random rand = new Random(System.currentTimeMillis());
@@ -55,8 +50,7 @@ public class espresso
                     break; //  Interrupted
                 try {
                     Thread.sleep(100); //  Wait for 1/10th second
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                 }
             }
             ctx.destroySocket(publisher);
@@ -67,11 +61,9 @@ public class espresso
     //  The listener receives all messages flowing through the proxy, on its
     //  pipe. In CZMQ, the pipe is a pair of ZMQ_PAIR sockets that connect
     //  attached child threads. In other languages your mileage may vary:
-    private static class Listener implements IAttachedRunnable
-    {
+    private static class Listener implements IAttachedRunnable {
         @Override
-        public void run(Object[] args, ZContext ctx, Socket pipe)
-        {
+        public void run(Object[] args, ZContext ctx, Socket pipe) {
             //  Print everything that arrives on pipe
             while (true) {
                 ZFrame frame = ZFrame.recvFrame(pipe);
@@ -86,8 +78,7 @@ public class espresso
     //  .split main thread
     //  The main task starts the subscriber and publisher, and then sets
     //  itself up as a listening proxy. The listener runs as a child thread:
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         //  Start child threads
         ZContext ctx = new ZContext();
         ZThread.fork(ctx, new Publisher());

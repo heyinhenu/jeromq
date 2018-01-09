@@ -18,13 +18,10 @@ import org.zeromq.ZThread.IAttachedRunnable;
  * Clone server Model Two
  *
  * @author Danish Shrestha <dshrestha06@gmail.com>
- *
  */
-public class clonesrv2
-{
+public class clonesrv2 {
 
-    public void run()
-    {
+    public void run() {
         ZContext ctx = new ZContext();
         Socket publisher = ctx.createSocket(ZMQ.PUB);
         publisher.bind("tcp://*:5557");
@@ -47,8 +44,7 @@ public class clonesrv2
 
             try {
                 Thread.sleep(1000);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
             }
 
         }
@@ -57,13 +53,11 @@ public class clonesrv2
         ctx.destroy();
     }
 
-    public static class StateManager implements IAttachedRunnable
-    {
+    public static class StateManager implements IAttachedRunnable {
         private static Map<String, kvsimple> kvMap = new LinkedHashMap<String, kvsimple>();
 
         @Override
-        public void run(Object[] args, ZContext ctx, Socket pipe)
-        {
+        public void run(Object[] args, ZContext ctx, Socket pipe) {
             pipe.send("READY"); // optional
 
             Socket snapshot = ctx.createSocket(ZMQ.ROUTER);
@@ -116,15 +110,13 @@ public class clonesrv2
             }
         }
 
-        private void sendMessage(kvsimple msg, byte[] identity, Socket snapshot)
-        {
+        private void sendMessage(kvsimple msg, byte[] identity, Socket snapshot) {
             snapshot.send(identity, ZMQ.SNDMORE);
             msg.send(snapshot);
         }
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonesrv2().run();
     }
 }

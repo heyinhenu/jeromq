@@ -11,11 +11,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class ConflateTest
-{
+public class ConflateTest {
     @Test
-    public void test() throws IOException, InterruptedException
-    {
+    public void test() throws IOException, InterruptedException {
         Ctx ctx = ZMQ.init(1);
         assert (ctx != null);
 

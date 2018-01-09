@@ -9,56 +9,41 @@ import zmq.util.Utils;
 import zmq.util.Z85;
 
 // wrapper around the wrapper of libsodium (ahem), for shorter names.
-public class Curve
-{
-    enum Size
-    {
+public class Curve {
+    enum Size {
         NONCE {
             @Override
-            public int bytes()
-            {
+            public int bytes() {
                 return curve25519xsalsa20poly1305.crypto_secretbox_NONCEBYTES;
             }
-        },
-        ZERO {
+        }, ZERO {
             @Override
-            public int bytes()
-            {
+            public int bytes() {
                 return curve25519xsalsa20poly1305.crypto_secretbox_ZEROBYTES;
             }
-        },
-        BOXZERO {
+        }, BOXZERO {
             @Override
-            public int bytes()
-            {
+            public int bytes() {
                 return curve25519xsalsa20poly1305.crypto_secretbox_BOXZEROBYTES;
             }
-        },
-        PUBLICKEY {
+        }, PUBLICKEY {
             @Override
-            public int bytes()
-            {
+            public int bytes() {
                 return curve25519xsalsa20poly1305.crypto_secretbox_PUBLICKEYBYTES;
             }
-        },
-        SECRETKEY {
+        }, SECRETKEY {
             @Override
-            public int bytes()
-            {
+            public int bytes() {
                 return curve25519xsalsa20poly1305.crypto_secretbox_SECRETKEYBYTES;
             }
-        },
-        KEY {
+        }, KEY {
             @Override
-            public int bytes()
-            {
+            public int bytes() {
                 return 32;
             }
-        },
-        BEFORENM {
+        }, BEFORENM {
             @Override
-            public int bytes()
-            {
+            public int bytes() {
                 return curve25519xsalsa20poly1305.crypto_secretbox_BEFORENMBYTES;
             }
         };
@@ -66,12 +51,10 @@ public class Curve
         public abstract int bytes();
     }
 
-    public Curve()
-    {
+    public Curve() {
     }
 
-    public static String z85EncodePublic(byte[] publicKey)
-    {
+    public static String z85EncodePublic(byte[] publicKey) {
         return Z85.encode(publicKey, Size.PUBLICKEY.bytes());
     }
 
@@ -82,8 +65,7 @@ public class Curve
      * The first element of the array is the public key,
      * the second element is the private (or secret) key.
      */
-    public String[] keypairZ85()
-    {
+    public String[] keypairZ85() {
         String[] pair = new String[2];
 
         byte[] publicKey = new byte[Size.PUBLICKEY.bytes()];
@@ -105,8 +87,7 @@ public class Curve
      * The first element of the array is the public key,
      * the second element is the private (or secret) key.
      */
-    public byte[][] keypair()
-    {
+    public byte[][] keypair() {
         byte[][] pair = new byte[2][];
 
         byte[] publicKey = new byte[Size.PUBLICKEY.bytes()];
@@ -121,74 +102,61 @@ public class Curve
         return pair;
     }
 
-    int beforenm(byte[] outSharedKey, byte[] publicKey, byte[] secretKey)
-    {
+    int beforenm(byte[] outSharedKey, byte[] publicKey, byte[] secretKey) {
         return curve25519xsalsa20poly1305.crypto_box_beforenm(outSharedKey, publicKey, secretKey);
     }
 
-    int afternm(ByteBuffer ciphered, ByteBuffer plaintext, int length, ByteBuffer nonce, byte[] precom)
-    {
+    int afternm(ByteBuffer ciphered, ByteBuffer plaintext, int length, ByteBuffer nonce, byte[] precom) {
         return afternm(ciphered.array(), plaintext.array(), length, nonce.array(), precom);
     }
 
-    int afternm(byte[] ciphered, byte[] plaintext, int length, byte[] nonce, byte[] precomp)
-    {
+    int afternm(byte[] ciphered, byte[] plaintext, int length, byte[] nonce, byte[] precomp) {
         return curve25519xsalsa20poly1305.crypto_box_afternm(ciphered, plaintext, length, nonce, precomp);
     }
 
-    int openAfternm(ByteBuffer plaintext, ByteBuffer messagebox, int length, ByteBuffer nonce, byte[] precom)
-    {
+    int openAfternm(ByteBuffer plaintext, ByteBuffer messagebox, int length, ByteBuffer nonce, byte[] precom) {
         return openAfternm(plaintext.array(), messagebox.array(), length, nonce.array(), precom);
     }
 
-    int openAfternm(byte[] plaintext, byte[] cipher, int length, byte[] nonce, byte[] precom)
-    {
+    int openAfternm(byte[] plaintext, byte[] cipher, int length, byte[] nonce, byte[] precom) {
         return curve25519xsalsa20poly1305.crypto_box_open_afternm(plaintext, cipher, length, nonce, precom);
     }
 
-    int open(ByteBuffer plaintext, ByteBuffer messagebox, int length, ByteBuffer nonce, byte[] precom, byte[] secretKey)
-    {
+    int open(ByteBuffer plaintext, ByteBuffer messagebox, int length, ByteBuffer nonce, byte[] precom,
+            byte[] secretKey) {
         return open(plaintext.array(), messagebox.array(), length, nonce.array(), precom, secretKey);
     }
 
-    int open(byte[] plaintext, byte[] messagebox, int length, byte[] nonce, byte[] publicKey, byte[] secretKey)
-    {
+    int open(byte[] plaintext, byte[] messagebox, int length, byte[] nonce, byte[] publicKey, byte[] secretKey) {
         return curve25519xsalsa20poly1305.crypto_box_open(plaintext, messagebox, length, nonce, publicKey, secretKey);
     }
 
-    int secretbox(ByteBuffer ciphertext, ByteBuffer plaintext, int length, ByteBuffer nonce, byte[] key)
-    {
+    int secretbox(ByteBuffer ciphertext, ByteBuffer plaintext, int length, ByteBuffer nonce, byte[] key) {
         return secretbox(ciphertext.array(), plaintext.array(), length, nonce.array(), key);
     }
 
-    int secretbox(byte[] ciphertext, byte[] plaintext, int length, byte[] nonce, byte[] key)
-    {
+    int secretbox(byte[] ciphertext, byte[] plaintext, int length, byte[] nonce, byte[] key) {
         return xsalsa20poly1305.crypto_secretbox(ciphertext, plaintext, length, nonce, key);
     }
 
-    int secretboxOpen(ByteBuffer plaintext, ByteBuffer box, int length, ByteBuffer nonce, byte[] key)
-    {
+    int secretboxOpen(ByteBuffer plaintext, ByteBuffer box, int length, ByteBuffer nonce, byte[] key) {
         return secretboxOpen(plaintext.array(), box.array(), length, nonce.array(), key);
     }
 
-    int secretboxOpen(byte[] plaintext, byte[] box, int length, byte[] nonce, byte[] key)
-    {
+    int secretboxOpen(byte[] plaintext, byte[] box, int length, byte[] nonce, byte[] key) {
         return xsalsa20poly1305.crypto_secretbox_open(plaintext, box, length, nonce, key);
     }
 
-    byte[] random(int length)
-    {
+    byte[] random(int length) {
         return Utils.randomBytes(length);
     }
 
     public int box(ByteBuffer ciphertext, ByteBuffer plaintext, int length, ByteBuffer nonce, byte[] publicKey,
-                   byte[] secretKey)
-    {
+            byte[] secretKey) {
         return box(ciphertext.array(), plaintext.array(), length, nonce.array(), publicKey, secretKey);
     }
 
-    public int box(byte[] ciphertext, byte[] plaintext, int length, byte[] nonce, byte[] publicKey, byte[] secretKey)
-    {
+    public int box(byte[] ciphertext, byte[] plaintext, int length, byte[] nonce, byte[] publicKey, byte[] secretKey) {
         return curve25519xsalsa20poly1305.crypto_box(ciphertext, plaintext, length, nonce, publicKey, secretKey);
     }
 }

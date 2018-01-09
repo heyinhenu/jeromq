@@ -5,11 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class TestDisconnectInprocZeromq
-{
+public class TestDisconnectInprocZeromq {
     @Test
-    public void testDisconnectInproc() throws Exception
-    {
+    public void testDisconnectInproc() throws Exception {
         int publicationsReceived = 0;
         boolean isSubscribed = false;
 
@@ -38,8 +36,7 @@ public class TestDisconnectInprocZeromq
                         assertTrue(isSubscribed);
                         System.out.printf("unsubscribing from '%s'\n", new String(buffer, 1, msgSize - 1));
                         isSubscribed = false;
-                    }
-                    else {
+                    } else {
                         assert (!isSubscribed);
                         System.out.printf("subscribing on '%s'\n", new String(buffer, 1, msgSize - 1));
                         isSubscribed = true;

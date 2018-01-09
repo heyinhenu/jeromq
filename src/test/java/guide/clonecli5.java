@@ -11,16 +11,13 @@ import org.zeromq.ZMQ.Socket;
 
 /**
  * Clone client Model Five
- *
  */
-public class clonecli5
-{
+public class clonecli5 {
     //  This client is identical to clonecli3 except for where we
     //  handles subtrees.
     private final static String SUBTREE = "/client/";
 
-    public void run()
-    {
+    public void run() {
         ZContext ctx = new ZContext();
         Socket snapshot = ctx.createSocket(ZMQ.DEALER);
         snapshot.connect("tcp://localhost:5556");
@@ -76,8 +73,8 @@ public class clonecli5
                     sequence = kvMsg.getSequence();
                     System.out.println("receiving " + sequence);
                     kvMsg.store(kvMap);
-                }
-                else kvMsg.destroy();
+                } else
+                    kvMsg.destroy();
             }
 
             if (System.currentTimeMillis() >= alarm) {
@@ -94,8 +91,7 @@ public class clonecli5
         ctx.close();
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonecli5().run();
     }
 }

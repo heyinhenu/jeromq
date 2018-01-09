@@ -23,23 +23,19 @@ import zmq.io.mechanism.curve.Curve;
 import zmq.util.Utils;
 import zmq.util.Z85;
 
-public class SecurityCurveTest
-{
-    private static class ZapHandler implements Runnable
-    {
+public class SecurityCurveTest {
+    private static class ZapHandler implements Runnable {
         private final SocketBase handler;
-        private final String     clientPublic;
+        private final String clientPublic;
 
-        public ZapHandler(SocketBase handler, String clientPublic)
-        {
+        public ZapHandler(SocketBase handler, String clientPublic) {
             this.handler = handler;
             this.clientPublic = clientPublic;
         }
 
         @SuppressWarnings("unused")
         @Override
-        public void run()
-        {
+        public void run() {
             //  Process ZAP requests forever
             while (true) {
                 Msg version = ZMQ.recv(handler, 0);
@@ -74,8 +70,7 @@ public class SecurityCurveTest
                     assertThat(ret, is(9));
                     ret = ZMQ.send(handler, "", 0);
                     assertThat(ret, is(0));
-                }
-                else {
+                } else {
                     ret = ZMQ.send(handler, "400", ZMQ.ZMQ_SNDMORE);
                     assertThat(ret, is(3));
                     ret = ZMQ.send(handler, "Invalid client public key", ZMQ.ZMQ_SNDMORE);
@@ -93,15 +88,13 @@ public class SecurityCurveTest
     private String connectionString;
 
     @Before
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         int port = Utils.findOpenPort();
         connectionString = "tcp://127.0.0.1:" + port;
     }
 
     @Test
-    public void testPlainCurveKeys() throws Exception
-    {
+    public void testPlainCurveKeys() throws Exception {
         byte[][] serverKeyPair = new Curve().keypair();
         byte[] serverPublicKey = serverKeyPair[0];
         byte[] serverSecretKey = serverKeyPair[1];
@@ -136,8 +129,7 @@ public class SecurityCurveTest
     }
 
     @Test
-    public void testCurveMechanismSecurity() throws IOException, InterruptedException
-    {
+    public void testCurveMechanismSecurity() throws IOException, InterruptedException {
         Curve cryptoBox = new Curve();
         //  Generate new keypairs for this test
         //  We'll generate random test keys at startup
@@ -294,9 +286,8 @@ public class SecurityCurveTest
         OutputStream out = sock.getOutputStream();
         out.write(new StringBuilder().append(0x01).append(0x00).toString().getBytes(ZMQ.CHARSET));
         // send sneaky message that shouldn't be received
-        out.write(
-                  new StringBuilder().append(0x08).append(0x00).append("sneaky").append(0x00).toString()
-                          .getBytes(ZMQ.CHARSET));
+        out.write(new StringBuilder().append(0x08).append(0x00).append("sneaky").append(0x00).toString().getBytes(
+                ZMQ.CHARSET));
         int timeout = 250;
         ZMQ.setSocketOption(server, ZMQ.ZMQ_RCVTIMEO, timeout);
 

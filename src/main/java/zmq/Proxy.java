@@ -5,34 +5,26 @@ import java.util.Arrays;
 
 import zmq.poll.PollItem;
 
-class Proxy
-{
-    public static boolean proxy(SocketBase frontend, SocketBase backend, SocketBase capture)
-    {
+class Proxy {
+    public static boolean proxy(SocketBase frontend, SocketBase backend, SocketBase capture) {
         return new Proxy().start(frontend, backend, capture, null);
     }
 
-    public static boolean proxy(SocketBase frontend, SocketBase backend, SocketBase capture, SocketBase control)
-    {
+    public static boolean proxy(SocketBase frontend, SocketBase backend, SocketBase capture, SocketBase control) {
         return new Proxy().start(frontend, backend, capture, control);
     }
 
-    public enum State
-    {
-        ACTIVE,
-        PAUSED,
-        TERMINATED
+    public enum State {
+        ACTIVE, PAUSED, TERMINATED
     }
 
     private State state;
 
-    private Proxy()
-    {
+    private Proxy() {
         state = State.ACTIVE;
     }
 
-    private boolean start(SocketBase frontend, SocketBase backend, SocketBase capture, SocketBase control)
-    {
+    private boolean start(SocketBase frontend, SocketBase backend, SocketBase capture, SocketBase control) {
         //  The algorithm below assumes ratio of requests and replies processed
         //  under full load to be 1:1.
 
@@ -97,17 +89,13 @@ class Proxy
                     byte[] command = msg.data();
                     if (Arrays.equals(command, ZMQ.PROXY_PAUSE)) {
                         state = State.PAUSED;
-                    }
-                    else if (Arrays.equals(command, ZMQ.PROXY_RESUME)) {
+                    } else if (Arrays.equals(command, ZMQ.PROXY_RESUME)) {
                         state = State.ACTIVE;
-                    }
-                    else if (Arrays.equals(command, ZMQ.PROXY_TERMINATE)) {
+                    } else if (Arrays.equals(command, ZMQ.PROXY_TERMINATE)) {
                         state = State.TERMINATED;
-                    }
-                    else {
+                    } else {
                         //  This is an API error, we should assert
-                        System.out
-                                .printf("E: invalid command sent to proxy '%s'%n", new String(command, ZMQ.CHARSET));
+                        System.out.printf("E: invalid command sent to proxy '%s'%n", new String(command, ZMQ.CHARSET));
                         assert false;
                     }
                 }
@@ -124,21 +112,18 @@ class Proxy
                     }
                 }
             }
-        }
-        finally {
+        } finally {
             frontend.getCtx().closeSelector(selector);
         }
 
         return true;
     }
 
-    private boolean process(PollItem read, PollItem write, SocketBase frontend, SocketBase backend)
-    {
+    private boolean process(PollItem read, PollItem write, SocketBase frontend, SocketBase backend) {
         return state == State.ACTIVE && read.isReadable() && (frontend == backend || write.isWritable());
     }
 
-    private boolean forward(SocketBase from, SocketBase to, SocketBase capture)
-    {
+    private boolean forward(SocketBase from, SocketBase to, SocketBase capture) {
         int more;
         boolean success;
         while (true) {
@@ -167,8 +152,7 @@ class Proxy
         return true;
     }
 
-    private boolean capture(SocketBase capture, Msg msg, int more)
-    {
+    private boolean capture(SocketBase capture, Msg msg, int more) {
         if (capture != null) {
             Msg ctrl = new Msg(msg);
             boolean success = capture.send(ctrl, more > 0 ? ZMQ.ZMQ_SNDMORE : 0);

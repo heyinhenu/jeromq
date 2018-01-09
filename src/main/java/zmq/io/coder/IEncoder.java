@@ -5,8 +5,7 @@ import java.nio.ByteBuffer;
 import zmq.Msg;
 import zmq.util.ValueReference;
 
-public interface IEncoder
-{
+public interface IEncoder {
     //  Load a new message into encoder.
     void loadMsg(Msg msg);
 

@@ -12,14 +12,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zeromq.ZConfig;
 
-public class ZConfigTest
-{
+public class ZConfigTest {
     private static final String TEST_FOLDER = "target/testCertFolder";
-    private static ZConfig      conf        = new ZConfig("root", null);
+    private static ZConfig conf = new ZConfig("root", null);
 
     @Before
-    public void init() throws IOException
-    {
+    public void init() throws IOException {
         conf.putValue("/curve/public-key", "abcdefg");
         conf.putValue("/curve/secret-key", "(w3lSF/5yv&j*c&0h{4JHe(CETJSksTr.QSjcZE}");
         conf.putValue("metadata/name", "key-value tests");
@@ -61,8 +59,7 @@ public class ZConfigTest
     }
 
     @Test
-    public void testPutGet()
-    {
+    public void testPutGet() {
         assertThat(conf.getValue("/curve/public-key"), is("abcdefg"));
         // intentionally checking without leading /
         assertThat(conf.getValue("curve/secret-key"), is("(w3lSF/5yv&j*c&0h{4JHe(CETJSksTr.QSjcZE}"));
@@ -73,8 +70,7 @@ public class ZConfigTest
     }
 
     @Test
-    public void testLoadSave() throws IOException
-    {
+    public void testLoadSave() throws IOException {
         conf.save(TEST_FOLDER + "/test.cert");
         assertThat(isFileInPath(TEST_FOLDER, "test.cert"), is(true));
         ZConfig loadedConfig = ZConfig.load(TEST_FOLDER + "/test.cert");
@@ -85,8 +81,7 @@ public class ZConfigTest
         assertThat(loadedConfig.getValue("/metadata/name"), is("key-value tests"));
     }
 
-    private boolean isFileInPath(String path, String filename)
-    {
+    private boolean isFileInPath(String path, String filename) {
         File dir = new File(path);
         if (!dir.isDirectory()) {
             return false;
@@ -100,8 +95,7 @@ public class ZConfigTest
     }
 
     @Test
-    public void testZPLSpecialCases() throws IOException
-    {
+    public void testZPLSpecialCases() throws IOException {
         // this file was generated in the init-method and tests some cases that should be processed by the loader but are not
         // created with our writer.
         ZConfig zplSpecials = ZConfig.load(TEST_FOLDER + "/test.zpl");
@@ -122,8 +116,7 @@ public class ZConfigTest
     }
 
     @Test
-    public void testReadReference() throws IOException
-    {
+    public void testReadReference() throws IOException {
         ZConfig ref = ZConfig.load(TEST_FOLDER + "/reference.zpl");
         assertThat(ref.getValue("context/iothreads"), is("1"));
         assertThat(ref.getValue("context/verbose"), is("1"));
@@ -135,8 +128,7 @@ public class ZConfigTest
     }
 
     @After
-    public void cleanup()
-    {
+    public void cleanup() {
         TestUtils.cleanupDir(TEST_FOLDER);
     }
 }

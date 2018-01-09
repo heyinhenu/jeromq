@@ -7,11 +7,9 @@ import org.zeromq.ZMQ;
 //  Binds PULL socket to tcp://localhost:5558
 //  Collects results from workers via that socket
 //
-public class tasksink
-{
+public class tasksink {
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
 
         //  Prepare our context and socket
         ZMQ.Context context = ZMQ.context(1);
@@ -31,8 +29,7 @@ public class tasksink
             string = new String(receiver.recv(0), ZMQ.CHARSET).trim();
             if ((task_nbr / 10) * 10 == task_nbr) {
                 System.out.print(":");
-            }
-            else {
+            } else {
                 System.out.print(".");
             }
         }

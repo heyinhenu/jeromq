@@ -7,21 +7,17 @@ import org.zeromq.ZMQ.Socket;
 /**
  * Multi threaded Hello World server
  */
-public class mtserver
-{
+public class mtserver {
 
-    private static class Worker extends Thread
-    {
+    private static class Worker extends Thread {
         private Context context;
 
-        private Worker(Context context)
-        {
+        private Worker(Context context) {
             this.context = context;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZMQ.Socket socket = context.socket(ZMQ.REP);
             socket.connect("inproc://workers");
 
@@ -34,8 +30,7 @@ public class mtserver
                 //  Do some 'work'
                 try {
                     Thread.sleep(1000);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                 }
 
                 //  Send reply back to client (C string)
@@ -44,8 +39,7 @@ public class mtserver
         }
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
 
         Context context = ZMQ.context(1);
 

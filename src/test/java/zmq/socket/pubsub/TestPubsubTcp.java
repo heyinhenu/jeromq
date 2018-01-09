@@ -12,11 +12,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class TestPubsubTcp
-{
+public class TestPubsubTcp {
     @Test
-    public void testPubsubTcp() throws Exception
-    {
+    public void testPubsubTcp() throws Exception {
         int port = Utils.findOpenPort();
         Ctx ctx = ZMQ.createContext();
         assertThat(ctx, notNullValue());

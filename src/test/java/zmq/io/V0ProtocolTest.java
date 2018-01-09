@@ -8,11 +8,9 @@ import org.junit.Test;
 
 import zmq.ZMQ;
 
-public class V0ProtocolTest extends AbstractProtocolVersion
-{
+public class V0ProtocolTest extends AbstractProtocolVersion {
     @Test(timeout = 2000)
-    public void testProtocolVersion0short() throws IOException, InterruptedException
-    {
+    public void testProtocolVersion0short() throws IOException, InterruptedException {
         ByteBuffer raw = ByteBuffer.allocate(11)
                 // send unversioned identity message
                 // size
@@ -25,8 +23,7 @@ public class V0ProtocolTest extends AbstractProtocolVersion
     }
 
     @Test(timeout = 2000)
-    public void testProtocolVersion0long() throws IOException, InterruptedException
-    {
+    public void testProtocolVersion0long() throws IOException, InterruptedException {
         ByteBuffer raw = ByteBuffer.allocate(35)
                 // send unversioned identity message
                 // large message indicator
@@ -43,9 +40,8 @@ public class V0ProtocolTest extends AbstractProtocolVersion
         assertProtocolVersion(0, raw, "abcdefg");
     }
 
-    private byte[] assertProtocolVersion(int version, ByteBuffer raw, String payload)
-            throws IOException, InterruptedException
-    {
+    private byte[] assertProtocolVersion(int version, ByteBuffer raw,
+            String payload) throws IOException, InterruptedException {
         return assertProtocolVersion(version, Collections.singletonList(raw), payload);
     }
 }

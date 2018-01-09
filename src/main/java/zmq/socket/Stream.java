@@ -16,8 +16,7 @@ import zmq.util.Utils;
 import zmq.util.ValueReference;
 import zmq.util.Wire;
 
-public class Stream extends SocketBase
-{
+public class Stream extends SocketBase {
     //  Fair queueing object for inbound pipes.
     private final FQ fq;
 
@@ -34,13 +33,11 @@ public class Stream extends SocketBase
     //  Holds the prefetched message.
     private Msg prefetchedMsg;
 
-    private class Outpipe
-    {
-        private Pipe    pipe;
+    private class Outpipe {
+        private Pipe pipe;
         private boolean active;
 
-        public Outpipe(Pipe pipe, boolean active)
-        {
+        public Outpipe(Pipe pipe, boolean active) {
             this.pipe = pipe;
             this.active = active;
         }
@@ -59,8 +56,7 @@ public class Stream extends SocketBase
     //  algorithm. This value is the next ID to use (if not used already).
     private int nextRid;
 
-    public Stream(Ctx parent, int tid, int sid)
-    {
+    public Stream(Ctx parent, int tid, int sid) {
         super(parent, tid, sid);
         prefetched = false;
         identitySent = false;
@@ -76,8 +72,7 @@ public class Stream extends SocketBase
     }
 
     @Override
-    protected void xattachPipe(Pipe pipe, boolean icanhasall)
-    {
+    protected void xattachPipe(Pipe pipe, boolean icanhasall) {
         assert (pipe != null);
 
         identifyPeer(pipe);
@@ -85,8 +80,7 @@ public class Stream extends SocketBase
     }
 
     @Override
-    protected void xpipeTerminated(Pipe pipe)
-    {
+    protected void xpipeTerminated(Pipe pipe) {
         Outpipe outpipe = outpipes.remove(pipe.getIdentity());
         assert (outpipe != null);
         fq.terminated(pipe);
@@ -96,14 +90,12 @@ public class Stream extends SocketBase
     }
 
     @Override
-    protected void xreadActivated(Pipe pipe)
-    {
+    protected void xreadActivated(Pipe pipe) {
         fq.activated(pipe);
     }
 
     @Override
-    protected void xwriteActivated(Pipe pipe)
-    {
+    protected void xwriteActivated(Pipe pipe) {
         Outpipe out = null;
         for (Outpipe outpipe : outpipes.values()) {
             if (outpipe.pipe == pipe) {
@@ -117,8 +109,7 @@ public class Stream extends SocketBase
     }
 
     @Override
-    protected boolean xsend(Msg msg)
-    {
+    protected boolean xsend(Msg msg) {
         //  If this is the first part of the message it's the ID of the
         //  peer to send the message to.
         if (!moreOut) {
@@ -143,8 +134,7 @@ public class Stream extends SocketBase
                         errno.set(ZError.EAGAIN);
                         return false;
                     }
-                }
-                else {
+                } else {
                     errno.set(ZError.EHOSTUNREACH);
                     return false;
                 }
@@ -182,29 +172,26 @@ public class Stream extends SocketBase
     }
 
     @Override
-    protected boolean xsetsockopt(int option, Object optval)
-    {
+    protected boolean xsetsockopt(int option, Object optval) {
         switch (option) {
-        case ZMQ.ZMQ_CONNECT_RID:
-            connectRid = (String) optval;
-            return true;
-        default:
-            errno.set(ZError.EINVAL);
-            return false;
+            case ZMQ.ZMQ_CONNECT_RID:
+                connectRid = (String) optval;
+                return true;
+            default:
+                errno.set(ZError.EINVAL);
+                return false;
         }
     }
 
     @Override
-    public Msg xrecv()
-    {
+    public Msg xrecv() {
         Msg msg;
         if (prefetched) {
             if (!identitySent) {
                 msg = prefetchedId;
                 prefetchedId = null;
                 identitySent = true;
-            }
-            else {
+            } else {
                 msg = prefetchedMsg;
                 prefetchedMsg = null;
                 prefetched = false;
@@ -245,8 +232,7 @@ public class Stream extends SocketBase
     }
 
     @Override
-    protected boolean xhasIn()
-    {
+    protected boolean xhasIn() {
         //  We may already have a message pre-fetched.
         if (prefetched) {
             return true;
@@ -282,16 +268,14 @@ public class Stream extends SocketBase
     }
 
     @Override
-    protected boolean xhasOut()
-    {
+    protected boolean xhasOut() {
         //  In theory, STREAM socket is always ready for writing. Whether actual
         //  attempt to write succeeds depends on which pipe the message is going
         //  to be routed to.
         return true;
     }
 
-    private void identifyPeer(Pipe pipe)
-    {
+    private void identifyPeer(Pipe pipe) {
         //  Always assign identity for raw-socket
 
         Blob identity;
@@ -301,8 +285,7 @@ public class Stream extends SocketBase
 
             Outpipe outpipe = outpipes.get(identity);
             assert (outpipe == null);
-        }
-        else {
+        } else {
             ByteBuffer buf = ByteBuffer.allocate(5);
             buf.put((byte) 0);
             Wire.putUInt32(buf, nextRid++);

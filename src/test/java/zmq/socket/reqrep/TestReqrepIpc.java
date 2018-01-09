@@ -11,11 +11,9 @@ import zmq.Helper;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class TestReqrepIpc
-{
+public class TestReqrepIpc {
     @Test
-    public void testReqrepIpc()
-    {
+    public void testReqrepIpc() {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
         SocketBase sb = ZMQ.socket(ctx, ZMQ.ZMQ_REP);

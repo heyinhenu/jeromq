@@ -20,15 +20,13 @@ import org.zeromq.ZMQ;
 /**
  * Test are basically the java-ports based on <a href="http://hintjens.com/blog:49">Using ZeroMQ Security (part 2)</a>
  */
-public class ZAuthTest
-{
-    private static final boolean VERBOSE_MODE       = true;
-    private static final String  PASSWORDS_FILE     = "target/passwords";
-    private static final String  CERTIFICATE_FOLDER = "target/curve";
+public class ZAuthTest {
+    private static final boolean VERBOSE_MODE = true;
+    private static final String PASSWORDS_FILE = "target/passwords";
+    private static final String CERTIFICATE_FOLDER = "target/curve";
 
     @Before
-    public void init()
-    {
+    public void init() {
         // create test-passwords
         try {
             FileWriter write = new FileWriter(PASSWORDS_FILE);
@@ -36,15 +34,13 @@ public class ZAuthTest
             write.write("tourist=1234\n");
             write.write("admin=secret\n");
             write.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Test
-    public void testNull() throws IOException
-    {
+    public void testNull() throws IOException {
         System.out.println("testNull");
         //  Create context
         final ZContext ctx = new ZContext();
@@ -77,15 +73,13 @@ public class ZAuthTest
             assertThat(message, is("Hello"));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testNullAllowed() throws IOException
-    {
+    public void testNullAllowed() throws IOException {
         System.out.println("testNullAllowed");
         //  Create context
         final ZContext ctx = new ZContext();
@@ -119,15 +113,13 @@ public class ZAuthTest
             assertThat(message, is("Hello"));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testNullWithNoDomain() throws IOException
-    {
+    public void testNullWithNoDomain() throws IOException {
         System.out.println("testNullWithNoDomain");
         //  Create context
         final ZContext ctx = new ZContext();
@@ -161,15 +153,13 @@ public class ZAuthTest
             assertThat(message, is("Hello"));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testPlainWithPassword() throws IOException
-    {
+    public void testPlainWithPassword() throws IOException {
         System.out.println("testPlainWithPassword");
         //  Create context
         final ZContext ctx = new ZContext();
@@ -210,15 +200,13 @@ public class ZAuthTest
             assertThat(message, is("Hello"));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testPlainWithPasswordDenied() throws IOException
-    {
+    public void testPlainWithPasswordDenied() throws IOException {
         System.out.println("testPlainWithPasswordDenied");
         //  Create context
         final ZContext ctx = new ZContext();
@@ -254,15 +242,13 @@ public class ZAuthTest
             assertThat(reply.statusCode, is(400));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testCurveAnyClient() throws IOException
-    {
+    public void testCurveAnyClient() throws IOException {
         System.out.println("testCurveAnyClient");
         // accept any client-certificate
 
@@ -312,16 +298,14 @@ public class ZAuthTest
             assertThat(message, is("Hello"));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
 
     }
 
     @Test
-    public void testCurveSuccessful() throws IOException
-    {
+    public void testCurveSuccessful() throws IOException {
         System.out.println("testCurveSuccessful");
         final ZContext ctx = new ZContext();
         try {
@@ -378,16 +362,14 @@ public class ZAuthTest
             assertThat(message, is("Hello"));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
             TestUtils.cleanupDir(CERTIFICATE_FOLDER);
         }
     }
 
     @Test
-    public void testBlacklistDenied() throws IOException
-    {
+    public void testBlacklistDenied() throws IOException {
         System.out.println("testBlacklistDenied");
         final ZContext ctx = new ZContext();
         try {
@@ -422,15 +404,13 @@ public class ZAuthTest
             assertThat(reply.userId, is(""));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testBlacklistAllowed() throws IOException
-    {
+    public void testBlacklistAllowed() throws IOException {
         System.out.println("testBlacklistAllowed");
         final ZContext ctx = new ZContext();
         try {
@@ -465,15 +445,13 @@ public class ZAuthTest
             assertThat(reply.userId, is(""));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testWhitelistDenied() throws IOException
-    {
+    public void testWhitelistDenied() throws IOException {
         System.out.println("testWhitelistDenied");
         final ZContext ctx = new ZContext();
         try {
@@ -508,15 +486,13 @@ public class ZAuthTest
             assertThat(reply.userId, is(""));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testWhitelistAllowed() throws IOException
-    {
+    public void testWhitelistAllowed() throws IOException {
         System.out.println("testWhitelistAllowed");
         final ZContext ctx = new ZContext();
         try {
@@ -551,15 +527,13 @@ public class ZAuthTest
             assertThat(reply.userId, is(""));
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @Test
-    public void testCurveFail() throws IOException
-    {
+    public void testCurveFail() throws IOException {
         System.out.println("testCurveFail");
         // this is the same test but here we do not save the client's certificate into the certstore's folder
         final ZContext ctx = new ZContext();
@@ -614,16 +588,14 @@ public class ZAuthTest
             assertThat(message, nullValue());
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
             TestUtils.cleanupDir(CERTIFICATE_FOLDER);
         }
     }
 
     @Test
-    public void testNoReplies() throws IOException
-    {
+    public void testNoReplies() throws IOException {
         System.out.println("testNoReplies");
         final ZContext ctx = new ZContext();
         try {
@@ -643,22 +615,19 @@ public class ZAuthTest
             assertThat(reply, nullValue());
 
             auth.close();
-        }
-        finally {
+        } finally {
             ctx.close();
         }
     }
 
     @After
-    public void cleanup()
-    {
+    public void cleanup() {
         File deletePasswords = new File(PASSWORDS_FILE);
         deletePasswords.delete();
     }
 
     //    @Test
-    public void testRepeated() throws IOException
-    {
+    public void testRepeated() throws IOException {
         for (int idx = 0; idx < 10000; ++idx) {
             System.out.println("+++++ " + idx);
             testCurveSuccessful();

@@ -9,23 +9,18 @@ import org.junit.Test;
 import org.zeromq.ZActor.Actor;
 import org.zeromq.ZMQ.Socket;
 
-public class TestZActor
-{
+public class TestZActor {
     @Test
-    public void testMinimalistic()
-    {
-        final Actor acting = new ZActor.SimpleActor()
-        {
+    public void testMinimalistic() {
+        final Actor acting = new ZActor.SimpleActor() {
             @Override
-            public List<Socket> createSockets(ZContext ctx, Object... args)
-            {
+            public List<Socket> createSockets(ZContext ctx, Object... args) {
                 assert ("TEST".equals(args[0]));
                 return Arrays.asList(ctx.createSocket(ZMQ.PUB));
             }
 
             @Override
-            public boolean backstage(Socket pipe, ZPoller poller, int events)
-            {
+            public boolean backstage(Socket pipe, ZPoller poller, int events) {
                 String string = pipe.recvStr();
                 if ("HELLO".equals(string)) {
                     pipe.send("WORLD");
@@ -66,15 +61,12 @@ public class TestZActor
     }
 
     @Test
-    public void testRecreateAgent()
-    {
-        ZActor.Actor acting = new ZActor.SimpleActor()
-        {
+    public void testRecreateAgent() {
+        ZActor.Actor acting = new ZActor.SimpleActor() {
             private int counter = 0;
 
             @Override
-            public List<Socket> createSockets(ZContext ctx, Object... args)
-            {
+            public List<Socket> createSockets(ZContext ctx, Object... args) {
                 ++counter;
                 System.out.print(".Acting Ready for a hello world.");
                 assert ("TEST".equals(args[0]));
@@ -82,8 +74,7 @@ public class TestZActor
             }
 
             @Override
-            public boolean backstage(Socket pipe, ZPoller poller, int events)
-            {
+            public boolean backstage(Socket pipe, ZPoller poller, int events) {
                 String string = pipe.recvStr();
                 if ("HELLO".equals(string)) {
                     System.out.print("Hi! ");
@@ -95,8 +86,7 @@ public class TestZActor
             }
 
             @Override
-            public boolean destroyed(ZContext ctx, Socket pipe, ZPoller poller)
-            {
+            public boolean destroyed(ZContext ctx, Socket pipe, ZPoller poller) {
                 if (counter == 2) {
                     System.out.print(".Acting Finished.");
                     return false;

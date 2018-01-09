@@ -14,13 +14,11 @@ import zmq.SocketBase;
 import zmq.ZError;
 import zmq.ZMQ;
 
-public class XPubNodropTest
-{
+public class XPubNodropTest {
     //  Create REQ/ROUTER wiring.
 
     @Test
-    public void testXpubNoDrop() throws IOException
-    {
+    public void testXpubNoDrop() throws IOException {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
 

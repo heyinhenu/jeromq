@@ -11,13 +11,11 @@ import zmq.Helper;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class TestReqrepInproc
-{
+public class TestReqrepInproc {
     //  Create REQ/ROUTER wiring.
 
     @Test
-    public void testReqrepInproc()
-    {
+    public void testReqrepInproc() {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
         SocketBase sb = ZMQ.socket(ctx, ZMQ.ZMQ_REP);

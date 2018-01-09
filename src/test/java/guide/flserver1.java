@@ -7,10 +7,8 @@ import org.zeromq.ZMsg;
 
 //  Freelance server - Model 1
 //  Trivial echo service
-public class flserver1
-{
-    public static void main(String[] args)
-    {
+public class flserver1 {
+    public static void main(String[] args) {
         if (args.length < 1) {
             System.out.printf("I: syntax: flserver1 <endpoint>\n");
             System.exit(0);

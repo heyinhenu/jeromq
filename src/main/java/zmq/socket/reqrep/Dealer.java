@@ -12,8 +12,7 @@ import zmq.socket.LB;
 import zmq.util.Blob;
 import zmq.util.ValueReference;
 
-public class Dealer extends SocketBase
-{
+public class Dealer extends SocketBase {
     //  Messages are fair-queued from inbound pipes. And load-balanced to
     //  the outbound pipes.
     private final FQ fq;
@@ -23,8 +22,7 @@ public class Dealer extends SocketBase
     private boolean probeRouter;
 
     //  Holds the prefetched message.
-    public Dealer(Ctx parent, int tid, int sid)
-    {
+    public Dealer(Ctx parent, int tid, int sid) {
         super(parent, tid, sid);
 
         options.type = ZMQ.ZMQ_DEALER;
@@ -34,8 +32,7 @@ public class Dealer extends SocketBase
     }
 
     @Override
-    protected void xattachPipe(Pipe pipe, boolean subscribe2all)
-    {
+    protected void xattachPipe(Pipe pipe, boolean subscribe2all) {
         assert (pipe != null);
 
         if (probeRouter) {
@@ -49,8 +46,7 @@ public class Dealer extends SocketBase
     }
 
     @Override
-    protected boolean xsetsockopt(int option, Object optval)
-    {
+    protected boolean xsetsockopt(int option, Object optval) {
         if (option == ZMQ.ZMQ_PROBE_ROUTER) {
             probeRouter = Options.parseBoolean(option, optval);
             return true;
@@ -60,61 +56,51 @@ public class Dealer extends SocketBase
     }
 
     @Override
-    protected boolean xsend(Msg msg)
-    {
+    protected boolean xsend(Msg msg) {
         return sendpipe(msg, null);
     }
 
     @Override
-    protected Msg xrecv()
-    {
+    protected Msg xrecv() {
         return recvpipe(null);
     }
 
     @Override
-    protected boolean xhasIn()
-    {
+    protected boolean xhasIn() {
         return fq.hasIn();
     }
 
     @Override
-    protected boolean xhasOut()
-    {
+    protected boolean xhasOut() {
         return lb.hasOut();
     }
 
     @Override
-    protected Blob getCredential()
-    {
+    protected Blob getCredential() {
         return fq.getCredential();
     }
 
     @Override
-    protected void xreadActivated(Pipe pipe)
-    {
+    protected void xreadActivated(Pipe pipe) {
         fq.activated(pipe);
     }
 
     @Override
-    protected void xwriteActivated(Pipe pipe)
-    {
+    protected void xwriteActivated(Pipe pipe) {
         lb.activated(pipe);
     }
 
     @Override
-    protected void xpipeTerminated(Pipe pipe)
-    {
+    protected void xpipeTerminated(Pipe pipe) {
         fq.terminated(pipe);
         lb.terminated(pipe);
     }
 
-    protected final boolean sendpipe(Msg msg, ValueReference<Pipe> pipe)
-    {
+    protected final boolean sendpipe(Msg msg, ValueReference<Pipe> pipe) {
         return lb.sendpipe(msg, errno, pipe);
     }
 
-    protected final Msg recvpipe(ValueReference<Pipe> pipe)
-    {
+    protected final Msg recvpipe(ValueReference<Pipe> pipe) {
         return fq.recvPipe(errno, pipe);
     }
 }

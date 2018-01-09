@@ -14,23 +14,20 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.zeromq.ZMQ.Context;
 
-public class DealerDealerTest
-{
-    private final class Client implements Runnable
-    {
-        private final Context       context;
-        private final boolean       verbose;
-        private final String        host;
-        private final int           messagesCount;
+public class DealerDealerTest {
+    private final class Client implements Runnable {
+        private final Context context;
+        private final boolean verbose;
+        private final String host;
+        private final int messagesCount;
         private final Deque<String> queue;
 
-        private int missed     = 0;
+        private int missed = 0;
         private int reconnects = 0;
-        private int count      = 0;
-        private int received   = 0;
+        private int count = 0;
+        private int received = 0;
 
-        private Client(Context context, boolean verbose, String host, int messagesCount, Deque<String> queue)
-        {
+        private Client(Context context, boolean verbose, String host, int messagesCount, Deque<String> queue) {
             this.context = context;
             this.verbose = verbose;
             this.host = host;
@@ -39,8 +36,7 @@ public class DealerDealerTest
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZMQ.Socket worker = context.socket(ZMQ.DEALER);
             worker.connect(host);
 
@@ -75,8 +71,7 @@ public class DealerDealerTest
 
                 if (count % 100 == 0) {
                     System.out.println(
-                                       "Received: " + this.received + " missed: " + missed + " reconnects: "
-                                               + reconnects);
+                            "Received: " + this.received + " missed: " + missed + " reconnects: " + reconnects);
                 }
             }
             worker.close();
@@ -85,8 +80,7 @@ public class DealerDealerTest
 
     @Test
     @Ignore
-    public void testIssue335() throws InterruptedException, IOException
-    {
+    public void testIssue335() throws InterruptedException, IOException {
         final boolean verbose = false;
         final int messagesCount = 1000;
 
@@ -94,11 +88,9 @@ public class DealerDealerTest
         final Deque<String> queue = new LinkedBlockingDeque<>();
         final String host = "tcp://localhost:" + Utils.findOpenPort();
 
-        final Runnable server = new Runnable()
-        {
+        final Runnable server = new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 final ZMQ.Socket server = context.socket(ZMQ.DEALER);
                 server.bind(host);
                 int msg = messagesCount;

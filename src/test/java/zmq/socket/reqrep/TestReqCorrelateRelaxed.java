@@ -17,21 +17,19 @@ import zmq.ZMQ;
 /**
  * This test does one setup, and runs a few tests on that setup.
  */
-public class TestReqCorrelateRelaxed
-{
-    static final int            REQUEST_ID_LENGTH = 4;
-    private static final String PAYLOAD           = "Payload";
+public class TestReqCorrelateRelaxed {
+    static final int REQUEST_ID_LENGTH = 4;
+    private static final String PAYLOAD = "Payload";
 
     /**
      * Prepares sockets and runs actual tests.
-     *
+     * <p>
      * Doing it this way so order is guaranteed.
      *
      * @throws Exception
      */
     @Test
-    public void overallSetup() throws Exception
-    {
+    public void overallSetup() throws Exception {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
 
@@ -71,8 +69,7 @@ public class TestReqCorrelateRelaxed
      * @throws Exception
      * @returns the request ID that was received
      */
-    public byte[] testReqSentFrames(SocketBase dealer, SocketBase reqClient) throws Exception
-    {
+    public byte[] testReqSentFrames(SocketBase dealer, SocketBase reqClient) throws Exception {
         // Send simple payload over REQ socket
         Msg request = new Msg(PAYLOAD.getBytes());
 
@@ -121,11 +118,11 @@ public class TestReqCorrelateRelaxed
      * @param dealer
      * @param reqClient
      * @param origRequestId the request ID that was sent by the REQ socket
-     * earlier
+     *                      earlier
      * @throws Exception
      */
-    public void testReqRecvGoodRequestId(SocketBase dealer, SocketBase reqClient, byte[] origRequestId) throws Exception
-    {
+    public void testReqRecvGoodRequestId(SocketBase dealer, SocketBase reqClient,
+            byte[] origRequestId) throws Exception {
         Msg requestId = new Msg(origRequestId);
         Msg empty = new Msg();
         Msg responsePayload = new Msg(PAYLOAD.getBytes());
@@ -152,8 +149,8 @@ public class TestReqCorrelateRelaxed
      * @param origRequestId
      * @throws Exception
      */
-    public void testReqRecvBadRequestId(SocketBase dealer, SocketBase reqClient, byte[] origRequestId) throws Exception
-    {
+    public void testReqRecvBadRequestId(SocketBase dealer, SocketBase reqClient,
+            byte[] origRequestId) throws Exception {
         Msg badRequestId = new Msg("gobbledygook".getBytes());
         Msg goodRequestId = new Msg(origRequestId);
 

@@ -6,11 +6,9 @@ import org.zeromq.ZMQ;
 //  Reading from multiple sockets in Java
 //  This version uses ZMQ.Poller
 //
-public class mspoller
-{
+public class mspoller {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZMQ.Context context = ZMQ.context(1);
 
         // Connect to task ventilator

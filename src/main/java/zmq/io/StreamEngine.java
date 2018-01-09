@@ -32,61 +32,48 @@ import zmq.util.Wire;
 
 // This engine handles any socket with SOCK_STREAM semantics,
 // e.g. TCP socket or an UNIX domain socket.
-public class StreamEngine implements IEngine, IPollEvents
-{
-    private final class HandshakeCommand extends MessageProcessor.Adapter
-    {
+public class StreamEngine implements IEngine, IPollEvents {
+    private final class HandshakeCommand extends MessageProcessor.Adapter {
         @Override
-        public Msg nextMsg()
-        {
+        public Msg nextMsg() {
             return nextHandshakeCommand();
         }
 
         @Override
-        public boolean processMsg(Msg msg)
-        {
+        public boolean processMsg(Msg msg) {
             return processHandshakeCommand(msg);
         }
     }
 
-    private final class PushMsgToSession extends MessageProcessor.Adapter
-    {
+    private final class PushMsgToSession extends MessageProcessor.Adapter {
         @Override
-        public Msg nextMsg()
-        {
+        public Msg nextMsg() {
             return pullMsgFromSession();
         }
 
         @Override
-        public boolean processMsg(Msg msg)
-        {
+        public boolean processMsg(Msg msg) {
             return pushMsgToSession(msg);
         }
     }
 
-    private final class PushRawMsgToSession extends MessageProcessor.Adapter
-    {
+    private final class PushRawMsgToSession extends MessageProcessor.Adapter {
         @Override
-        public boolean processMsg(Msg msg)
-        {
+        public boolean processMsg(Msg msg) {
             return pushRawMsgToSession(msg);
         }
     }
 
-    private final class WriteCredential extends MessageProcessor.Adapter
-    {
+    private final class WriteCredential extends MessageProcessor.Adapter {
         @Override
-        public boolean processMsg(Msg msg)
-        {
+        public boolean processMsg(Msg msg) {
             return writeCredential(msg);
         }
     }
 
-    private final class DecodeAndPush extends MessageProcessor.Adapter
-    {
+    private final class DecodeAndPush extends MessageProcessor.Adapter {
         @Override
-        public boolean processMsg(Msg msg)
-        {
+        public boolean processMsg(Msg msg) {
             assert (mechanism != null);
 
             msg = mechanism.decode(msg);
@@ -107,11 +94,9 @@ public class StreamEngine implements IEngine, IPollEvents
         }
     }
 
-    private final class PullAndEncode extends MessageProcessor.Adapter
-    {
+    private final class PullAndEncode extends MessageProcessor.Adapter {
         @Override
-        public Msg nextMsg()
-        {
+        public Msg nextMsg() {
             assert (mechanism != null);
 
             Msg msg = session.pullMsg();
@@ -124,11 +109,9 @@ public class StreamEngine implements IEngine, IPollEvents
         }
     }
 
-    private final class PushOneThenDecodeAndPush extends MessageProcessor.Adapter
-    {
+    private final class PushOneThenDecodeAndPush extends MessageProcessor.Adapter {
         @Override
-        public boolean processMsg(Msg msg)
-        {
+        public boolean processMsg(Msg msg) {
             boolean rc = session.pushMsg(msg);
             if (rc) {
                 processMsg = decodeAndPush;
@@ -137,65 +120,50 @@ public class StreamEngine implements IEngine, IPollEvents
         }
     }
 
-    private final class Identity implements MessageProcessor
-    {
+    private final class Identity implements MessageProcessor {
         @Override
-        public Msg nextMsg()
-        {
+        public Msg nextMsg() {
             return identityMsg();
         }
 
         @Override
-        public boolean processMsg(Msg msg)
-        {
+        public boolean processMsg(Msg msg) {
             return processIdentityMsg(msg);
         }
     }
 
     // used to implement FSM actions
-    private interface MessageProcessor
-    {
+    private interface MessageProcessor {
         Msg nextMsg();
 
         boolean processMsg(Msg msg);
 
-        public static class Adapter implements MessageProcessor
-        {
+        public static class Adapter implements MessageProcessor {
             @Override
-            public Msg nextMsg()
-            {
+            public Msg nextMsg() {
                 throw new UnsupportedOperationException("nextMsg is not implemented and should not be used here");
             }
 
             @Override
-            public boolean processMsg(Msg msg)
-            {
+            public boolean processMsg(Msg msg) {
                 throw new UnsupportedOperationException("processMsg is not implemented and should not be used here");
             }
         }
     }
 
     //  Protocol revisions
-    private enum Protocol
-    {
-        V0(-1),
-        V1(0),
-        V2(1),
-        V3(3);
+    private enum Protocol {
+        V0(-1), V1(0), V2(1), V3(3);
 
         private final byte revision;
 
-        Protocol(int revision)
-        {
+        Protocol(int revision) {
             this.revision = (byte) revision;
         }
     }
 
-    public enum ErrorReason
-    {
-        PROTOCOL,
-        CONNECTION,
-        TIMEOUT,
+    public enum ErrorReason {
+        PROTOCOL, CONNECTION, TIMEOUT,
     }
 
     private IOObject ioObject;
@@ -211,12 +179,12 @@ public class StreamEngine implements IEngine, IPollEvents
     private Poller.Handle handle;
 
     private ByteBuffer inpos;
-    private int        insize;
-    private IDecoder   decoder;
+    private int insize;
+    private IDecoder decoder;
 
     private final ValueReference<ByteBuffer> outpos;
-    private int                              outsize;
-    private IEncoder                         encoder;
+    private int outsize;
+    private IEncoder encoder;
 
     private Metadata metadata;
 
@@ -282,8 +250,7 @@ public class StreamEngine implements IEngine, IPollEvents
 
     private final Errno errno;
 
-    public StreamEngine(SocketChannel fd, final Options options, final String endpoint)
-    {
+    public StreamEngine(SocketChannel fd, final Options options, final String endpoint) {
         this.errno = options.errno;
         this.fd = fd;
         this.handshaking = true;
@@ -301,23 +268,20 @@ public class StreamEngine implements IEngine, IPollEvents
         //  Put the socket into non-blocking mode.
         try {
             Utils.unblockSocket(this.fd);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new ZError.IOException(e);
         }
 
         peerAddress = Utils.getPeerIpAddress(fd);
     }
 
-    public void destroy()
-    {
+    public void destroy() {
         assert (!plugged);
 
         if (fd != null) {
             try {
                 fd.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 assert (false);
             }
             fd = null;
@@ -334,8 +298,7 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     @Override
-    public void plug(IOThread ioThread, SessionBase session)
-    {
+    public void plug(IOThread ioThread, SessionBase session) {
         assert (!plugged);
         plugged = true;
 
@@ -379,8 +342,7 @@ public class StreamEngine implements IEngine, IPollEvents
             Msg connector = new Msg();
             pushRawMsgToSession(connector);
             session.flush();
-        }
-        else {
+        } else {
             // start optional timer, to prevent handshake hanging on no input
             setHandshakeTimer();
 
@@ -402,22 +364,19 @@ public class StreamEngine implements IEngine, IPollEvents
         inEvent();
     }
 
-    private Object instantiate(Class<?> decoder, int size, long max)
-    {
+    private Object instantiate(Class<?> decoder, int size, long max) {
         if (decoder == null) {
             return null;
         }
         try {
             return decoder.getConstructor(int.class, long.class).newInstance(size, max);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    private void unplug()
-    {
+    private void unplug() {
         assert (plugged);
         plugged = false;
 
@@ -440,15 +399,13 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     @Override
-    public void terminate()
-    {
+    public void terminate() {
         unplug();
         destroy();
     }
 
     @Override
-    public void inEvent()
-    {
+    public void inEvent() {
         assert (!ioError);
 
         //  If still handshaking, receive and process the greeting message.
@@ -535,8 +492,7 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     @Override
-    public void outEvent()
-    {
+    public void outEvent() {
         assert (!ioError);
 
         //  If write buffer is empty, try to read new data from the encoder.
@@ -605,8 +561,7 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     @Override
-    public void restartOutput()
-    {
+    public void restartOutput() {
         if (ioError) {
             return;
         }
@@ -624,8 +579,7 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     @Override
-    public void restartInput()
-    {
+    public void restartInput() {
         assert (inputStopped);
         assert (session != null);
         assert (decoder != null);
@@ -636,8 +590,7 @@ public class StreamEngine implements IEngine, IPollEvents
         if (!rc) {
             if (errno.is(ZError.EAGAIN)) {
                 session.flush();
-            }
-            else {
+            } else {
                 error(ErrorReason.PROTOCOL);
             }
             return;
@@ -664,14 +617,11 @@ public class StreamEngine implements IEngine, IPollEvents
         }
         if (!rc && errno.is(ZError.EAGAIN)) {
             session.flush();
-        }
-        else if (ioError) {
+        } else if (ioError) {
             error(ErrorReason.CONNECTION);
-        }
-        else if (!rc) {
+        } else if (!rc) {
             error(ErrorReason.PROTOCOL);
-        }
-        else {
+        } else {
             inputStopped = false;
             ioObject.setPollIn(handle);
             session.flush();
@@ -682,8 +632,7 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     //  Detects the protocol used by the peer.
-    private boolean handshake()
-    {
+    private boolean handshake() {
         assert (handshaking);
         assert (greetingRecv.position() < greetingSize);
 
@@ -753,8 +702,7 @@ public class StreamEngine implements IEngine, IPollEvents
                         greetingSend.position(SIGNATURE_SIZE + 1);
                         greetingSend.put((byte) options.type); // Socket type
                         outsize += 1;
-                    }
-                    else {
+                    } else {
                         // If this is 3 or greater, we have a ZMTP 3.0 peer.
                         greetingSend.limit(V3_GREETING_SIZE);
                         greetingSend.position(SIGNATURE_SIZE + 1);
@@ -763,8 +711,7 @@ public class StreamEngine implements IEngine, IPollEvents
                         greetingSend.mark();
                         greetingSend.put(new byte[20]);
 
-                        assert (options.mechanism == Mechanisms.NULL || options.mechanism == Mechanisms.PLAIN
-                                || options.mechanism == Mechanisms.CURVE || options.mechanism == Mechanisms.GSSAPI);
+                        assert (options.mechanism == Mechanisms.NULL || options.mechanism == Mechanisms.PLAIN || options.mechanism == Mechanisms.CURVE || options.mechanism == Mechanisms.GSSAPI);
                         greetingSend.reset();
                         greetingSend.put(options.mechanism.name().getBytes(ZMQ.CHARSET));
                         greetingSend.reset();
@@ -833,8 +780,7 @@ public class StreamEngine implements IEngine, IPollEvents
             //  We are expecting identity message.
             processMsg = identity;
 
-        }
-        else if (greetingRecv.get(revisionPos) == Protocol.V1.revision) {
+        } else if (greetingRecv.get(revisionPos) == Protocol.V1.revision) {
             //  ZMTP/1.0 framing.
 
             zmtpVersion = Protocol.V1;
@@ -846,8 +792,7 @@ public class StreamEngine implements IEngine, IPollEvents
             }
             encoder = new V1Encoder(errno, Config.OUT_BATCH_SIZE.getValue());
             decoder = new V1Decoder(errno, Config.IN_BATCH_SIZE.getValue(), options.maxMsgSize, options.allocator);
-        }
-        else if (greetingRecv.get(revisionPos) == Protocol.V2.revision) {
+        } else if (greetingRecv.get(revisionPos) == Protocol.V2.revision) {
             //  ZMTP/2.0 framing.
 
             zmtpVersion = Protocol.V2;
@@ -859,8 +804,7 @@ public class StreamEngine implements IEngine, IPollEvents
             }
             encoder = new V2Encoder(errno, Config.OUT_BATCH_SIZE.getValue());
             decoder = new V2Decoder(errno, Config.IN_BATCH_SIZE.getValue(), options.maxMsgSize, options.allocator);
-        }
-        else {
+        } else {
             zmtpVersion = Protocol.V3;
 
             encoder = new V2Encoder(errno, Config.OUT_BATCH_SIZE.getValue());
@@ -870,12 +814,10 @@ public class StreamEngine implements IEngine, IPollEvents
             if (options.mechanism == null) {
                 error(ErrorReason.PROTOCOL);
                 return false;
-            }
-            else {
+            } else {
                 if (options.mechanism.isMechanism(greetingRecv)) {
                     mechanism = options.mechanism.create(session, peerAddress, options);
-                }
-                else {
+                } else {
                     error(ErrorReason.PROTOCOL);
                     return false;
                 }
@@ -904,8 +846,7 @@ public class StreamEngine implements IEngine, IPollEvents
         return true;
     }
 
-    private Msg identityMsg()
-    {
+    private Msg identityMsg() {
         Msg msg = new Msg(options.identitySize);
         if (options.identitySize > 0) {
             msg.put(options.identity, 0, options.identitySize);
@@ -914,8 +855,7 @@ public class StreamEngine implements IEngine, IPollEvents
         return msg;
     }
 
-    private boolean processIdentityMsg(Msg msg)
-    {
+    private boolean processIdentityMsg(Msg msg) {
         if (options.recvIdentity) {
             msg.setFlags(Msg.IDENTITY);
             boolean rc = session.pushMsg(msg);
@@ -938,63 +878,55 @@ public class StreamEngine implements IEngine, IPollEvents
 
     private final MessageProcessor identity = new Identity();
 
-    private Msg nextHandshakeCommand()
-    {
+    private Msg nextHandshakeCommand() {
         assert (mechanism != null);
 
         if (mechanism.status() == Mechanism.Status.READY) {
             mechanismReady();
 
             return pullAndEncode.nextMsg();
-        }
-        else if (mechanism.status() == Mechanism.Status.ERROR) {
+        } else if (mechanism.status() == Mechanism.Status.ERROR) {
             errno.set(ZError.EPROTO);
             //            error(ErrorReason.PROTOCOL);
             return null;
-        }
-        else {
+        } else {
             Msg.Builder msg = new Msg.Builder();
             int rc = mechanism.nextHandshakeCommand(msg);
             if (rc == 0) {
                 msg.setFlags(Msg.COMMAND);
                 return msg.build();
-            }
-            else {
+            } else {
                 errno.set(rc);
                 return null;
             }
         }
     }
 
-    private boolean processHandshakeCommand(Msg msg)
-    {
+    private boolean processHandshakeCommand(Msg msg) {
         assert (mechanism != null);
 
         int rc = mechanism.processHandshakeCommand(msg);
         if (rc == 0) {
             if (mechanism.status() == Mechanism.Status.READY) {
                 mechanismReady();
-            }
-            else if (mechanism.status() == Mechanism.Status.ERROR) {
+            } else if (mechanism.status() == Mechanism.Status.ERROR) {
                 errno.set(ZError.EPROTO);
                 return false;
             }
             if (outputStopped) {
                 restartOutput();
             }
-        }
-        else {
+        } else {
             errno.set(rc);
         }
         return rc == 0;
     }
 
     private final MessageProcessor processHandshakeCommand = new HandshakeCommand();
-    private final MessageProcessor nextHandshakeCommand    = processHandshakeCommand;
+    private final MessageProcessor nextHandshakeCommand = processHandshakeCommand;
 
     @Override
-    public void zapMsgAvailable()
-    {
+    public void zapMsgAvailable() {
         assert (mechanism != null);
 
         int rc = mechanism.zapMsgAvailable();
@@ -1010,8 +942,7 @@ public class StreamEngine implements IEngine, IPollEvents
         }
     }
 
-    private void mechanismReady()
-    {
+    private void mechanismReady() {
         if (options.recvIdentity) {
             Msg identity = mechanism.peerIdentity();
             boolean rc = session.pushMsg(identity);
@@ -1049,21 +980,18 @@ public class StreamEngine implements IEngine, IPollEvents
 
     }
 
-    private Msg pullMsgFromSession()
-    {
+    private Msg pullMsgFromSession() {
         return session.pullMsg();
     }
 
-    private boolean pushMsgToSession(Msg msg)
-    {
+    private boolean pushMsgToSession(Msg msg) {
         return session.pushMsg(msg);
     }
 
-    private final MessageProcessor pushMsgToSession   = new PushMsgToSession();
+    private final MessageProcessor pushMsgToSession = new PushMsgToSession();
     private final MessageProcessor pullMsgFromSession = pushMsgToSession;
 
-    private boolean pushRawMsgToSession(Msg msg)
-    {
+    private boolean pushRawMsgToSession(Msg msg) {
         if (metadata != null && !metadata.equals(msg.getMetadata())) {
             msg.setMetadata(metadata);
         }
@@ -1072,8 +1000,7 @@ public class StreamEngine implements IEngine, IPollEvents
 
     private final MessageProcessor pushRawMsgToSession = new PushRawMsgToSession();
 
-    private boolean writeCredential(Msg msg)
-    {
+    private boolean writeCredential(Msg msg) {
         assert (mechanism != null);
         assert (session != null);
 
@@ -1101,8 +1028,7 @@ public class StreamEngine implements IEngine, IPollEvents
     private final MessageProcessor pushOneThenDecodeAndPush = new PushOneThenDecodeAndPush();
 
     //  Function to handle network disconnections.
-    private void error(ErrorReason error)
-    {
+    private void error(ErrorReason error) {
         if (options.rawSocket) {
             //  For raw sockets, send a final 0-length message to the application
             //  so that it knows the peer has been disconnected.
@@ -1117,8 +1043,7 @@ public class StreamEngine implements IEngine, IPollEvents
         destroy();
     }
 
-    private void setHandshakeTimer()
-    {
+    private void setHandshakeTimer() {
         assert (!hasHandshakeTimer);
 
         if (!options.rawSocket && options.handshakeIvl > 0) {
@@ -1128,8 +1053,7 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     @Override
-    public void timerEvent(int id)
-    {
+    public void timerEvent(int id) {
         assert (id == HANDSHAKE_TIMER_ID);
         hasHandshakeTimer = false;
 
@@ -1140,16 +1064,14 @@ public class StreamEngine implements IEngine, IPollEvents
     //  Writes data to the socket. Returns the number of bytes actually
     //  written (even zero is to be considered to be a success). In case
     //  of error or orderly shutdown by the other peer -1 is returned.
-    private int write(ByteBuffer outbuf)
-    {
+    private int write(ByteBuffer outbuf) {
         int nbytes;
         try {
             nbytes = fd.write(outbuf);
             if (nbytes == 0) {
                 errno.set(ZError.EAGAIN);
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             errno.set(ZError.ENOTCONN);
             nbytes = -1;
         }
@@ -1160,15 +1082,13 @@ public class StreamEngine implements IEngine, IPollEvents
     //  Reads data from the socket (up to 'size' bytes).
     //  Returns the number of bytes actually read or -1 on error.
     //  Zero indicates the peer has closed the connection.
-    private int read(ByteBuffer buf)
-    {
+    private int read(ByteBuffer buf) {
         int nbytes;
         try {
             nbytes = fd.read(buf);
             if (nbytes == -1) {
                 errno.set(ZError.ENOTCONN);
-            }
-            else if (nbytes == 0) {
+            } else if (nbytes == 0) {
                 if (!fd.isBlocking()) {
                     //  If not a single byte can be read from the socket in non-blocking mode
                     //  we'll get an error (this may happen during the speculative read).
@@ -1180,8 +1100,7 @@ public class StreamEngine implements IEngine, IPollEvents
                     nbytes = -1;
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             errno.set(ZError.ENOTCONN);
             nbytes = -1;
         }
@@ -1190,20 +1109,17 @@ public class StreamEngine implements IEngine, IPollEvents
     }
 
     @Override
-    public void connectEvent()
-    {
+    public void connectEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void acceptEvent()
-    {
+    public void acceptEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getClass().getSimpleName() + socket + "-" + zmtpVersion;
     }
 }

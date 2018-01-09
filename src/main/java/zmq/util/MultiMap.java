@@ -12,14 +12,11 @@ import java.util.Map.Entry;
 // custom implementation of a collection mapping multiple values, tailored for use in the lib.
 // this class is definitely not thread-safe, and allows only one mapping per key-value
 // aka if the same value is correlated to a new key, the old mapping is removed.
-public final class MultiMap<K extends Comparable<? super K>, V>
-{
+public final class MultiMap<K extends Comparable<? super K>, V> {
     // sorts entries according to the natural order of the keys
-    private final class EntryComparator implements Comparator<Entry<V, K>>
-    {
+    private final class EntryComparator implements Comparator<Entry<V, K>> {
         @Override
-        public int compare(Entry<V, K> first, Entry<V, K> second)
-        {
+        public int compare(Entry<V, K> first, Entry<V, K> second) {
             return first.getValue().compareTo(second.getValue());
         }
     }
@@ -31,32 +28,27 @@ public final class MultiMap<K extends Comparable<? super K>, V>
     // inverse mapping to speed-up the process
     private final Map<V, K> inverse;
 
-    public MultiMap()
-    {
+    public MultiMap() {
         data = new HashMap<>();
         inverse = new HashMap<>();
     }
 
-    public void clear()
-    {
+    public void clear() {
         data.clear();
         inverse.clear();
     }
 
-    public Collection<Entry<V, K>> entries()
-    {
+    public Collection<Entry<V, K>> entries() {
         List<Entry<V, K>> list = new ArrayList<>(inverse.entrySet());
         Collections.sort(list, comparator);
         return list;
     }
 
-    public Collection<V> values()
-    {
+    public Collection<V> values() {
         return inverse.keySet();
     }
 
-    public V find(V copy)
-    {
+    public V find(V copy) {
         K key = inverse.get(copy);
         if (key != null) {
             List<V> list = data.get(key);
@@ -65,8 +57,7 @@ public final class MultiMap<K extends Comparable<? super K>, V>
         return null;
     }
 
-    public boolean hasValues(K key)
-    {
+    public boolean hasValues(K key) {
         List<V> list = data.get(key);
         if (list == null) {
             return false;
@@ -74,13 +65,11 @@ public final class MultiMap<K extends Comparable<? super K>, V>
         return !list.isEmpty();
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return inverse.isEmpty();
     }
 
-    private List<V> getValues(K key)
-    {
+    private List<V> getValues(K key) {
         List<V> list = data.get(key);
         if (list == null) {
             list = new ArrayList<>();
@@ -89,8 +78,7 @@ public final class MultiMap<K extends Comparable<? super K>, V>
         return list;
     }
 
-    public boolean insert(K key, V value)
-    {
+    public boolean insert(K key, V value) {
         K old = inverse.get(value);
         if (old != null) {
             removeData(old, value);
@@ -102,8 +90,7 @@ public final class MultiMap<K extends Comparable<? super K>, V>
         return inserted;
     }
 
-    public Collection<V> remove(K key)
-    {
+    public Collection<V> remove(K key) {
         List<V> removed = data.remove(key);
         if (removed != null) {
             for (V val : removed) {
@@ -113,8 +100,7 @@ public final class MultiMap<K extends Comparable<? super K>, V>
         return removed;
     }
 
-    public boolean remove(V value)
-    {
+    public boolean remove(V value) {
         K key = inverse.remove(value);
         if (key != null) {
             return removeData(key, value);
@@ -122,8 +108,7 @@ public final class MultiMap<K extends Comparable<? super K>, V>
         return false;
     }
 
-    public boolean remove(K key, V value)
-    {
+    public boolean remove(K key, V value) {
         boolean removed = removeData(key, value);
         if (removed) {
             inverse.remove(value);
@@ -131,8 +116,7 @@ public final class MultiMap<K extends Comparable<? super K>, V>
         return removed;
     }
 
-    private boolean removeData(K key, V value)
-    {
+    private boolean removeData(K key, V value) {
         boolean removed = false;
         List<V> list = data.get(key);
         if (list != null) {
@@ -145,8 +129,7 @@ public final class MultiMap<K extends Comparable<? super K>, V>
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return data.toString();
     }
 }

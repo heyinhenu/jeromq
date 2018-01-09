@@ -14,11 +14,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class TestPushPullTcp
-{
+public class TestPushPullTcp {
     @Test
-    public void testPushPullTcp() throws IOException
-    {
+    public void testPushPullTcp() throws IOException {
         int port = Utils.findOpenPort();
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());

@@ -7,13 +7,11 @@ import zmq.ZMQ;
 import zmq.pipe.Pipe;
 import zmq.socket.LB;
 
-public class Push extends SocketBase
-{
+public class Push extends SocketBase {
     //  Load balancer managing the outbound pipes.
     private final LB lb;
 
-    public Push(Ctx parent, int tid, int sid)
-    {
+    public Push(Ctx parent, int tid, int sid) {
         super(parent, tid, sid);
         options.type = ZMQ.ZMQ_PUSH;
 
@@ -21,8 +19,7 @@ public class Push extends SocketBase
     }
 
     @Override
-    protected void xattachPipe(Pipe pipe, boolean subscribe2all)
-    {
+    protected void xattachPipe(Pipe pipe, boolean subscribe2all) {
         assert (pipe != null);
 
         //  Don't delay pipe termination as there is no one
@@ -33,26 +30,22 @@ public class Push extends SocketBase
     }
 
     @Override
-    protected void xwriteActivated(Pipe pipe)
-    {
+    protected void xwriteActivated(Pipe pipe) {
         lb.activated(pipe);
     }
 
     @Override
-    protected void xpipeTerminated(Pipe pipe)
-    {
+    protected void xpipeTerminated(Pipe pipe) {
         lb.terminated(pipe);
     }
 
     @Override
-    public boolean xsend(Msg msg)
-    {
+    public boolean xsend(Msg msg) {
         return lb.sendpipe(msg, errno, null);
     }
 
     @Override
-    protected boolean xhasOut()
-    {
+    protected boolean xhasOut() {
         return lb.hasOut();
     }
 }

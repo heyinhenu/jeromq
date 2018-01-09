@@ -16,23 +16,20 @@ import org.zeromq.ZThread;
 /**
  * Load-balancing broker
  * Demonstrates use of the ZLoop API and reactor style
- *
+ * <p>
  * The client and worker tasks are identical from the previous example.
  */
-public class lbbroker3
-{
-    private static final int NBR_CLIENTS  = 10;
-    private static final int NBR_WORKERS  = 3;
-    private static byte[]    WORKER_READY = { '\001' };
+public class lbbroker3 {
+    private static final int NBR_CLIENTS = 10;
+    private static final int NBR_WORKERS = 3;
+    private static byte[] WORKER_READY = {'\001'};
 
     /**
      * Basic request-reply client using REQ socket
      */
-    private static class ClientTask implements ZThread.IDetachedRunnable
-    {
+    private static class ClientTask implements ZThread.IDetachedRunnable {
         @Override
-        public void run(Object [] args)
-        {
+        public void run(Object[] args) {
             ZContext context = new ZContext();
 
             //  Prepare our context and sockets
@@ -53,11 +50,9 @@ public class lbbroker3
     /**
      * Worker using REQ socket to do load-balancing
      */
-    private static class WorkerTask implements ZThread.IDetachedRunnable
-    {
+    private static class WorkerTask implements ZThread.IDetachedRunnable {
         @Override
-        public void run(Object [] args)
-        {
+        public void run(Object[] args) {
             ZContext context = new ZContext();
 
             //  Prepare our context and sockets
@@ -83,24 +78,23 @@ public class lbbroker3
     }
 
     //Our load-balancer structure, passed to reactor handlers
-    private static class LBBroker
-    {
-        Socket        frontend; //  Listen to clients
-        Socket        backend;  //  Listen to workers
+    private static class LBBroker {
+        Socket frontend; //  Listen to clients
+        Socket backend;  //  Listen to workers
         Queue<ZFrame> workers;  //  List of ready workers
-    };
+    }
+
+    ;
 
     /**
      * In the reactor design, each time a message arrives on a socket, the
      * reactor passes it to a handler function. We have two handlers; one
      * for the frontend, one for the backend:
      */
-    private static class FrontendHandler implements ZLoop.IZLoopHandler
-    {
+    private static class FrontendHandler implements ZLoop.IZLoopHandler {
 
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg_)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg_) {
 
             LBBroker arg = (LBBroker) arg_;
             ZMsg msg = ZMsg.recvMsg(arg.frontend);
@@ -118,12 +112,10 @@ public class lbbroker3
 
     }
 
-    private static class BackendHandler implements ZLoop.IZLoopHandler
-    {
+    private static class BackendHandler implements ZLoop.IZLoopHandler {
 
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg_)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg_) {
 
             LBBroker arg = (LBBroker) arg_;
             ZMsg msg = ZMsg.recvMsg(arg.backend);
@@ -142,21 +134,21 @@ public class lbbroker3
                 ZFrame frame = msg.getFirst();
                 if (Arrays.equals(frame.getData(), WORKER_READY))
                     msg.destroy();
-                else msg.send(arg.frontend);
+                else
+                    msg.send(arg.frontend);
             }
             return 0;
         }
     }
 
     private final static FrontendHandler frontendHandler = new FrontendHandler();
-    private final static BackendHandler  backendHandler  = new BackendHandler();
+    private final static BackendHandler backendHandler = new BackendHandler();
 
     /**
      * And the main task now sets-up child tasks, then starts its reactor.
      * If you press Ctrl-C, the reactor exits and the main task shuts down.
      */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZContext context = new ZContext();
         LBBroker arg = new LBBroker();
         //  Prepare our context and sockets

@@ -5,14 +5,11 @@ import zmq.Msg;
 import zmq.SocketBase;
 import zmq.ZMQ;
 
-public class RemoteThr
-{
-    private RemoteThr()
-    {
+public class RemoteThr {
+    private RemoteThr() {
     }
 
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         String connectTo;
         long messageCount;
         int messageSize;
@@ -70,18 +67,15 @@ public class RemoteThr
 
     }
 
-    private static int atoi(String string)
-    {
+    private static int atoi(String string) {
         return Integer.valueOf(string);
     }
 
-    private static long atol(String string)
-    {
+    private static long atol(String string) {
         return Long.valueOf(string);
     }
 
-    private static void printf(String string)
-    {
+    private static void printf(String string) {
         System.out.println(string);
     }
 }

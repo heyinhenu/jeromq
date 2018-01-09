@@ -3,7 +3,7 @@
 .project
 .classpath
 .settings
-.idea
+.idea/
 target
 maven-build.properties
 maven-build.xml

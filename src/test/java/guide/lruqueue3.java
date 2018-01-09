@@ -11,11 +11,9 @@ import org.zeromq.ZMQ.PollItem;
 import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZMsg;
 
-class ClientThread3 extends Thread
-{
+class ClientThread3 extends Thread {
     @Override
-    public void run()
-    {
+    public void run() {
         ZContext context = new ZContext();
 
         //  Prepare our context and sockets
@@ -34,8 +32,7 @@ class ClientThread3 extends Thread
             String reply = new String(data, ZMQ.CHARSET);
             try {
                 Thread.sleep(1000);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
             }
 
             System.out.println(Thread.currentThread().getName() + " Client Sent HELLO");
@@ -45,12 +42,10 @@ class ClientThread3 extends Thread
     }
 }
 
-class WorkerThread3 extends Thread
-{
+class WorkerThread3 extends Thread {
 
     @Override
-    public void run()
-    {
+    public void run() {
         ZContext context = new ZContext();
         //  Prepare our context and sockets
         Socket worker = context.createSocket(ZMQ.REQ);
@@ -77,10 +72,9 @@ class WorkerThread3 extends Thread
 }
 
 //Our LRU queue structure, passed to reactor handlers
-class LRUQueueArg
-{
-    Socket        frontend; //  Listen to clients
-    Socket        backend;  //  Listen to workers
+class LRUQueueArg {
+    Socket frontend; //  Listen to clients
+    Socket backend;  //  Listen to workers
     Queue<ZFrame> workers;  //  List of ready workers
 };
 
@@ -88,12 +82,10 @@ class LRUQueueArg
 //reactor passes it to a handler function. We have two handlers; one
 //for the frontend, one for the backend:
 
-class FrontendHandler implements ZLoop.IZLoopHandler
-{
+class FrontendHandler implements ZLoop.IZLoopHandler {
 
     @Override
-    public int handle(ZLoop loop, PollItem item, Object arg_)
-    {
+    public int handle(ZLoop loop, PollItem item, Object arg_) {
 
         LRUQueueArg arg = (LRUQueueArg) arg_;
         ZMsg msg = ZMsg.recvMsg(arg.frontend);
@@ -112,12 +104,10 @@ class FrontendHandler implements ZLoop.IZLoopHandler
 
 }
 
-class BackendHandler implements ZLoop.IZLoopHandler
-{
+class BackendHandler implements ZLoop.IZLoopHandler {
 
     @Override
-    public int handle(ZLoop loop, PollItem item, Object arg_)
-    {
+    public int handle(ZLoop loop, PollItem item, Object arg_) {
 
         LRUQueueArg arg = (LRUQueueArg) arg_;
         ZMsg msg = ZMsg.recvMsg(arg.backend);
@@ -136,22 +126,21 @@ class BackendHandler implements ZLoop.IZLoopHandler
             ZFrame frame = msg.getFirst();
             if (new String(frame.getData(), ZMQ.CHARSET).equals(lruqueue3.LRU_READY))
                 msg.destroy();
-            else msg.send(arg.frontend);
+            else
+                msg.send(arg.frontend);
         }
         return 0;
     }
 
 }
 
-public class lruqueue3
-{
+public class lruqueue3 {
 
-    public final static String             LRU_READY       = "\001";
+    public final static String LRU_READY = "\001";
     protected final static FrontendHandler handle_frontend = new FrontendHandler();
-    protected final static BackendHandler  handle_backend  = new BackendHandler();
+    protected final static BackendHandler handle_backend = new BackendHandler();
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         ZContext context = new ZContext();
         LRUQueueArg arg = new LRUQueueArg();
         //  Prepare our context and sockets

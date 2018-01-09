@@ -8,13 +8,11 @@ import zmq.msg.MsgAllocator;
 import zmq.util.Errno;
 import zmq.util.Wire;
 
-public class V2Decoder extends Decoder
-{
+public class V2Decoder extends Decoder {
     private final ByteBuffer tmpbuf;
     private int msgFlags;
 
-    public V2Decoder(Errno errno, int bufsize, long maxmsgsize, MsgAllocator allocator)
-    {
+    public V2Decoder(Errno errno, int bufsize, long maxmsgsize, MsgAllocator allocator) {
         super(errno, bufsize, maxmsgsize, allocator);
 
         tmpbuf = ByteBuffer.allocate(8);
@@ -25,16 +23,14 @@ public class V2Decoder extends Decoder
     }
 
     @Override
-    protected Msg allocate(int size)
-    {
+    protected Msg allocate(int size) {
         Msg msg = super.allocate(size);
         msg.setFlags(msgFlags);
         return msg;
     }
 
     @Override
-    protected Step.Result oneByteSizeReady()
-    {
+    protected Step.Result oneByteSizeReady() {
         int size = tmpbuf.get(0) & 0xff;
         Step.Result rc = sizeReady(size);
         if (rc != Step.Result.ERROR) {
@@ -44,8 +40,7 @@ public class V2Decoder extends Decoder
     }
 
     @Override
-    protected Step.Result eightByteSizeReady()
-    {
+    protected Step.Result eightByteSizeReady() {
         //  The payload size is encoded as 64-bit unsigned integer.
         //  The most significant byte comes first.
         tmpbuf.position(0);
@@ -60,8 +55,7 @@ public class V2Decoder extends Decoder
     }
 
     @Override
-    protected Step.Result flagsReady()
-    {
+    protected Step.Result flagsReady() {
         //  Store the flags from the wire into the message structure.
         this.msgFlags = 0;
         int first = tmpbuf.get(0) & 0xff;
@@ -78,8 +72,7 @@ public class V2Decoder extends Decoder
         if ((first & V2Protocol.LARGE_FLAG) > 0) {
             tmpbuf.limit(8);
             nextStep(tmpbuf, eightByteSizeReady);
-        }
-        else {
+        } else {
             tmpbuf.limit(1);
             nextStep(tmpbuf, oneByteSizeReady);
         }
@@ -88,8 +81,7 @@ public class V2Decoder extends Decoder
     }
 
     @Override
-    protected Step.Result messageReady()
-    {
+    protected Step.Result messageReady() {
         //  Message is completely read. Signal this to the caller
         //  and prepare to decode next message.
         tmpbuf.position(0);

@@ -9,11 +9,9 @@ import zmq.SocketBase;
 import zmq.ZMQ;
 import zmq.util.Utils;
 
-public class BindSrcAddressTest
-{
+public class BindSrcAddressTest {
     @Test
-    public void test() throws IOException
-    {
+    public void test() throws IOException {
         Ctx ctx = ZMQ.createContext();
         assert (ctx != null);
 

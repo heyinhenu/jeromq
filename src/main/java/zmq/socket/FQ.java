@@ -14,8 +14,7 @@ import zmq.util.ValueReference;
 //  Class manages a set of inbound pipes. On receive it performs fair
 //  queuing so that senders gone berserk won't cause denial of
 //  service for decent senders.
-public class FQ
-{
+public class FQ {
     //  Inbound pipes.
     private final List<Pipe> pipes;
 
@@ -38,8 +37,7 @@ public class FQ
     //  Holds credential after the last_acive_pipe has terminated.
     private Blob savedCredential;
 
-    public FQ()
-    {
+    public FQ() {
         active = 0;
         current = 0;
         more = false;
@@ -47,15 +45,13 @@ public class FQ
         pipes = new ArrayList<>();
     }
 
-    public void attach(Pipe pipe)
-    {
+    public void attach(Pipe pipe) {
         pipes.add(pipe);
         Collections.swap(pipes, active, pipes.size() - 1);
         active++;
     }
 
-    public void terminated(Pipe pipe)
-    {
+    public void terminated(Pipe pipe) {
         final int index = pipes.indexOf(pipe);
 
         //  Remove the pipe from the list; adjust number of active pipes
@@ -75,20 +71,17 @@ public class FQ
         }
     }
 
-    public void activated(Pipe pipe)
-    {
+    public void activated(Pipe pipe) {
         //  Move the pipe to the list of active pipes.
         Collections.swap(pipes, pipes.indexOf(pipe), active);
         active++;
     }
 
-    public Msg recv(Errno errno)
-    {
+    public Msg recv(Errno errno) {
         return recvPipe(errno, null);
     }
 
-    public Msg recvPipe(Errno errno, ValueReference<Pipe> pipe)
-    {
+    public Msg recvPipe(Errno errno, ValueReference<Pipe> pipe) {
         //  Round-robin over the pipes to get the next message.
         while (active > 0) {
             //  Try to fetch new message. If we've already read part of the message
@@ -131,8 +124,7 @@ public class FQ
         return null;
     }
 
-    public boolean hasIn()
-    {
+    public boolean hasIn() {
         //  There are subsequent parts of the partly-read message available.
         if (more) {
             return true;
@@ -158,8 +150,7 @@ public class FQ
         return false;
     }
 
-    public Blob getCredential()
-    {
+    public Blob getCredential() {
         return lastIn != null ? lastIn.getCredential() : savedCredential;
     }
 }

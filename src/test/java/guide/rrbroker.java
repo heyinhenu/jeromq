@@ -6,14 +6,11 @@ import org.zeromq.ZMQ.Poller;
 import org.zeromq.ZMQ.Socket;
 
 /**
-* Simple request-reply broker
-*
-*/
-public class rrbroker
-{
+ * Simple request-reply broker
+ */
+public class rrbroker {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         //  Prepare our context and sockets
         Context context = ZMQ.context(1);
 

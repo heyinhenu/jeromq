@@ -7,20 +7,16 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public class TestTimeo
-{
-    class Worker implements Runnable
-    {
+public class TestTimeo {
+    class Worker implements Runnable {
         Ctx ctx;
 
-        Worker(Ctx ctx)
-        {
+        Worker(Ctx ctx) {
             this.ctx = ctx;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             ZMQ.sleep(1);
             SocketBase sc = ZMQ.socket(ctx, ZMQ.ZMQ_PUSH);
             assertThat(sc, notNullValue());
@@ -32,8 +28,7 @@ public class TestTimeo
     }
 
     @Test
-    public void testTimeo() throws Exception
-    {
+    public void testTimeo() throws Exception {
         Ctx ctx = ZMQ.init(1);
         assertThat(ctx, notNullValue());
 

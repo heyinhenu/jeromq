@@ -9,25 +9,21 @@ import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
 /**
- * 
  * Clone server model 1
- * @author Danish Shrestha <dshrestha06@gmail.com>
  *
+ * @author Danish Shrestha <dshrestha06@gmail.com>
  */
-public class clonesrv1
-{
+public class clonesrv1 {
     private static AtomicLong sequence = new AtomicLong();
 
-    public void run()
-    {
+    public void run() {
         Context ctx = ZMQ.context(1);
         Socket publisher = ctx.socket(ZMQ.PUB);
         publisher.bind("tcp://*:5556");
 
         try {
             Thread.sleep(200);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -48,8 +44,7 @@ public class clonesrv1
         }
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonesrv1().run();
     }
 }

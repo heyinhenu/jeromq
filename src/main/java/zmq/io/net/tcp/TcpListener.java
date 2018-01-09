@@ -17,9 +17,9 @@ import zmq.poll.IPollEvents;
 import zmq.poll.Poller;
 import zmq.socket.Sockets;
 
-public class TcpListener extends Own implements IPollEvents
-{
+public class TcpListener extends Own implements IPollEvents {
     private static boolean isWindows;
+
     static {
         String os = System.getProperty("os.name").toLowerCase();
         isWindows = os.contains("win");
@@ -30,7 +30,7 @@ public class TcpListener extends Own implements IPollEvents
 
     //  Underlying socket.
     private ServerSocketChannel fd;
-    private Poller.Handle       handle;
+    private Poller.Handle handle;
 
     //  Socket the listerner belongs to.
     private SocketBase socket;
@@ -40,8 +40,7 @@ public class TcpListener extends Own implements IPollEvents
 
     private final IOObject ioObject;
 
-    public TcpListener(IOThread ioThread, SocketBase socket, final Options options)
-    {
+    public TcpListener(IOThread ioThread, SocketBase socket, final Options options) {
         super(ioThread, options);
 
         ioObject = new IOObject(ioThread, this);
@@ -50,16 +49,14 @@ public class TcpListener extends Own implements IPollEvents
     }
 
     @Override
-    public void destroy()
-    {
+    public void destroy() {
         assert (fd == null);
         assert (handle == null);
         ioObject.unplug();
     }
 
     @Override
-    protected void processPlug()
-    {
+    protected void processPlug() {
         //  Start polling for incoming connections.
         ioObject.plug();
         handle = ioObject.addFd(fd);
@@ -67,8 +64,7 @@ public class TcpListener extends Own implements IPollEvents
     }
 
     @Override
-    protected void processTerm(int linger)
-    {
+    protected void processTerm(int linger) {
         ioObject.removeHandle(handle);
         handle = null;
         close();
@@ -76,8 +72,7 @@ public class TcpListener extends Own implements IPollEvents
     }
 
     @Override
-    public void acceptEvent()
-    {
+    public void acceptEvent() {
         SocketChannel channel;
 
         try {
@@ -89,14 +84,9 @@ public class TcpListener extends Own implements IPollEvents
                 return;
             }
             TcpUtils.tuneTcpSocket(channel);
-            TcpUtils.tuneTcpKeepalives(
-                                       channel,
-                                       options.tcpKeepAlive,
-                                       options.tcpKeepAliveCnt,
-                                       options.tcpKeepAliveIdle,
-                                       options.tcpKeepAliveIntvl);
-        }
-        catch (IOException e) {
+            TcpUtils.tuneTcpKeepalives(channel, options.tcpKeepAlive, options.tcpKeepAliveCnt, options.tcpKeepAliveIdle,
+                    options.tcpKeepAliveIntvl);
+        } catch (IOException e) {
             //  If connection was reset by the peer in the meantime, just ignore it.
             //  TODO: Handle specific errors like ENFILE/EMFILE etc.
             socket.eventAcceptFailed(endpoint, ZError.exccode(e));
@@ -110,8 +100,7 @@ public class TcpListener extends Own implements IPollEvents
         StreamEngine engine = null;
         try {
             engine = new StreamEngine(channel, options, endpoint);
-        }
-        catch (ZError.InstantiationException e) {
+        } catch (ZError.InstantiationException e) {
             socket.eventAcceptFailed(endpoint, ZError.EINVAL);
             return;
         }
@@ -132,28 +121,24 @@ public class TcpListener extends Own implements IPollEvents
     }
 
     //  Close the listening socket.
-    private void close()
-    {
+    private void close() {
         assert (fd != null);
 
         try {
             fd.close();
             socket.eventClosed(endpoint, fd);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             socket.eventCloseFailed(endpoint, ZError.exccode(e));
         }
         fd = null;
     }
 
-    public String getAddress()
-    {
+    public String getAddress() {
         return address.toString();
     }
 
     //  Set address to listen on.
-    public boolean setAddress(final String addr)
-    {
+    public boolean setAddress(final String addr) {
         //  Convert the textual address into address structure.
         address = new TcpAddress(addr, options.ipv6);
         endpoint = address.toString();
@@ -191,8 +176,7 @@ public class TcpListener extends Own implements IPollEvents
             //  Bind the socket to the network interface and port.
             // NB: fd.socket().bind(...) for Android environments
             fd.socket().bind(address.address(), options.backlog);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             close();
             errno.set(ZError.EADDRINUSE);
             return false;
@@ -205,8 +189,7 @@ public class TcpListener extends Own implements IPollEvents
     //  newly created connection. The function may throw IOException
     //  if the connection was dropped while waiting in the listen backlog
     //  or was denied because of accept filters.
-    private SocketChannel accept() throws IOException
-    {
+    private SocketChannel accept() throws IOException {
         //  The situation where connection cannot be accepted due to insufficient
         //  resources is considered valid and treated by ignoring the connection.
         //  Accept one connection and deal with different failure modes.
@@ -225,8 +208,7 @@ public class TcpListener extends Own implements IPollEvents
             if (!matched) {
                 try {
                     sock.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                 }
                 return null;
             }
@@ -250,32 +232,27 @@ public class TcpListener extends Own implements IPollEvents
     }
 
     @Override
-    public void inEvent()
-    {
+    public void inEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void outEvent()
-    {
+    public void outEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void connectEvent()
-    {
+    public void connectEvent() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void timerEvent(int id)
-    {
+    public void timerEvent(int id) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getClass().getSimpleName() + "[" + options.socketId + "]";
     }
 }

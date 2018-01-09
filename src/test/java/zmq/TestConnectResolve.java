@@ -10,11 +10,9 @@ import org.junit.Test;
 
 import zmq.util.Utils;
 
-public class TestConnectResolve
-{
+public class TestConnectResolve {
     @Test
-    public void testConnectResolve() throws IOException
-    {
+    public void testConnectResolve() throws IOException {
         int port = Utils.findOpenPort();
         System.out.println("test_connect_resolve running...\n");
 

@@ -9,11 +9,9 @@ import org.junit.Test;
 import zmq.ZMQ;
 import zmq.util.Wire;
 
-public class V2ProtocolTest extends AbstractProtocolVersion
-{
+public class V2ProtocolTest extends AbstractProtocolVersion {
     @Override
-    protected ByteBuffer identity()
-    {
+    protected ByteBuffer identity() {
         return ByteBuffer.allocate(2)
                 // flag
                 .put((byte) 0)
@@ -22,8 +20,7 @@ public class V2ProtocolTest extends AbstractProtocolVersion
     }
 
     @Test(timeout = 2000)
-    public void testProtocolVersion2short() throws IOException, InterruptedException
-    {
+    public void testProtocolVersion2short() throws IOException, InterruptedException {
         List<ByteBuffer> raws = raws(1);
         raws.add(identity());
 
@@ -39,8 +36,7 @@ public class V2ProtocolTest extends AbstractProtocolVersion
     }
 
     @Test(timeout = 2000)
-    public void testProtocolVersion2long() throws IOException, InterruptedException
-    {
+    public void testProtocolVersion2long() throws IOException, InterruptedException {
         List<ByteBuffer> raws = raws(1);
         raws.add(identity());
 

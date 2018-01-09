@@ -9,24 +9,20 @@ import org.junit.Test;
 
 import zmq.util.Utils;
 
-public class TestMonitor
-{
-    static class SocketMonitor extends Thread
-    {
-        private Ctx    ctx;
-        private int    events;
+public class TestMonitor {
+    static class SocketMonitor extends Thread {
+        private Ctx ctx;
+        private int events;
         private String monitorAddr;
 
-        public SocketMonitor(Ctx ctx, String monitorAddr)
-        {
+        public SocketMonitor(Ctx ctx, String monitorAddr) {
             this.ctx = ctx;
             this.monitorAddr = monitorAddr;
             events = 0;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             SocketBase s = ZMQ.socket(ctx, ZMQ.ZMQ_PAIR);
             boolean rc = s.connect(monitorAddr);
             assertThat(rc, is(true));
@@ -39,22 +35,22 @@ public class TestMonitor
                 assertThat(event, notNullValue());
 
                 switch (event.event) {
-                // listener specific
-                case ZMQ.ZMQ_EVENT_LISTENING:
-                case ZMQ.ZMQ_EVENT_ACCEPTED:
-                    // connecter specific
-                case ZMQ.ZMQ_EVENT_CONNECTED:
-                case ZMQ.ZMQ_EVENT_CONNECT_DELAYED:
-                    // generic - either end of the socket
-                case ZMQ.ZMQ_EVENT_CLOSE_FAILED:
-                case ZMQ.ZMQ_EVENT_CLOSED:
-                case ZMQ.ZMQ_EVENT_DISCONNECTED:
-                case ZMQ.ZMQ_EVENT_MONITOR_STOPPED:
-                    events |= event.event;
-                    break;
-                default:
-                    // out of band / unexpected event
-                    assertTrue("Unkown Event " + event.event, true);
+                    // listener specific
+                    case ZMQ.ZMQ_EVENT_LISTENING:
+                    case ZMQ.ZMQ_EVENT_ACCEPTED:
+                        // connecter specific
+                    case ZMQ.ZMQ_EVENT_CONNECTED:
+                    case ZMQ.ZMQ_EVENT_CONNECT_DELAYED:
+                        // generic - either end of the socket
+                    case ZMQ.ZMQ_EVENT_CLOSE_FAILED:
+                    case ZMQ.ZMQ_EVENT_CLOSED:
+                    case ZMQ.ZMQ_EVENT_DISCONNECTED:
+                    case ZMQ.ZMQ_EVENT_MONITOR_STOPPED:
+                        events |= event.event;
+                        break;
+                    default:
+                        // out of band / unexpected event
+                        assertTrue("Unkown Event " + event.event, true);
                 }
             }
             s.close();
@@ -62,8 +58,7 @@ public class TestMonitor
     }
 
     @Test
-    public void testMonitor() throws Exception
-    {
+    public void testMonitor() throws Exception {
         int port = Utils.findOpenPort();
         String addr = "tcp://127.0.0.1:" + port;
         SocketMonitor[] threads = new SocketMonitor[3];

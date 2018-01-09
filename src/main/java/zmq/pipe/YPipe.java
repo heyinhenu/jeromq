@@ -2,8 +2,7 @@ package zmq.pipe;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class YPipe<T> implements YPipeBase<T>
-{
+public class YPipe<T> implements YPipeBase<T> {
     //  Allocation-efficient queue to store pipe items.
     //  Front of the queue points to the first prefetched item, back of
     //  the pipe points to last un-flushed item. Front is used only by
@@ -27,8 +26,7 @@ public class YPipe<T> implements YPipeBase<T>
     //  atomic operations.
     private final AtomicInteger c;
 
-    public YPipe(int qsize)
-    {
+    public YPipe(int qsize) {
         queue = new YQueue<>(qsize);
         int pos = queue.backPos();
         f = pos;
@@ -42,8 +40,7 @@ public class YPipe<T> implements YPipeBase<T>
     //  subsequently written to the pipe. Incomplete items are never
     //  flushed down the stream.
     @Override
-    public void write(final T value, boolean incomplete)
-    {
+    public void write(final T value, boolean incomplete) {
         //  Place the value to the queue, add new terminator element.
         queue.push(value);
 
@@ -56,8 +53,7 @@ public class YPipe<T> implements YPipeBase<T>
     //  Pop an incomplete item from the pipe. Returns true is such
     //  item exists, false otherwise.
     @Override
-    public T unwrite()
-    {
+    public T unwrite() {
         if (f == queue.backPos()) {
             return null;
         }
@@ -69,8 +65,7 @@ public class YPipe<T> implements YPipeBase<T>
     //  the reader thread is sleeping. In that case, caller is obliged to
     //  wake the reader up before using the pipe again.
     @Override
-    public boolean flush()
-    {
+    public boolean flush() {
         //  If there are no un-flushed items, do nothing.
         if (w == f) {
             return true;
@@ -96,8 +91,7 @@ public class YPipe<T> implements YPipeBase<T>
 
     //  Check whether item is available for reading.
     @Override
-    public boolean checkRead()
-    {
+    public boolean checkRead() {
         //  Was the value prefetched already? If so, return.
         int h = queue.frontPos();
         if (h != r) {
@@ -110,8 +104,7 @@ public class YPipe<T> implements YPipeBase<T>
         //  items to prefetch, set c to -1 (using compare-and-swap).
         if (c.compareAndSet(h, -1)) {
             // nothing to read, h == r must be the same
-        }
-        else {
+        } else {
             // something to have been written
             r = c.get();
         }
@@ -131,8 +124,7 @@ public class YPipe<T> implements YPipeBase<T>
     //  Reads an item from the pipe. Returns null if there is no value.
     //  available.
     @Override
-    public T read()
-    {
+    public T read() {
         //  Try to prefetch a value.
         if (!checkRead()) {
             return null;
@@ -147,8 +139,7 @@ public class YPipe<T> implements YPipeBase<T>
     //  Returns the first element in the pipe without removing it.
     //  The pipe mustn't be empty or the function crashes.
     @Override
-    public T probe()
-    {
+    public T probe() {
         boolean rc = checkRead();
         assert (rc);
 

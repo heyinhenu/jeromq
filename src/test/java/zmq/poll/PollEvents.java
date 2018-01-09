@@ -1,29 +1,23 @@
 package zmq.poll;
 
-class PollEvents implements IPollEvents
-{
+class PollEvents implements IPollEvents {
     @Override
-    public void timerEvent(int id)
-    {
+    public void timerEvent(int id) {
     }
 
     @Override
-    public void outEvent()
-    {
+    public void outEvent() {
     }
 
     @Override
-    public void inEvent()
-    {
+    public void inEvent() {
     }
 
     @Override
-    public void connectEvent()
-    {
+    public void connectEvent() {
     }
 
     @Override
-    public void acceptEvent()
-    {
+    public void acceptEvent() {
     }
 }

@@ -7,46 +7,38 @@ import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Socket;
 
 /**
- * 
  * A simple getKey value message class
- * @author Danish Shrestha <dshrestha06@gmail.com>
  *
+ * @author Danish Shrestha <dshrestha06@gmail.com>
  */
-public class kvsimple
-{
+public class kvsimple {
     private final String key;
-    private long         sequence;
+    private long sequence;
     private final byte[] body;
 
-    public kvsimple(String key, long sequence, byte[] body)
-    {
+    public kvsimple(String key, long sequence, byte[] body) {
         this.key = key;
         this.sequence = sequence;
         this.body = body; // clone if needed
     }
 
-    public String getKey()
-    {
+    public String getKey() {
         return key;
     }
 
-    public long getSequence()
-    {
+    public long getSequence() {
         return sequence;
     }
 
-    public void setSequence(long sequence)
-    {
+    public void setSequence(long sequence) {
         this.sequence = sequence;
     }
 
-    public byte[] getBody()
-    {
+    public byte[] getBody() {
         return body;
     }
 
-    public void send(Socket publisher)
-    {
+    public void send(Socket publisher) {
 
         publisher.send(key.getBytes(ZMQ.CHARSET), ZMQ.SNDMORE);
 
@@ -57,8 +49,7 @@ public class kvsimple
         publisher.send(body, 0);
     }
 
-    public static kvsimple recv(Socket updates)
-    {
+    public static kvsimple recv(Socket updates) {
         byte[] data = updates.recv(0);
         if (data == null || !updates.hasReceiveMore())
             return null;
@@ -75,14 +66,12 @@ public class kvsimple
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "kvsimple [getKey=" + key + ", getSequence=" + sequence + ", body=" + Arrays.toString(body) + "]";
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(body);
@@ -92,8 +81,7 @@ public class kvsimple
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
@@ -106,8 +94,7 @@ public class kvsimple
         if (key == null) {
             if (other.key != null)
                 return false;
-        }
-        else if (!key.equals(other.key))
+        } else if (!key.equals(other.key))
             return false;
         if (sequence != other.sequence)
             return false;

@@ -9,11 +9,9 @@ import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZMsg;
 
 //  bstar class - Binary Star reactor
-public class bstar
-{
+public class bstar {
     //  States we can be in at any point in time
-    enum State
-    {
+    enum State {
         STATE_PRIMARY, //  Primary, waiting for peer to connect
         STATE_BACKUP, //  Backup, waiting for peer to connect
         STATE_ACTIVE, //  Active - accepting connections
@@ -21,8 +19,7 @@ public class bstar
     }
 
     //  Events, which start with the states our peer can be in
-    enum Event
-    {
+    enum Event {
         PEER_PRIMARY, //  HA peer is pending primary
         PEER_BACKUP, //  HA peer is pending backup
         PEER_ACTIVE, //  HA peer is active
@@ -30,19 +27,19 @@ public class bstar
         CLIENT_REQUEST //  Client makes request
     }
 
-    private ZContext            ctx;        //  Our private context
-    private ZLoop               loop;       //  Reactor loop
-    private Socket              statepub;   //  State publisher
-    private Socket              statesub;   //  State subscriber
-    private State               state;      //  Current state
-    private Event               event;      //  Current event
-    private long                peerExpiry; //  When peer is considered 'dead'
+    private ZContext ctx;        //  Our private context
+    private ZLoop loop;       //  Reactor loop
+    private Socket statepub;   //  State publisher
+    private Socket statesub;   //  State subscriber
+    private State state;      //  Current state
+    private Event event;      //  Current event
+    private long peerExpiry; //  When peer is considered 'dead'
     private ZLoop.IZLoopHandler voterFn;    //  Voting socket handler
-    private Object              voterArg;   //  Arguments for voting handler
+    private Object voterArg;   //  Arguments for voting handler
     private ZLoop.IZLoopHandler activeFn;   //  Call when become active
-    private Object              activeArg;  //  Arguments for handler
+    private Object activeArg;  //  Arguments for handler
     private ZLoop.IZLoopHandler passiveFn;  //  Call when become passive
-    private Object              passiveArg; //  Arguments for handler
+    private Object passiveArg; //  Arguments for handler
 
     //  The finite-state machine is the same as in the proof-of-concept server.
     //  To understand this reactor in detail, first read the ZLoop class.
@@ -55,8 +52,7 @@ public class bstar
     //  Binary Star finite state machine (applies event to state)
     //  Returns false if there was an exception, true if event was valid.
 
-    private boolean execute()
-    {
+    private boolean execute() {
         boolean rc = true;
 
         //  Primary server is waiting for peer to connect
@@ -67,14 +63,12 @@ public class bstar
                 state = State.STATE_ACTIVE;
                 if (activeFn != null)
                     activeFn.handle(loop, null, activeArg);
-            }
-            else if (event == Event.PEER_ACTIVE) {
+            } else if (event == Event.PEER_ACTIVE) {
                 System.out.printf("I: connected to backup (active), ready passive\n");
                 state = State.STATE_PASSIVE;
                 if (passiveFn != null)
                     passiveFn.handle(loop, null, passiveArg);
-            }
-            else if (event == Event.CLIENT_REQUEST) {
+            } else if (event == Event.CLIENT_REQUEST) {
                 // Allow client requests to turn us into the active if we've
                 // waited sufficiently long to believe the backup is not
                 // currently acting as active (i.e., after a failover)
@@ -84,89 +78,77 @@ public class bstar
                     state = State.STATE_ACTIVE;
                     if (activeFn != null)
                         activeFn.handle(loop, null, activeArg);
-                }
-                else
+                } else
                     // Don't respond to clients yet - it's possible we're
                     // performing a failback and the backup is currently active
                     rc = false;
             }
-        }
-        else if (state == State.STATE_BACKUP) {
+        } else if (state == State.STATE_BACKUP) {
             if (event == Event.PEER_ACTIVE) {
                 System.out.printf("I: connected to primary (active), ready passive\n");
                 state = State.STATE_PASSIVE;
                 if (passiveFn != null)
                     passiveFn.handle(loop, null, passiveArg);
-            }
-            else
-            //  Reject client connections when acting as backup
-            if (event == Event.CLIENT_REQUEST)
-                rc = false;
-        }
-        else
-        //  .split active and passive states
-        //  These are the ACTIVE and PASSIVE states:
-        if (state == State.STATE_ACTIVE) {
-            if (event == Event.PEER_ACTIVE) {
-                //  Two actives would mean split-brain
-                System.out.printf("E: fatal error - dual actives, aborting\n");
-                rc = false;
-            }
-        }
-        else
-        //  Server is passive
-        //  CLIENT_REQUEST events can trigger failover if peer looks dead
-        if (state == State.STATE_PASSIVE) {
-            if (event == Event.PEER_PRIMARY) {
-                //  Peer is restarting - become active, peer will go passive
-                System.out.printf("I: primary (passive) is restarting, ready active\n");
-                state = State.STATE_ACTIVE;
-            }
-            else if (event == Event.PEER_BACKUP) {
-                //  Peer is restarting - become active, peer will go passive
-                System.out.printf("I: backup (passive) is restarting, ready active\n");
-                state = State.STATE_ACTIVE;
-            }
-            else if (event == Event.PEER_PASSIVE) {
-                //  Two passives would mean cluster would be non-responsive
-                System.out.printf("E: fatal error - dual passives, aborting\n");
-                rc = false;
-            }
-            else if (event == Event.CLIENT_REQUEST) {
-                //  Peer becomes active if timeout has passed
-                //  It's the client request that triggers the failover
-                assert (peerExpiry > 0);
-                if (System.currentTimeMillis() >= peerExpiry) {
-                    //  If peer is dead, switch to the active state
-                    System.out.printf("I: failover successful, ready active\n");
-                    state = State.STATE_ACTIVE;
-                }
-                else
-                    //  If peer is alive, reject connections
+            } else
+                //  Reject client connections when acting as backup
+                if (event == Event.CLIENT_REQUEST)
                     rc = false;
+        } else
+            //  .split active and passive states
+            //  These are the ACTIVE and PASSIVE states:
+            if (state == State.STATE_ACTIVE) {
+                if (event == Event.PEER_ACTIVE) {
+                    //  Two actives would mean split-brain
+                    System.out.printf("E: fatal error - dual actives, aborting\n");
+                    rc = false;
+                }
+            } else
+                //  Server is passive
+                //  CLIENT_REQUEST events can trigger failover if peer looks dead
+                if (state == State.STATE_PASSIVE) {
+                    if (event == Event.PEER_PRIMARY) {
+                        //  Peer is restarting - become active, peer will go passive
+                        System.out.printf("I: primary (passive) is restarting, ready active\n");
+                        state = State.STATE_ACTIVE;
+                    } else if (event == Event.PEER_BACKUP) {
+                        //  Peer is restarting - become active, peer will go passive
+                        System.out.printf("I: backup (passive) is restarting, ready active\n");
+                        state = State.STATE_ACTIVE;
+                    } else if (event == Event.PEER_PASSIVE) {
+                        //  Two passives would mean cluster would be non-responsive
+                        System.out.printf("E: fatal error - dual passives, aborting\n");
+                        rc = false;
+                    } else if (event == Event.CLIENT_REQUEST) {
+                        //  Peer becomes active if timeout has passed
+                        //  It's the client request that triggers the failover
+                        assert (peerExpiry > 0);
+                        if (System.currentTimeMillis() >= peerExpiry) {
+                            //  If peer is dead, switch to the active state
+                            System.out.printf("I: failover successful, ready active\n");
+                            state = State.STATE_ACTIVE;
+                        } else
+                            //  If peer is alive, reject connections
+                            rc = false;
 
-                //  Call state change handler if necessary
-                if (state == State.STATE_ACTIVE && activeFn != null)
-                    activeFn.handle(loop, null, activeArg);
-            }
-        }
+                        //  Call state change handler if necessary
+                        if (state == State.STATE_ACTIVE && activeFn != null)
+                            activeFn.handle(loop, null, activeArg);
+                    }
+                }
         return rc;
     }
 
-    private void updatePeerExpiry()
-    {
+    private void updatePeerExpiry() {
         peerExpiry = System.currentTimeMillis() + 2 * BSTAR_HEARTBEAT;
     }
 
     //  Reactor event handlers...
 
     //  Publish our state to peer
-    private static IZLoopHandler SendState = new IZLoopHandler()
-    {
+    private static IZLoopHandler SendState = new IZLoopHandler() {
 
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             bstar self = (bstar) arg;
             self.statepub.send(String.format("%d", self.state.ordinal()));
             return 0;
@@ -174,12 +156,10 @@ public class bstar
     };
 
     //  Receive state from peer, execute finite state machine
-    private static IZLoopHandler RecvState = new IZLoopHandler()
-    {
+    private static IZLoopHandler RecvState = new IZLoopHandler() {
 
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             bstar self = (bstar) arg;
             String state = item.getSocket().recvStr();
             if (state != null) {
@@ -191,12 +171,10 @@ public class bstar
     };
 
     //  Application wants to speak to us, see if it's possible
-    private static IZLoopHandler VoterReady = new IZLoopHandler()
-    {
+    private static IZLoopHandler VoterReady = new IZLoopHandler() {
 
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             bstar self = (bstar) arg;
             //  If server can accept input now, call appl handler
             self.event = Event.CLIENT_REQUEST;
@@ -216,8 +194,7 @@ public class bstar
     //  This is the constructor for our {{bstar}} class. We have to tell it
     //  whether we're primary or backup server, as well as our local and
     //  remote endpoints to bind and connect to:
-    public bstar(boolean primary, String local, String remote)
-    {
+    public bstar(boolean primary, String local, String remote) {
         //  Initialize the Binary Star
         ctx = new ZContext();
         loop = new ZLoop(ctx);
@@ -240,8 +217,7 @@ public class bstar
 
     //  .split destructor
     //  The destructor shuts down the bstar reactor:
-    public void destroy()
-    {
+    public void destroy() {
         loop.destroy();
         ctx.destroy();
     }
@@ -249,8 +225,7 @@ public class bstar
     //  .split zloop method
     //  This method returns the underlying zloop reactor, so we can add
     //  additional timers and readers:
-    public ZLoop zloop()
-    {
+    public ZLoop zloop() {
         return loop;
     }
 
@@ -259,8 +234,7 @@ public class bstar
     //  on this socket provide the CLIENT_REQUEST events for the Binary Star
     //  FSM and are passed to the provided application handler. We require
     //  exactly one voter per {{bstar}} instance:
-    public int voter(String endpoint, int type, IZLoopHandler handler, Object arg)
-    {
+    public int voter(String endpoint, int type, IZLoopHandler handler, Object arg) {
         //  Hold actual handler+arg so we can call this later
         Socket socket = ctx.createSocket(type);
         socket.bind(endpoint);
@@ -272,22 +246,19 @@ public class bstar
 
     //  .split register state-change handlers
     //  Register handlers to be called each time there's a state change:
-    public void newActive(IZLoopHandler handler, Object arg)
-    {
+    public void newActive(IZLoopHandler handler, Object arg) {
         activeFn = handler;
         activeArg = arg;
     }
 
-    public void newPassive(IZLoopHandler handler, Object arg)
-    {
+    public void newPassive(IZLoopHandler handler, Object arg) {
         passiveFn = handler;
         passiveArg = arg;
     }
 
     //  .split enable/disable tracing
     //  Enable/disable verbose tracing, for debugging:
-    public void setVerbose(boolean verbose)
-    {
+    public void setVerbose(boolean verbose) {
         loop.verbose(verbose);
     }
 
@@ -295,8 +266,7 @@ public class bstar
     //  Finally, start the configured reactor. It will end if any handler
     //  returns -1 to the reactor, or if the process receives Interrupt
 
-    public int start()
-    {
+    public int start() {
         assert (voterFn != null);
         updatePeerExpiry();
         return loop.start();

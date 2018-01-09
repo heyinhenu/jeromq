@@ -14,8 +14,7 @@ import zmq.util.Utils;
 import zmq.util.ValueReference;
 import zmq.util.Wire;
 
-public class Req extends Dealer
-{
+public class Req extends Dealer {
     //  If true, request was already sent and reply wasn't received yet or
     //  was received partially.
     private boolean receivingReply;
@@ -39,8 +38,7 @@ public class Req extends Dealer
     //  still pending.
     private boolean strict;
 
-    public Req(Ctx parent, int tid, int sid)
-    {
+    public Req(Ctx parent, int tid, int sid) {
         super(parent, tid, sid);
         receivingReply = false;
         messageBegins = true;
@@ -51,8 +49,7 @@ public class Req extends Dealer
     }
 
     @Override
-    public boolean xsend(final Msg msg)
-    {
+    public boolean xsend(final Msg msg) {
         //  If we've sent a request and we still haven't got the reply,
         //  we can't send another request.
         if (receivingReply) {
@@ -121,8 +118,7 @@ public class Req extends Dealer
     }
 
     @Override
-    protected Msg xrecv()
-    {
+    protected Msg xrecv() {
         // If request wasn't send, we can't wait for reply.
         // Thus, we don't look at the state of the ZMQ_REQ_RELAXED option.
         if (!receivingReply) {
@@ -181,47 +177,42 @@ public class Req extends Dealer
     }
 
     @Override
-    public boolean xhasIn()
-    {
+    public boolean xhasIn() {
         //  TODO: Duplicates should be removed here.
 
         return receivingReply && super.xhasIn();
     }
 
     @Override
-    public boolean xhasOut()
-    {
+    public boolean xhasOut() {
         return !receivingReply && super.xhasOut();
     }
 
     @Override
-    protected boolean xsetsockopt(int option, Object optval)
-    {
+    protected boolean xsetsockopt(int option, Object optval) {
         switch (option) {
-        case ZMQ.ZMQ_REQ_CORRELATE:
-            requestIdFramesEnabled = Options.parseBoolean(option, optval);
-            return true;
-        case ZMQ.ZMQ_REQ_RELAXED:
-            strict = !Options.parseBoolean(option, optval);
-            return true;
+            case ZMQ.ZMQ_REQ_CORRELATE:
+                requestIdFramesEnabled = Options.parseBoolean(option, optval);
+                return true;
+            case ZMQ.ZMQ_REQ_RELAXED:
+                strict = !Options.parseBoolean(option, optval);
+                return true;
 
-        default:
-            break;
+            default:
+                break;
         }
         return super.xsetsockopt(option, optval);
     }
 
     @Override
-    protected void xpipeTerminated(Pipe pipe)
-    {
+    protected void xpipeTerminated(Pipe pipe) {
         if (replyPipe.get() == pipe) {
             replyPipe.set(null);
         }
         super.xpipeTerminated(pipe);
     }
 
-    private Msg recvReplyPipe()
-    {
+    private Msg recvReplyPipe() {
         while (true) {
             ValueReference<Pipe> pipe = new ValueReference<>();
             Msg msg = super.recvpipe(pipe);
@@ -235,53 +226,47 @@ public class Req extends Dealer
         }
     }
 
-    public static class ReqSession extends SessionBase
-    {
-        enum State
-        {
-            BOTTOM,
-            BODY
+    public static class ReqSession extends SessionBase {
+        enum State {
+            BOTTOM, BODY
         }
 
         private State state;
 
         public ReqSession(IOThread ioThread, boolean connect, SocketBase socket, final Options options,
-                final Address addr)
-        {
+                final Address addr) {
             super(ioThread, connect, socket, options, addr);
 
             state = State.BOTTOM;
         }
 
         @Override
-        public boolean pushMsg(Msg msg)
-        {
+        public boolean pushMsg(Msg msg) {
             switch (state) {
-            case BOTTOM:
-                if (msg.hasMore() && msg.size() == 0) {
-                    state = State.BODY;
-                    return super.pushMsg(msg);
-                }
-                break;
-            case BODY:
-                if (msg.hasMore()) {
-                    return super.pushMsg(msg);
-                }
-                if (msg.flags() == 0) {
-                    state = State.BOTTOM;
-                    return super.pushMsg(msg);
-                }
-                break;
-            default:
-                break;
+                case BOTTOM:
+                    if (msg.hasMore() && msg.size() == 0) {
+                        state = State.BODY;
+                        return super.pushMsg(msg);
+                    }
+                    break;
+                case BODY:
+                    if (msg.hasMore()) {
+                        return super.pushMsg(msg);
+                    }
+                    if (msg.flags() == 0) {
+                        state = State.BOTTOM;
+                        return super.pushMsg(msg);
+                    }
+                    break;
+                default:
+                    break;
             }
             errno.set(ZError.EFAULT);
             return false;
         }
 
         @Override
-        public void reset()
-        {
+        public void reset() {
             super.reset();
             state = State.BOTTOM;
         }

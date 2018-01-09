@@ -7,15 +7,13 @@ import org.zeromq.ZMQ.Socket;
 
 //  Binary Star client proof-of-concept implementation. This client does no
 //  real work; it just demonstrates the Binary Star failover model.
-public class bstarcli
-{
+public class bstarcli {
     private static final long REQUEST_TIMEOUT = 1000; //  msecs
-    private static final long SETTLE_DELAY    = 2000; //  Before failing over
+    private static final long SETTLE_DELAY = 2000; //  Before failing over
 
-    public static void main(String[] argv) throws Exception
-    {
+    public static void main(String[] argv) throws Exception {
         ZContext ctx = new ZContext();
-        String[] server = { "tcp://localhost:5001", "tcp://localhost:5002" };
+        String[] server = {"tcp://localhost:5001", "tcp://localhost:5002"};
         int serverNbr = 0;
 
         System.out.printf("I: connecting to server at %s...\n", server[serverNbr]);
@@ -52,10 +50,9 @@ public class bstarcli
                         System.out.printf("I: server replied OK (%s)\n", reply);
                         expectReply = false;
                         Thread.sleep(1000); //  One request per second
-                    }
-                    else System.out.printf("E: bad reply from server: %s\n", reply);
-                }
-                else {
+                    } else
+                        System.out.printf("E: bad reply from server: %s\n", reply);
+                } else {
                     System.out.printf("W: no response from server, failing over\n");
 
                     //  Old socket is confused; close it and open a new one

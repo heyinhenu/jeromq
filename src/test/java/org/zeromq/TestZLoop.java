@@ -8,16 +8,14 @@ import org.zeromq.ZMQ.PollItem;
 import org.zeromq.ZMQ.Poller;
 import org.zeromq.ZMQ.Socket;
 
-public class TestZLoop
-{
-    private String   received;
+public class TestZLoop {
+    private String received;
     private ZContext ctx;
-    private Socket   input;
-    private Socket   output;
+    private Socket input;
+    private Socket output;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         ctx = new ZContext();
         assert (ctx != null);
 
@@ -32,14 +30,12 @@ public class TestZLoop
     }
 
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
         ctx.destroy();
     }
 
     @Test
-    public void testZLoop()
-    {
+    public void testZLoop() {
         int rc = 0;
 
         // setUp() should create the context
@@ -48,21 +44,17 @@ public class TestZLoop
         ZLoop loop = new ZLoop(ctx);
         assert (loop != null);
 
-        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 ((Socket) arg).send("PING", 0);
                 return 0;
             }
         };
 
-        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 received = ((Socket) arg).recvStr(0);
                 //  Just end the reactor
                 return -1;
@@ -83,25 +75,20 @@ public class TestZLoop
     }
 
     @Test
-    public void testZLoopAddTimerFromTimer()
-    {
+    public void testZLoopAddTimerFromTimer() {
         int rc = 0;
 
         ZLoop loop = new ZLoop(ctx);
         assert (loop != null);
 
-        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 final long now = System.currentTimeMillis();
 
-                ZLoop.IZLoopHandler timerEvent2 = new ZLoop.IZLoopHandler()
-                {
+                ZLoop.IZLoopHandler timerEvent2 = new ZLoop.IZLoopHandler() {
                     @Override
-                    public int handle(ZLoop loop, PollItem item, Object arg)
-                    {
+                    public int handle(ZLoop loop, PollItem item, Object arg) {
                         final long now2 = System.currentTimeMillis();
                         assert (now2 >= now + 10);
                         ((Socket) arg).send("PING", 0);
@@ -113,11 +100,9 @@ public class TestZLoop
             }
         };
 
-        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 received = ((Socket) arg).recvStr(0);
                 //  Just end the reactor
                 return -1;
@@ -141,34 +126,27 @@ public class TestZLoop
     }
 
     @Test(timeout = 1000)
-    public void testZLoopAddTimerFromSocketHandler()
-    {
+    public void testZLoopAddTimerFromSocketHandler() {
         int rc = 0;
 
         ZLoop loop = new ZLoop(ctx);
         assert (loop != null);
 
-        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 ((Socket) arg).send("PING", 0);
                 return 0;
             }
         };
 
-        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 final long now = System.currentTimeMillis();
-                ZLoop.IZLoopHandler timerEvent2 = new ZLoop.IZLoopHandler()
-                {
+                ZLoop.IZLoopHandler timerEvent2 = new ZLoop.IZLoopHandler() {
                     @Override
-                    public int handle(ZLoop loop, PollItem item, Object arg)
-                    {
+                    public int handle(ZLoop loop, PollItem item, Object arg) {
                         final long now2 = System.currentTimeMillis();
                         Assert.assertTrue(now2 >= now + 10);
                         received = ((Socket) arg).recvStr(0);
@@ -197,34 +175,27 @@ public class TestZLoop
     }
 
     @Test(timeout = 1000)
-    public void testZLoopEndReactorFromTimer()
-    {
+    public void testZLoopEndReactorFromTimer() {
         int rc = 0;
 
         ZLoop loop = new ZLoop(ctx);
         assert (loop != null);
 
-        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler timerEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 ((Socket) arg).send("PING", 0);
                 return 0;
             }
         };
 
-        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler()
-        {
+        ZLoop.IZLoopHandler socketEvent = new ZLoop.IZLoopHandler() {
             @Override
-            public int handle(ZLoop loop, PollItem item, Object arg)
-            {
+            public int handle(ZLoop loop, PollItem item, Object arg) {
                 //  After 10 msecs, fire an event that ends the reactor
-                ZLoop.IZLoopHandler shutdownEvent = new ZLoop.IZLoopHandler()
-                {
+                ZLoop.IZLoopHandler shutdownEvent = new ZLoop.IZLoopHandler() {
                     @Override
-                    public int handle(ZLoop loop, PollItem item, Object arg)
-                    {
+                    public int handle(ZLoop loop, PollItem item, Object arg) {
                         received = ((Socket) arg).recvStr(0);
                         //  Just end the reactor
                         return -1;

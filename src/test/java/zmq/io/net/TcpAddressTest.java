@@ -10,11 +10,9 @@ import org.junit.Test;
 import zmq.io.net.tcp.TcpAddress;
 import zmq.util.Utils;
 
-public class TcpAddressTest
-{
+public class TcpAddressTest {
     @Test
-    public void parsesIpv6Address() throws IOException
-    {
+    public void parsesIpv6Address() throws IOException {
         String addressString = "2000::a1";
         int port = Utils.findOpenPort();
         TcpAddress address = new TcpAddress("[" + addressString + "]:" + port, true);

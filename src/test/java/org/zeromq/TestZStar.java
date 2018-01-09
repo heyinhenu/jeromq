@@ -10,87 +10,71 @@ import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZStar.Fortune;
 import org.zeromq.ZStar.Star;
 
-public class TestZStar
-{
-    private final class BlackHole implements ZStar.Fortune
-    {
+public class TestZStar {
+    private final class BlackHole implements ZStar.Fortune {
         @Override
-        public String premiere(Socket mic, Object... args)
-        {
+        public String premiere(Socket mic, Object... args) {
             return "Test " + Arrays.toString(args);
         }
 
         @Override
-        public Star create(ZContext ctx, Socket pipe, Selector sel, int count, Star previous, Object... args)
-        {
+        public Star create(ZContext ctx, Socket pipe, Selector sel, int count, Star previous, Object... args) {
             return new NoNo();
         }
 
         @Override
-        public boolean interview(Socket mic)
-        {
+        public boolean interview(Socket mic) {
             System.out.print("Fortune is not here anymore ...");
             // tell that star is not here anymore
             return true;
         }
 
         @Override
-        public void party(ZContext ctx)
-        {
+        public void party(ZContext ctx) {
             // do nothing
             System.out.print(" Cleaning the remains.. ");
         }
     }
 
-    private final class NoNo implements ZStar.Star
-    {
+    private final class NoNo implements ZStar.Star {
         @Override
-        public void prepare()
-        {
+        public void prepare() {
             // do nothing
         }
 
         @Override
-        public int breathe()
-        {
+        public int breathe() {
             return -1;
         }
 
         @Override
-        public boolean act(int events)
-        {
+        public boolean act(int events) {
             return false;
         }
 
         @Override
-        public boolean entract()
-        {
+        public boolean entract() {
             return false;
         }
 
         @Override
-        public boolean renews()
-        {
+        public boolean renews() {
             return false;
         }
     }
 
     @Test
-    public void testNoStar()
-    {
+    public void testNoStar() {
         System.out.print("No star: ");
         ZStar.Fortune fortune = new BlackHole();
-        ZStar.Entourage entourage = new ZStar.Entourage()
-        {
+        ZStar.Entourage entourage = new ZStar.Entourage() {
             @Override
-            public void breakaleg(ZContext ctx, Fortune fortune, Socket phone, Object... bags)
-            {
+            public void breakaleg(ZContext ctx, Fortune fortune, Socket phone, Object... bags) {
                 // Crepi il lupo!
             }
 
             @Override
-            public void party(ZContext ctx)
-            {
+            public void party(ZContext ctx) {
                 // right now there are some random closing issues
                 ZStar.party(30, TimeUnit.MILLISECONDS);
                 // waited a bit here seems to arrange that.

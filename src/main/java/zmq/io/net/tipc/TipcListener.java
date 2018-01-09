@@ -6,12 +6,10 @@ import zmq.io.IOThread;
 import zmq.io.net.ipc.IpcAddress;
 import zmq.io.net.tcp.TcpListener;
 
-public class TipcListener extends TcpListener
-{
+public class TipcListener extends TcpListener {
     private IpcAddress address;
 
-    public TipcListener(IOThread ioThread, SocketBase socket, final Options options)
-    {
+    public TipcListener(IOThread ioThread, SocketBase socket, final Options options) {
         super(ioThread, socket, options);
         // TODO V4 implement tipc
         throw new UnsupportedOperationException("TODO implement tipc");

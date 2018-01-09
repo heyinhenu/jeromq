@@ -9,13 +9,11 @@ import org.junit.Test;
 
 import zmq.Msg;
 
-public class TrieTest
-{
-    private static final Msg prefix = new Msg(new byte[] { 1, 2, 3, 4, 5 });
+public class TrieTest {
+    private static final Msg prefix = new Msg(new byte[]{1, 2, 3, 4, 5});
 
     @Test
-    public void testAddRemoveNodeOnTop()
-    {
+    public void testAddRemoveNodeOnTop() {
         Trie trie = new Trie();
 
         boolean rc = trie.add(null, 0, 0);
@@ -25,8 +23,7 @@ public class TrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesBelowLevel()
-    {
+    public void testAddRemoveMultiNodesBelowLevel() {
         Trie trie = new Trie();
 
         boolean rc = trie.add(prefix, 0, prefix.size());
@@ -57,8 +54,7 @@ public class TrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesAboveLevel()
-    {
+    public void testAddRemoveMultiNodesAboveLevel() {
         Trie trie = new Trie();
 
         boolean rc = trie.add(prefix, 0, prefix.size());
@@ -89,8 +85,7 @@ public class TrieTest
     }
 
     @Test
-    public void testAddRemoveMultiNodesSameLevel()
-    {
+    public void testAddRemoveMultiNodesSameLevel() {
         Trie trie = new Trie();
 
         boolean rc = trie.add(prefix, 0, prefix.size());
@@ -105,8 +100,7 @@ public class TrieTest
     }
 
     @Test
-    public void testAddRemoveOneNode()
-    {
+    public void testAddRemoveOneNode() {
         Trie trie = new Trie();
 
         boolean rc = trie.add(prefix, 0, prefix.size());

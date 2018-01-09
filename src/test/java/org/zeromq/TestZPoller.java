@@ -20,39 +20,32 @@ import org.zeromq.ZPoller.EventsHandler;
 import org.zeromq.ZPoller.ItemCreator;
 import org.zeromq.ZPoller.ItemHolder;
 
-public class TestZPoller
-{
-    private static class EventsHandlerAdapter implements EventsHandler
-    {
+public class TestZPoller {
+    private static class EventsHandlerAdapter implements EventsHandler {
         @Override
-        public boolean events(SelectableChannel channel, int events)
-        {
+        public boolean events(SelectableChannel channel, int events) {
             return false;
         }
 
         @Override
-        public boolean events(Socket socket, int events)
-        {
+        public boolean events(Socket socket, int events) {
             return false;
         }
     }
 
-    static class Server extends Thread
-    {
-        private final int     port;
-        private final Socket  socket;
+    static class Server extends Thread {
+        private final int port;
+        private final Socket socket;
         private final ZPoller poller;
 
-        public Server(ZContext context, int port)
-        {
+        public Server(ZContext context, int port) {
             this.port = port;
             socket = context.createSocket(ZMQ.PUSH);
             poller = new ZPoller(context);
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             socket.bind("tcp://127.0.0.1:" + port);
 
             poller.register(socket, ZPoller.WRITABLE);
@@ -64,8 +57,7 @@ public class TestZPoller
                     msg.send(socket);
 
                     break;
-                }
-                else {
+                } else {
                     fail("unable to get server socket in writable state");
                 }
             }
@@ -73,8 +65,7 @@ public class TestZPoller
 
             try {
                 poller.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 fail("error while closing poller " + e.getMessage());
             }
@@ -82,8 +73,7 @@ public class TestZPoller
     }
 
     @Test
-    public void testPollerPollout() throws IOException, InterruptedException
-    {
+    public void testPollerPollout() throws IOException, InterruptedException {
         final int port = Utils.findOpenPort();
 
         final ZContext context = new ZContext();
@@ -97,16 +87,13 @@ public class TestZPoller
             receiver.connect("tcp://127.0.0.1:" + port);
 
             final AtomicReference<ZMsg> msg = new AtomicReference<>();
-            poller.register(receiver, new EventsHandlerAdapter()
-            {
+            poller.register(receiver, new EventsHandlerAdapter() {
                 @Override
-                public boolean events(Socket s, int events)
-                {
+                public boolean events(Socket s, int events) {
                     if (receiver.equals(s)) {
                         msg.set(ZMsg.recvMsg(receiver));
                         return false;
-                    }
-                    else {
+                    } else {
                         return true;
                     }
                 }
@@ -121,8 +108,7 @@ public class TestZPoller
             client.join();
 
             assertThat("unable to receive msg after several cycles", msg, notNullValue());
-        }
-        finally {
+        } finally {
             receiver.close();
             context.close();
             poller.close();
@@ -130,8 +116,7 @@ public class TestZPoller
     }
 
     @Test
-    public void testUseNull() throws IOException
-    {
+    public void testUseNull() throws IOException {
         Selector selector = new ZStar.VerySimpleSelectorCreator().create();
         ZPoller poller = new ZPoller(selector);
 
@@ -175,8 +160,7 @@ public class TestZPoller
     }
 
     @Test
-    public void testZPollerNew() throws IOException
-    {
+    public void testZPollerNew() throws IOException {
         ZContext ctx = new ZContext();
         ZPoller poller = new ZPoller(ctx);
         try {
@@ -186,16 +170,14 @@ public class TestZPoller
             ItemCreator itemCreator = new ZPoller.SimpleCreator();
             other = new ZPoller(itemCreator, poller);
             other.close();
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
     }
 
     @Test
-    public void testGlobalHandler() throws IOException
-    {
+    public void testGlobalHandler() throws IOException {
         ZContext ctx = new ZContext();
         ZPoller poller = new ZPoller(ctx);
         try {
@@ -203,8 +185,7 @@ public class TestZPoller
             EventsHandler handler = new EventsHandlerAdapter();
             poller.setGlobalHandler(handler);
             assertThat(poller.getGlobalHandler(), is(handler));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
@@ -212,8 +193,7 @@ public class TestZPoller
 
     @SuppressWarnings("unlikely-arg-type")
     @Test
-    public void testItemEqualsBasic() throws IOException
-    {
+    public void testItemEqualsBasic() throws IOException {
         ZContext ctx = new ZContext();
 
         ItemCreator itemCreator = new ZPoller.SimpleCreator();
@@ -227,16 +207,14 @@ public class TestZPoller
             assertThat(holder, is(not(equalTo(null))));
 
             assertThat(holder.equals(""), is(false));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
     }
 
     @Test
-    public void testItemEquals() throws IOException
-    {
+    public void testItemEquals() throws IOException {
         ZContext ctx = new ZContext();
         ItemCreator itemCreator = new ZPoller.SimpleCreator();
         ZPoller poller = new ZPoller(itemCreator, ctx);
@@ -261,16 +239,14 @@ public class TestZPoller
             holder = poller.create(socket, new EventsHandlerAdapter(), 0);
             other = new ZPoller.ZPollItem(socket, new EventsHandlerAdapter(), 0);
             assertThat(other, is(not(equalTo(holder))));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
     }
 
     @Test
-    public void testReadable() throws IOException
-    {
+    public void testReadable() throws IOException {
         ZContext ctx = new ZContext();
         ZPoller poller = new ZPoller(ctx);
         try {
@@ -285,16 +261,14 @@ public class TestZPoller
 
             rc = poller.pollin(socket);
             assertThat(rc, is(false));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
     }
 
     @Test
-    public void testWritable() throws IOException
-    {
+    public void testWritable() throws IOException {
         ZContext ctx = new ZContext();
         ZPoller poller = new ZPoller(ctx);
         try {
@@ -309,16 +283,14 @@ public class TestZPoller
 
             rc = poller.pollout(socket);
             assertThat(rc, is(false));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
     }
 
     @Test
-    public void testError() throws IOException
-    {
+    public void testError() throws IOException {
         ZContext ctx = new ZContext();
         ZPoller poller = new ZPoller(ctx);
         try {
@@ -333,16 +305,14 @@ public class TestZPoller
 
             rc = poller.pollerr(socket);
             assertThat(rc, is(false));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
     }
 
     @Test
-    public void testRegister() throws IOException
-    {
+    public void testRegister() throws IOException {
         ZContext ctx = new ZContext();
         ZPoller poller = new ZPoller(ctx);
         try {
@@ -350,16 +320,14 @@ public class TestZPoller
             ItemHolder holder = poller.create(socket, null, 0);
             boolean rc = poller.register(holder);
             assertThat(rc, is(true));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }
     }
 
     @Test
-    public void testItems() throws IOException
-    {
+    public void testItems() throws IOException {
         ZContext ctx = new ZContext();
         ZPoller poller = new ZPoller(ctx);
         try {
@@ -371,8 +339,7 @@ public class TestZPoller
             poller.register(holder);
             items = poller.items(socket);
             assertThat(items, hasItem(holder));
-        }
-        finally {
+        } finally {
             poller.close();
             ctx.close();
         }

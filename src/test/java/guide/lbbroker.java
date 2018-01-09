@@ -8,8 +8,7 @@ import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Poller;
 import org.zeromq.ZMQ.Socket;
 
-public class lbbroker
-{
+public class lbbroker {
 
     private static final int NBR_CLIENTS = 10;
     private static final int NBR_WORKERS = 3;
@@ -17,11 +16,9 @@ public class lbbroker
     /**
      * Basic request-reply client using REQ socket
      */
-    private static class ClientTask extends Thread
-    {
+    private static class ClientTask extends Thread {
         @Override
-        public void run()
-        {
+        public void run() {
             Context context = ZMQ.context(1);
 
             //  Prepare our context and sockets
@@ -46,11 +43,9 @@ public class lbbroker
      * context and conceptually acts as a separate process.
      * This is the worker task, using a REQ socket to do load-balancing.
      */
-    private static class WorkerTask extends Thread
-    {
+    private static class WorkerTask extends Thread {
         @Override
-        public void run()
-        {
+        public void run() {
             Context context = ZMQ.context(1);
             //  Prepare our context and sockets
             Socket worker = context.socket(ZMQ.REQ);
@@ -86,8 +81,7 @@ public class lbbroker
      * a response back to a client. The load-balancing data structure is
      * just a queue of next available workers.
      */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         Context context = ZMQ.context(1);
         //  Prepare our context and sockets
         Socket frontend = context.socket(ZMQ.ROUTER);

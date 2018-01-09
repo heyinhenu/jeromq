@@ -13,11 +13,10 @@ import org.zeromq.ZMsg;
 //  Broker peering simulation (part 3)
 //  Prototypes the full flow of status and tasks
 
-public class peering3
-{
+public class peering3 {
 
-    private static final int    NBR_CLIENTS  = 10;
-    private static final int    NBR_WORKERS  = 5;
+    private static final int NBR_CLIENTS = 10;
+    private static final int NBR_WORKERS = 5;
     private static final String WORKER_READY = "\001"; //  Signals worker is ready
 
     //  Our own name; in practice this would be configured per node
@@ -28,11 +27,9 @@ public class peering3
     //  a number of clients are active at once, the local workers should
     //  be overloaded. The client uses a REQ socket for requests and also
     //  pushes statistics to the monitor socket:
-    private static class client_task extends Thread
-    {
+    private static class client_task extends Thread {
         @Override
-        public void run()
-        {
+        public void run() {
             ZContext ctx = new ZContext();
             Socket client = ctx.createSocket(ZMQ.REQ);
             client.connect(String.format("ipc://%s-localfe.ipc", self));
@@ -47,8 +44,7 @@ public class peering3
 
                 try {
                     Thread.sleep(rand.nextInt(5) * 1000);
-                }
-                catch (InterruptedException e1) {
+                } catch (InterruptedException e1) {
                 }
                 int burst = rand.nextInt(15);
 
@@ -69,8 +65,7 @@ public class peering3
                         //  Worker is supposed to answer us with our task id
                         assert (reply.equals(taskId));
                         monitor.send(String.format("%s", reply), 0);
-                    }
-                    else {
+                    } else {
                         monitor.send(String.format("E: CLIENT EXIT - lost task %s", taskId), 0);
                         ctx.close();
                         return;
@@ -84,11 +79,9 @@ public class peering3
     //  This is the worker task, which uses a REQ socket to plug into the LRU
     //  router. It's the same stub worker task you've seen in other examples:
 
-    private static class worker_task extends Thread
-    {
+    private static class worker_task extends Thread {
         @Override
-        public void run()
-        {
+        public void run() {
             Random rand = new Random(System.nanoTime());
             ZContext ctx = new ZContext();
             Socket worker = ctx.createSocket(ZMQ.REQ);
@@ -107,8 +100,7 @@ public class peering3
                 //  Workers are busy for 0/1 seconds
                 try {
                     Thread.sleep(rand.nextInt(2) * 1000);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                 }
 
                 msg.send(worker);
@@ -125,8 +117,7 @@ public class peering3
     //  backend publishes regular state messages, and the state frontend
     //  subscribes to all state backends to collect these messages. Finally,
     //  we use a PULL monitor socket to collect printable messages from tasks:
-    public static void main(String[] argv)
-    {
+    public static void main(String[] argv) {
         //  First argument is this broker's name
         //  Other arguments are our peers' names
         //
@@ -282,11 +273,10 @@ public class peering3
 
                 if (secondary.pollin(0)) {
                     msg = ZMsg.recvMsg(localfe);
-                }
-                else if (localCapacity > 0 && secondary.pollin(1)) {
+                } else if (localCapacity > 0 && secondary.pollin(1)) {
                     msg = ZMsg.recvMsg(cloudfe);
-                }
-                else break; //  No work, go back to backends
+                } else
+                    break; //  No work, go back to backends
 
                 if (localCapacity > 0) {
                     ZFrame frame = workers.remove(0);
@@ -294,8 +284,7 @@ public class peering3
                     msg.send(localbe);
                     localCapacity--;
 
-                }
-                else {
+                } else {
                     //  Route to random broker peer
                     int random_peer = rand.nextInt(argv.length - 1) + 1;
                     msg.push(argv[random_peer]);

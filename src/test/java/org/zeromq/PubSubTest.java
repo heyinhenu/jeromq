@@ -15,23 +15,19 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.zeromq.ZMQ.Socket;
 
-public class PubSubTest
-{
+public class PubSubTest {
     @Test
     @Ignore
-    public void testRaceConditionIssue322() throws IOException, InterruptedException
-    {
+    public void testRaceConditionIssue322() throws IOException, InterruptedException {
         final ZMQ.Context context = ZMQ.context(1);
         final String address = "tcp://localhost:" + Utils.findOpenPort();
         final byte[] msg = "abc".getBytes();
 
         final int messagesNumber = 1000;
         //run publisher
-        Runnable pub = new Runnable()
-        {
+        Runnable pub = new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 ZMQ.Socket publisher = context.socket(ZMQ.PUB);
                 publisher.bind(address);
                 int count = messagesNumber;
@@ -44,11 +40,9 @@ public class PubSubTest
 
         };
         //run subscriber
-        Runnable sub = new Runnable()
-        {
+        Runnable sub = new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
                 subscriber.connect(address);
                 subscriber.subscribe(ZMQ.SUBSCRIPTION_ALL);
@@ -60,17 +54,13 @@ public class PubSubTest
                 subscriber.close();
             }
         };
-        ExecutorService executor = Executors.newFixedThreadPool(2, new ThreadFactory()
-        {
+        ExecutorService executor = Executors.newFixedThreadPool(2, new ThreadFactory() {
             @Override
-            public Thread newThread(Runnable r)
-            {
+            public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
-                thread.setUncaughtExceptionHandler(new UncaughtExceptionHandler()
-                {
+                thread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                     @Override
-                    public void uncaughtException(Thread t, Throwable e)
-                    {
+                    public void uncaughtException(Thread t, Throwable e) {
                         e.printStackTrace();
                     }
                 });
@@ -90,8 +80,7 @@ public class PubSubTest
 
     @Test
     @Ignore
-    public void testPubConnectSubBindIssue289and342() throws IOException
-    {
+    public void testPubConnectSubBindIssue289and342() throws IOException {
         ZMQ.Context context = ZMQ.context(1);
         Socket pub = context.socket(ZMQ.XPUB);
         assertThat(pub, notNullValue());

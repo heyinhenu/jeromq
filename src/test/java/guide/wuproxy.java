@@ -5,13 +5,11 @@ import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
 /**
-* Weather proxy device.
-*/
-public class wuproxy
-{
+ * Weather proxy device.
+ */
+public class wuproxy {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         //  Prepare our context and sockets
         Context context = ZMQ.context(1);
 

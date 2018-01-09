@@ -15,20 +15,17 @@ import zmq.io.coder.v2.V2Encoder;
 import zmq.util.Errno;
 import zmq.util.ValueReference;
 
-public class V2EncoderTest
-{
+public class V2EncoderTest {
     private EncoderBase encoder = new V2Encoder(new Errno(), 64);
 
     // as if it read data from socket
-    private Msg readShortMessage()
-    {
+    private Msg readShortMessage() {
         Msg msg = new Msg("hello".getBytes(ZMQ.CHARSET));
         return msg;
     }
 
     // as if it read data from socket
-    private Msg readLongMessage1()
-    {
+    private Msg readLongMessage1() {
         Msg msg = new Msg(200);
         for (int i = 0; i < 20; i++) {
             msg.put("0123456789".getBytes(ZMQ.CHARSET));
@@ -37,8 +34,7 @@ public class V2EncoderTest
     }
 
     @Test
-    public void testReader()
-    {
+    public void testReader() {
         Msg msg = readShortMessage();
         encoder.loadMsg(msg);
 
@@ -52,8 +48,7 @@ public class V2EncoderTest
     }
 
     @Test
-    public void testReaderLong()
-    {
+    public void testReaderLong() {
         Msg msg = readLongMessage1();
         ValueReference<ByteBuffer> ref = new ValueReference<>();
         int outsize = encoder.encode(ref, 0);

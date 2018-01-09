@@ -12,15 +12,13 @@ import org.zeromq.ZMQ.Socket;
 
 /**
  * Clone client Model Three
- * @author Danish Shrestha <dshrestha06@gmail.com>
  *
+ * @author Danish Shrestha <dshrestha06@gmail.com>
  */
-public class clonecli3
-{
+public class clonecli3 {
     private static Map<String, kvsimple> kvMap = new HashMap<String, kvsimple>();
 
-    public void run()
-    {
+    public void run() {
         ZContext ctx = new ZContext();
         Socket snapshot = ctx.createSocket(ZMQ.DEALER);
         snapshot.connect("tcp://localhost:5556");
@@ -88,8 +86,7 @@ public class clonecli3
         ctx.close();
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new clonecli3().run();
     }
 }

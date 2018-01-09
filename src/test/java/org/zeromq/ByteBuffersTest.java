@@ -12,20 +12,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.zeromq.ZMQ.Socket;
 
-public class ByteBuffersTest
-{
-    static class Client extends Thread
-    {
+public class ByteBuffersTest {
+    static class Client extends Thread {
         private int port = -1;
 
-        public Client(int port)
-        {
+        public Client(int port) {
             this.port = port;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             System.out.println("Start client thread ");
             ZMQ.Context context = ZMQ.context(1);
             Socket pullConnect = context.socket(ZMQ.PULL);
@@ -40,8 +36,7 @@ public class ByteBuffersTest
     }
 
     @Test
-    public void testByteBufferSend() throws InterruptedException, IOException
-    {
+    public void testByteBufferSend() throws InterruptedException, IOException {
         int port = Utils.findOpenPort();
         ZMQ.Context context = ZMQ.context(1);
         ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
@@ -61,29 +56,24 @@ public class ByteBuffersTest
             push.sendByteBuffer(bb, 0);
             String actual = new String(pull.recv(), ZMQ.CHARSET);
             assertEquals("PING", actual);
-        }
-        finally {
+        } finally {
             try {
                 push.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
             }
             try {
                 pull.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
             }
             try {
                 context.term();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
             }
         }
     }
 
     @Test
-    public void testByteBufferRecv() throws InterruptedException, IOException, CharacterCodingException
-    {
+    public void testByteBufferRecv() throws InterruptedException, IOException, CharacterCodingException {
         int port = Utils.findOpenPort();
         ZMQ.Context context = ZMQ.context(1);
         ByteBuffer bb = ByteBuffer.allocate(6).order(ByteOrder.nativeOrder());
@@ -104,24 +94,20 @@ public class ByteBuffersTest
             byte[] b = new byte[bb.remaining()];
             bb.duplicate().get(b);
             assertEquals("PING", new String(b, ZMQ.CHARSET));
-        }
-        finally {
+        } finally {
             try {
                 push.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
             try {
                 pull.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
             try {
                 context.term();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
         }
@@ -129,8 +115,7 @@ public class ByteBuffersTest
     }
 
     @Test
-    public void testByteBufferLarge() throws InterruptedException, IOException, CharacterCodingException
-    {
+    public void testByteBufferLarge() throws InterruptedException, IOException, CharacterCodingException {
         int port = Utils.findOpenPort();
         ZMQ.Context context = ZMQ.context(1);
         int[] array = new int[2048 * 2000];
@@ -161,36 +146,30 @@ public class ByteBuffersTest
             System.out.println("Received ~" + size + "Mb msg in " + (end - start) + " millisec.");
             bRec.flip();
             assertEquals(bSend, bRec);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
-        }
-        finally {
+        } finally {
             try {
                 push.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
             try {
                 pull.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
             try {
                 context.term();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
         }
     }
 
     @Test
-    public void testByteBufferLargeDirect() throws InterruptedException, IOException, CharacterCodingException
-    {
+    public void testByteBufferLargeDirect() throws InterruptedException, IOException, CharacterCodingException {
         int port = Utils.findOpenPort();
         ZMQ.Context context = ZMQ.context(1);
         int[] array = new int[2048 * 2000];
@@ -224,28 +203,23 @@ public class ByteBuffersTest
             bRec.flip();
             bRec.asIntBuffer().get(recArray);
             assertArrayEquals(array, recArray);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
-        }
-        finally {
+        } finally {
             try {
                 push.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
             try {
                 pull.close();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
             try {
                 context.term();
-            }
-            catch (Exception ignore) {
+            } catch (Exception ignore) {
                 ignore.printStackTrace();
             }
         }

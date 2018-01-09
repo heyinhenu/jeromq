@@ -8,12 +8,10 @@ import zmq.util.Errno;
 import zmq.util.Wire;
 
 // Encoder for 0MQ framing protocol. Converts messages into data stream.
-public class V1Encoder extends Encoder
-{
+public class V1Encoder extends Encoder {
     private final ByteBuffer tmpbufWrap;
 
-    public V1Encoder(Errno errno, int bufsize)
-    {
+    public V1Encoder(Errno errno, int bufsize) {
         super(errno, bufsize);
         tmpbufWrap = ByteBuffer.allocate(10);
 
@@ -22,15 +20,13 @@ public class V1Encoder extends Encoder
     }
 
     @Override
-    protected void sizeReady()
-    {
+    protected void sizeReady() {
         //  Write message body into the buffer.
         nextStep(inProgress.buf(), inProgress.size(), messageReady, true);
     }
 
     @Override
-    protected void messageReady()
-    {
+    protected void messageReady() {
         //  Get the message size.
         int size = inProgress.size();
 
@@ -45,8 +41,7 @@ public class V1Encoder extends Encoder
         if (size < 255) {
             tmpbufWrap.limit(2);
             tmpbufWrap.put((byte) size);
-        }
-        else {
+        } else {
             tmpbufWrap.limit(10);
             tmpbufWrap.put((byte) 0xff);
             Wire.putUInt64(tmpbufWrap, size);

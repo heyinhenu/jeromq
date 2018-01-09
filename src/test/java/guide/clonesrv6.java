@@ -15,27 +15,24 @@ import org.zeromq.ZMQ.PollItem;
 import org.zeromq.ZMQ.Socket;
 
 //  Clone server - Model Six
-public class clonesrv6
-{
-    private ZContext           ctx;        //  Context wrapper
+public class clonesrv6 {
+    private ZContext ctx;        //  Context wrapper
     private Map<String, kvmsg> kvmap;      //  Key-value store
-    private bstar              bStar;      //  Bstar reactor core
-    private long               sequence;   //  How many updates we're at
-    private int                port;       //  Main port we're working on
-    private int                peer;       //  Main port of our peer
-    private Socket             publisher;  //  Publish updates and hugz
-    private Socket             collector;  //  Collect updates from clients
-    private Socket             subscriber; //  Get updates from peer
-    private List<kvmsg>        pending;    //  Pending updates from clients
-    private boolean            primary;    //  TRUE if we're primary
-    private boolean            active;     //  TRUE if we're active
-    private boolean            passive;    //  TRUE if we're passive
+    private bstar bStar;      //  Bstar reactor core
+    private long sequence;   //  How many updates we're at
+    private int port;       //  Main port we're working on
+    private int peer;       //  Main port of our peer
+    private Socket publisher;  //  Publish updates and hugz
+    private Socket collector;  //  Collect updates from clients
+    private Socket subscriber; //  Get updates from peer
+    private List<kvmsg> pending;    //  Pending updates from clients
+    private boolean primary;    //  TRUE if we're primary
+    private boolean active;     //  TRUE if we're active
+    private boolean passive;    //  TRUE if we're passive
 
-    private static class Snapshots implements IZLoopHandler
-    {
+    private static class Snapshots implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv6 srv = (clonesrv6) arg;
             Socket socket = item.getSocket();
 
@@ -46,8 +43,8 @@ public class clonesrv6
                 String subtree = null;
                 if (request.equals("ICANHAZ?")) {
                     subtree = socket.recvStr();
-                }
-                else System.out.printf("E: bad request, aborting\n");
+                } else
+                    System.out.printf("E: bad request, aborting\n");
 
                 if (subtree != null) {
                     //  Send state socket to client
@@ -69,11 +66,9 @@ public class clonesrv6
         }
     }
 
-    private static class Collector implements IZLoopHandler
-    {
+    private static class Collector implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv6 srv = (clonesrv6) arg;
             Socket socket = item.getSocket();
 
@@ -87,13 +82,13 @@ public class clonesrv6
                         msg.setProp("ttl", "%d", System.currentTimeMillis() + ttl * 1000);
                     msg.store(srv.kvmap);
                     System.out.printf("I: publishing update=%d\n", srv.sequence);
-                }
-                else {
+                } else {
                     //  If we already got message from active, drop it, else
                     //  hold on pending list
                     if (srv.wasPending(msg))
                         msg.destroy();
-                    else srv.pending.add(msg);
+                    else
+                        srv.pending.add(msg);
                 }
             }
 
@@ -105,11 +100,9 @@ public class clonesrv6
     //  We send a HUGZ message once a second to all subscribers so that they
     //  can detect if our server dies. They'll then switch over to the backup
     //  server, which will become active:
-    private static class SendHugz implements IZLoopHandler
-    {
+    private static class SendHugz implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv6 srv = (clonesrv6) arg;
 
             kvmsg msg = new kvmsg(srv.sequence);
@@ -122,11 +115,9 @@ public class clonesrv6
         }
     }
 
-    private static class FlushTTL implements IZLoopHandler
-    {
+    private static class FlushTTL implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv6 srv = (clonesrv6) arg;
             if (srv.kvmap != null) {
                 for (kvmsg msg : new ArrayList<kvmsg>(srv.kvmap.values())) {
@@ -141,11 +132,9 @@ public class clonesrv6
     //  When we switch from passive to active, we apply our pending list so that
     //  our kvmap is up-to-date. When we switch to passive, we wipe our kvmap
     //  and grab a new snapshot from the active server:
-    private static class NewActive implements IZLoopHandler
-    {
+    private static class NewActive implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv6 srv = (clonesrv6) arg;
 
             srv.active = true;
@@ -167,11 +156,9 @@ public class clonesrv6
         }
     }
 
-    private static class NewPassive implements IZLoopHandler
-    {
+    private static class NewPassive implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv6 srv = (clonesrv6) arg;
 
             if (srv.kvmap != null) {
@@ -191,11 +178,9 @@ public class clonesrv6
     //  .split subscriber handler
     //  When we get an update, we create a new kvmap if necessary, and then
     //  add our update to our kvmap. We're always passive in this case:
-    private static class Subscriber implements IZLoopHandler
-    {
+    private static class Subscriber implements IZLoopHandler {
         @Override
-        public int handle(ZLoop loop, PollItem item, Object arg)
-        {
+        public int handle(ZLoop loop, PollItem item, Object arg) {
             clonesrv6 srv = (clonesrv6) arg;
             Socket socket = item.getSocket();
 
@@ -250,8 +235,7 @@ public class clonesrv6
         }
     }
 
-    public clonesrv6(boolean primary)
-    {
+    public clonesrv6(boolean primary) {
         if (primary) {
             bStar = new bstar(true, "tcp://*:5003", "tcp://localhost:5004");
             bStar.voter("tcp://*:5556", ZMQ.ROUTER, new Snapshots(), this);
@@ -259,8 +243,7 @@ public class clonesrv6
             port = 5556;
             peer = 5566;
             this.primary = true;
-        }
-        else {
+        } else {
             bStar = new bstar(false, "tcp://*:5004", "tcp://localhost:5003");
             bStar.voter("tcp://*:5566", ZMQ.ROUTER, new Snapshots(), this);
 
@@ -295,8 +278,7 @@ public class clonesrv6
     //  event handlers, and then start the bstar reactor. This finishes
     //  when the user presses Ctrl-C or when the process receives a SIGINT
     //  interrupt:
-    public void run()
-    {
+    public void run() {
         //  Register state change handlers
         bStar.newActive(new NewActive(), this);
         bStar.newPassive(new NewPassive(), this);
@@ -324,8 +306,7 @@ public class clonesrv6
 
     //  Send one state snapshot key-value pair to a socket
     //  Hash item data is our kvmsg object, ready to send
-    private static void sendSingle(kvmsg msg, byte[] identity, String subtree, Socket socket)
-    {
+    private static void sendSingle(kvmsg msg, byte[] identity, String subtree, Socket socket) {
         if (msg.getKey().startsWith(subtree)) {
             socket.send(identity, //  Choose recipient
                     ZMQ.SNDMORE);
@@ -340,8 +321,7 @@ public class clonesrv6
 
     //  If message was already on pending list, remove it and return TRUE,
     //  else return FALSE.
-    boolean wasPending(kvmsg msg)
-    {
+    boolean wasPending(kvmsg msg) {
         Iterator<kvmsg> it = pending.iterator();
         while (it.hasNext()) {
             if (java.util.Arrays.equals(msg.UUID(), it.next().UUID())) {
@@ -358,8 +338,7 @@ public class clonesrv6
     //  .skip
     //  If key-value pair has expired, delete it and publish the
     //  fact to listening clients.
-    private void flushSingle(kvmsg msg)
-    {
+    private void flushSingle(kvmsg msg) {
         long ttl = Long.parseLong(msg.getProp("ttl"));
         if (ttl > 0 && System.currentTimeMillis() >= ttl) {
             msg.setSequence(++sequence);
@@ -380,17 +359,14 @@ public class clonesrv6
     //  servers. Ports 5556/5566 are used to receive voting events (snapshot
     //  requests in the clone pattern). Ports 5557/5567 are used by the
     //  publisher, and ports 5558/5568 are used by the collector:
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         clonesrv6 srv = null;
 
         if (args.length == 1 && "-p".equals(args[0])) {
             srv = new clonesrv6(true);
-        }
-        else if (args.length == 1 && "-b".equals(args[0])) {
+        } else if (args.length == 1 && "-b".equals(args[0])) {
             srv = new clonesrv6(false);
-        }
-        else {
+        } else {
             System.out.printf("Usage: clonesrv4 { -p | -b }\n");
             System.exit(0);
         }
