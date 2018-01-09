@@ -10,6 +10,11 @@ import org.zeromq.ZMQ;
 
 public class hwclient {
 
+    /**
+     * 服务端必须先进行接受，然后才能发送。
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         ZMQ.Context context = ZMQ.context(1);
 
